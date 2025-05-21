@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../Styles/Drawer.css"; 
+import "../../Styles/Drawer.css"; 
 import { FaTimes } from "react-icons/fa";
 
 const Drawer = ({ toggleDrawer }) => {
