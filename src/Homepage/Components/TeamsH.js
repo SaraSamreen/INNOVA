@@ -1,5 +1,5 @@
 import React from 'react';
-import "../Styles/TeamsH.css";
+import "../../Styles/TeamsH.css";
 import Footer from "./Footer";
 
 export default function TeamsH() {

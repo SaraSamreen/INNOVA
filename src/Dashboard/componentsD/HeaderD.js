@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiBell, FiCalendar, FiSearch, FiSettings } from 'react-icons/fi'; // added FiSettings
+import { FiBell, FiCalendar, FiSearch, FiSettings } from 'react-icons/fi'; 
 import '../../Styles/HeaderD.css';
 
 export default function HeaderD() {

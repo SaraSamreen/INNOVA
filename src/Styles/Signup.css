@@ -1,0 +1,241 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #2b2a2a;
+  color: white;
+  min-height: 100vh; /* ensures full screen */
+  padding: 40px;
+}
+
+.signup-section, .preview-section {
+  flex: 1;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-section {
+  justify-content: center;
+  max-width: 500px;
+  padding-left: 80px;
+}
+
+.logo-container {
+  margin-bottom: 40px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.welcome-text {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #3538CD, #0099ff, #00E1D9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: 52px;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #222;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+  background-color: #333;
+}
+
+.auth-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #666;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #333;
+}
+
+.divider::before {
+  margin-right: 10px;
+}
+
+.divider::after {
+  margin-left: 10px;
+}
+
+.email-input {
+  width: 100%;
+  padding: 16px;
+  background-color: #222;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.create-account-button {
+  width: 100%;
+  padding: 16px;
+  background-color: #0095ff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-account-button:hover {
+  background-color: #0084e3;
+}
+
+.login-prompt {
+  margin: 20px 0;
+  text-align: center;
+  color: #999;
+}
+
+.login-link {
+  color: #0095ff;
+  text-decoration: none;
+}
+
+.terms {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  margin-top: 30px;
+}
+
+/* Preview Section */
+.preview-section {
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-heading {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.youtube-text {
+  color: #0095ff;
+  font-weight: 700;
+}
+
+.preview-description {
+  font-size: 18px;
+  margin-bottom: 40px;
+  max-width: 600px;
+}
+
+.play-button {
+  width: 80px;
+  height: 80px;
+  background-color: #0095ff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 149, 255, 0.5);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.generate-button {
+  padding: 12px 24px;
+  background-color: #8957ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .signup-section, .preview-section {
+    padding: 40px 20px;
+    max-width: 100%;
+  }
+}
+.video-box {
+  max-width: 600px;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255, 0, 230, 0.3);
+}
+
+.video {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+.forgot-password-link {
+  text-align: center;
+  margin-top: 16px; /* optional spacing */
+}
+
+.forgot-password-link a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px; /* optional: adjust size */
+}
+
+.forgot-password-link a:hover {
+  text-decoration: underline; /* Optional: adds underline on hover */
+}
