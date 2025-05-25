@@ -10,7 +10,7 @@ import Footer from "./Components/Footer";
 export default function Home() {
   return (
     <div className="container">
-      <h1 className="heading">AI-Powered Reels Creator</h1>
+      <h1 className="heading">AI-Powered Content Creator</h1>
       <p className="content">
         Effortlessly craft viral Instagram reels with InVideo’s AI-driven reel generator.  
         Simply choose a topic, and the AI will generate your script, design scenes, add voiceovers,  
