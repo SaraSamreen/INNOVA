@@ -1,4 +1,6 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+
 import Header from "./Homepage/Components/Header";
 import Home from "./Homepage/Home";
 import TeamsH from "./Homepage/Components/TeamsH";
@@ -7,7 +9,9 @@ import Signup from "./AccessHub/Signup";
 import Login from "./AccessHub/Login";
 import Dashboard from "./Dashboard/Dashboard";
 import VideoGenerator from './Dashboard/componentsD/Createvidpg1';
-import { useEffect } from "react";
+import ProfileSettings from './ProfileSettings/ProfileSettings';
+import TeamCollab from "./TeamCollab/TeamCollab";
+import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 
 function ConditionalHeader() {
   const location = useLocation();
@@ -30,6 +34,9 @@ function AppWrapper() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/create-video" element={<VideoGenerator />} />
+        <Route path="/profile-settings" element={<ProfileSettings />} />
+        <Route path="/team-collaboration" element={<TeamCollab />} />
+        <Route path="/admin" element={<AdminCommandHub />} /> 
       </Routes>
     </Router>
   );

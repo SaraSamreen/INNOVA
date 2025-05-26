@@ -18,6 +18,7 @@ const Drawer = ({ toggleDrawer }) => {
           <Link to="/custom-ai" onClick={toggleDrawer}>Custom AI Models</Link>
           <Link to="/about" onClick={toggleDrawer}>About</Link>
           <Link to="/contact" onClick={toggleDrawer}>Contact</Link>
+          
         </nav>
       </div>
     </div>

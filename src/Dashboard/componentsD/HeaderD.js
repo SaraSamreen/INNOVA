@@ -1,5 +1,6 @@
 import React from 'react';
-import { FiBell, FiCalendar, FiSearch, FiSettings } from 'react-icons/fi'; 
+import { FiBell, FiCalendar, FiSearch, FiSettings } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import '../../Styles/HeaderD.css';
 
 export default function HeaderD() {
@@ -12,12 +13,16 @@ export default function HeaderD() {
           placeholder="Search your videos...."
         />
       </div>
-
+      
       <div className="header-icons">
         <FiCalendar className="icon" />
         <FiBell className="icon" />
-        <img src="/avatar.png" alt="User" className="profile-pic" />
-        <FiSettings className="icon" />
+        <Link to="/User">
+          <img src="/avatar.png" alt="User" className="profile-pic" />
+        </Link>
+        <Link to="/profile-settings">
+          <FiSettings className="icon" />
+        </Link>
       </div>
     </header>
   );
