@@ -31,12 +31,12 @@ export default function Homepricing() {
       <h2 className="pricing-heading">Choose Your Plan</h2>
 
       <div className="toggle-switch">
-        <span className={!isYearly ? 'active' : ''}>Monthly</span>
+        <span className={!isYearly ? 'active' : ''}>Anually</span>
         <label className="switch">
           <input type="checkbox" onChange={() => setIsYearly(!isYearly)} />
           <span className="slider"></span>
         </label>
-        <span className={isYearly ? 'active' : ''}>Yearly</span>
+        <span className={isYearly ? 'active' : ''}></span>
       </div>
 
       <div className="cards-container">

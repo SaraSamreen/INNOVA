@@ -6,7 +6,7 @@
     justify-content: center;
     height: 130vh; /* Center content vertically */
     text-align: center;
-    margin-top: 172vw;
+    margin-top: 145vw;
   }
   .heading {
   font-size: 3.3rem !important; /* Added !important to override any conflicting styles */

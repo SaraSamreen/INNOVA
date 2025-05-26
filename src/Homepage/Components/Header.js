@@ -69,8 +69,8 @@ function Header() {
 
         {/* Regular navigation items */}
         
-        <Link to="/teamsH" className="nav-link">Team Work</Link> 
-        <Link to="/pricingH" className="nav-link">Pricing</Link>
+        <Link to="/teamsH" className="dropdown-trigger">Team Work</Link> 
+        <Link to="/pricingH" className="dropdown-trigger">Pricing</Link>
       </div>
 
       {/* Auth links - separate on the right */}

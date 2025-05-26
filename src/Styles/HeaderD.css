@@ -35,6 +35,7 @@
   .header-icons {
     display: flex;
     align-items: center;
+    margin-left: 100px;
   }
   
   .icon {
@@ -42,7 +43,7 @@
     cursor: pointer;
     color: #555;
     transition: color 0.2s;
-    margin-left: 20px;
+    margin-left: 120px;
     margin-right: 10px;
   }
   

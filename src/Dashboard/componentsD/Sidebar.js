@@ -21,7 +21,7 @@ const Sidebar = () => {
         </Link>
 
         <Link to="/admin">
-          <p className={`nav-item cursor-pointer ${location.pathname === "/admin" ? "active" : ""}`}>🛡️ Admin Panel</p>
+          <p className={`nav-item cursor-pointer ${location.pathname === "/admin" ? "active" : ""}`}>Admin Panel</p>
         </Link>
 
         <p className="nav-item">Create Subtitles</p>
