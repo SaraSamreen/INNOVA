@@ -6,18 +6,24 @@
     justify-content: center;
     height: 130vh; /* Center content vertically */
     text-align: center;
-    margin-top: 182vw;
+    margin-top: 172vw;
   }
-  
   .heading {
-    font-size: 2.5rem;
-    font-weight: bold;
-    font-family:Georgia, 'Times New Roman', Times, serif;
-    background: linear-gradient(to right, #5316e1,#e8a2e7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  font-size: 3.3rem !important; /* Added !important to override any conflicting styles */
+  font-weight: bold;
+  font-family: Georgia, 'Times New Roman', Times, serif;
   
+  /* Gradient text setup - standard and webkit versions */
+  background: linear-gradient(to right, #5316e1, #eb99e9);
+  background-clip: text; /* Standard property */
+  -webkit-background-clip: text; /* For webkit browsers */
+  -webkit-text-fill-color: transparent;
+  color: transparent; /* Fallback for non-webkit browsers */
+  
+  /* Ensure the element takes the full width */
+  display: block;
+  width: 100%;
+}
   .content {
     font-size: 1.2rem;
     color: #555;

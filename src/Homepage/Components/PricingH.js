@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "../Styles/PricingH.css";
+import "../../Styles/PricingH.css";
 import Footer from "./Footer";
 
 export default function PricingH() {
