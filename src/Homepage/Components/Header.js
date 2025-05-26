@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "../Styles/Header.css";
+import "../../Styles/Header.css";
 import Drawer from "./Drawer";
 import { FaBars } from "react-icons/fa";
 
@@ -20,7 +20,7 @@ function Header() {
 
 
       <div className="main-nav-container">
-        {/* AI Solutions Dropdown */}
+        
         <div 
           className="dropdown-container"
           onMouseEnter={() => setShowAIDropdown(true)}
