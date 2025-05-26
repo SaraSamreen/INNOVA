@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 .sidebar {
-    width: 140px;
+    width: 182px;
     height: 100%;
     background-color: #d9d9f5;
     padding: 20px;
@@ -13,6 +13,15 @@
     left: 0;
     overflow: hidden;
 }
+.sidebar-nav a {
+    text-decoration: none; /* removes underline */
+    color: inherit; /* keep the existing text color */
+  }
+  
+  .sidebar-nav a:hover {
+    text-decoration: none; /* ensure no underline on hover */
+  }
+  
 
 .INNOVA {
     font-family: 'Caveat Brush', cursive;

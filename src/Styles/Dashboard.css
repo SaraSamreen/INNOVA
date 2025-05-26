@@ -24,8 +24,8 @@
 
 .button-wrapper {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 30px;
+  justify-content: center;
+  margin-top: 30px;
 }
 
 .ai-video-btn {
@@ -116,6 +116,21 @@
   animation: blink 1s infinite;
   color: #000;
 }
+.typewriter-text {
+  font-size: 16px;
+  font-family: monospace;
+  color: #333;
+}
+
+.cursor {
+  display: inline-block;
+  margin-left: 3px;
+  width: 10px;
+  animation: blink 1s infinite;
+  color: #000;
+}
+
+
 
 @keyframes blink {
   0%, 50%, 100% { opacity: 1; }

@@ -265,14 +265,14 @@ body, .team-collab-container {
 }
 
 .message-content {
-  background-color: #1a73e8;
+  background-color: #d8dce1;
   padding: 12px;
   border-radius: 16px;
   display: inline-block;
 }
 
 .message.current-user .message-content {
-  background-color: #1a73e8;
+  background-color: #d8dce1;
   color: white;
 }
 
