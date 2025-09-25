@@ -1,42 +1,74 @@
-import React from "react"
-import { Link, useLocation } from "react-router-dom"
-import "../../Styles/Sidebar.css"
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { FaImage, FaUsers, FaShieldAlt, FaClosedCaptioning, FaMicrophone, FaFileAlt, FaVolumeUp, FaCut, FaEdit, FaBars } from "react-icons/fa";
+import "../../Styles/Sidebar.css";
 
 const Sidebar = () => {
-  const location = useLocation() // You need to call the hook inside the component
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="sidebar">
-      <h1 className="INNOVA">INNOVA</h1>
+    <div className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
+      {/* Toggle Button */}
+      <div className="sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
+        <FaBars />
+      </div>
 
+      {/* Logo */}
+      {isOpen && <h1 className="INNOVA">INNOVA</h1>}
+
+      {/* Nav Items */}
       <div className="sidebar-nav">
-        <p className="nav-item">Create image</p>
+        <div className="nav-item">
+          <FaImage />
+          {isOpen && <span>Create image</span>}
+        </div>
 
-        <Link to="/create-video">
-          <button className="createreel">+ Create Ad</button>
+        <Link to="/create-script">
+          <button className="createreel">{isOpen ? "+ Create Ad" : "+"}</button>
         </Link>
 
         <Link to="/team-collaboration">
-          <p className="nav-item cursor-pointer">Team Collaboration</p>
+          <div className="nav-item">
+            <FaUsers />
+            {isOpen && <span>Team Collaboration</span>}
+          </div>
         </Link>
 
         <Link to="/admin">
-          <p className={`nav-item cursor-pointer ${location.pathname === "/admin" ? "active" : ""}`}>Admin Panel</p>
+          <div className={`nav-item ${location.pathname === "/admin" ? "active" : ""}`}>
+            <FaShieldAlt />
+            {isOpen && <span>Admin Panel</span>}
+          </div>
         </Link>
 
-        <p className="nav-item">Create Subtitles</p>
-        <p className="nav-item">Create voice over</p>
-        <p className="nav-item">Create picture To video</p>
-        <p className="nav-item">Check Leads on Social media</p>
-        <p className="nav-item">Post on Social Media with captions</p>
-        <p className="nav-item">Your Drafts</p>
-        <p className="nav-item">Add Text to video</p>
-        <p className="nav-item">MP4 compressor</p>
-        <p className="nav-item">Video Trimmer</p>
-        <p className="nav-item">Editor</p>
+        <div className="nav-item">
+          <FaClosedCaptioning />
+          {isOpen && <span>Create Subtitles</span>}
+        </div>
+        <div className="nav-item">
+          <FaMicrophone />
+          {isOpen && <span>Create voice over</span>}
+        </div>
+        <div className="nav-item">
+          <FaFileAlt />
+          {isOpen && <span>Your Drafts</span>}
+        </div>
+        <div className="nav-item">
+          <FaVolumeUp />
+          {isOpen && <span>Add Voice to video</span>}
+        </div>
+        <div className="nav-item">
+          <FaCut />
+          {isOpen && <span>Video Trimmer</span>}
+        </div>
+        <div className="nav-item">
+          <FaEdit />
+          {isOpen && <span>Editor</span>}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

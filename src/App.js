@@ -12,6 +12,7 @@ import VideoGenerator from './Dashboard/componentsD/Createvidpg1';
 import ProfileSettings from './ProfileSettings/ProfileSettings';
 import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
+import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 
 function ConditionalHeader() {
   const location = useLocation();
@@ -37,6 +38,7 @@ function AppWrapper() {
         <Route path="/profile-settings" element={<ProfileSettings />} />
         <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
+        <Route path="/reel-creation" element={<ReelCreationStep />} />
       </Routes>
     </Router>
   );

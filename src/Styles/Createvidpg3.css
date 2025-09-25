@@ -1,124 +1,154 @@
+/* Createvidpg3.css - Light Purple Theme */
+
 .video-generator-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #f5f5f7;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    padding: 20px;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 0;
-  }
-  
-  .version {
-    font-size: 1rem;
-    color: #666;
-    margin: 0;
-  }
-  
-  .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  
-  .prompt-text {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 30px;
-    font-weight: 500;
-  }
-  
-  .input-container {
-    width: 100%;
-    position: relative;
-    margin-bottom: 30px;
-  }
-  
-  .text-input {
-    width: 100%;
-    min-height: 200px;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    font-size: 1rem;
-    resize: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .text-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-  }
-  
-  .char-counter {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    font-size: 0.8rem;
-    color: #999;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  
-  .generate-button{
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 1.1rem;
-    margin-right: 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  } 
-  .Enhance-button{
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  } 
-  .button-group {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+  color: #3b0764;
+  min-height: 100vh;
+  padding: 40px;
 }
 
-  .Enhance-button:hover {
-    background-color: #0069d9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .Enhance-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .generate-button:hover {
-    background-color: #0069d9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .generate-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.version {
+  font-size: 1.5rem;
+  color: #6d28d9;
+  font-weight: bold;
+}
+
+.content {
+  background: #faf5ff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(109, 40, 217, 0.15);
+  max-width: 800px;
+  margin: auto;
+}
+
+.prompt-text {
+  text-align: center;
+  color: #581c87;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.option-group {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f5f3ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+}
+
+.option-group h3 {
+  color: #5b21b6;
+  margin-bottom: 10px;
+}
+
+.option-group label {
+  margin-right: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.option-group input[type="radio"],
+.option-group select {
+  margin-right: 8px;
+  accent-color: #7c3aed;
+}
+
+select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #c4b5fd;
+  background: #ede9fe;
+  color: #4c1d95;
+  font-size: 1rem;
+}
+
+.input-container {
+  margin: 25px 0;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 140px;
+  border-radius: 12px;
+  border: 1px solid #d8b4fe;
+  padding: 15px;
+  font-size: 1rem;
+  background: #faf5ff;
+  color: #3b0764;
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.text-input:focus {
+  border: 1px solid #7c3aed;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
+}
+
+.char-counter {
+  text-align: right;
+  margin-top: 6px;
+  color: #7e22ce;
+  font-size: 0.85rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.Enhance-button,
+.next-button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.Enhance-button {
+  background: #a78bfa;
+  color: white;
+}
+
+.Enhance-button:hover {
+  background: #7c3aed;
+}
+
+.next-button {
+  background: #c4b5fd;
+  color: #3b0764;
+}
+
+.next-button:hover {
+  background: #8b5cf6;
+  color: white;
+}
+
+.output-box {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 25px;
+}
+
+.output-box h3 {
+  color: #5b21b6;
+  margin-bottom: 10px;
+}
+
+.output-box p {
+  color: #3b0764;
+  white-space: pre-line;
+}
