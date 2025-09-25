@@ -45,12 +45,14 @@ export default function Dashboard() {
           </h3>
 
           <div className="button-wrapper">
-            <Link to="/create-video" style={{ textDecoration: 'none' }}>
-              <button className="ai-video-btn">
-                <h2 className="btn-heading">Create AI video</h2>
-                <p className="btn-subheading">start from scratch →</p>
-              </button>
-            </Link>
+           <Link to="/reel-creation" style={{ textDecoration: 'none' }}>
+  <button className="ai-video-btn">
+    <h2 className="btn-heading">Create AI video</h2>
+    <p className="btn-subheading">start from scratch →</p>
+  </button>
+</Link>
+
+
           </div>
 
           <div className="video-script-wrapper">

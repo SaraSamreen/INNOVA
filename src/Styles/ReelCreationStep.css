@@ -1,0 +1,241 @@
+/* ReelCreationStep.css */
+.reel-creation-container {
+  min-height: 100vh;
+  /* Changed from purple gradient to clean white background */
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Removed header styles since header section is removed */
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.prompt-text {
+  /* Changed text color from white to dark for white background */
+  color: #333;
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+  text-shadow: none;
+}
+
+.subtitle {
+  /* Changed text color from white to gray for white background */
+  color: #666;
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 50px;
+  font-weight: 400;
+}
+
+.method-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 50px;
+}
+
+.method-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.method-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(116, 75, 162, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.method-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.method-card:hover::before {
+  opacity: 1;
+}
+
+.method-card.selected {
+  border-color: #4facfe;
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-4px);
+}
+
+.method-card.selected::before {
+  opacity: 0.5;
+}
+
+.card-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.ai-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.template-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.quick-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.card-title {
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.navigation-buttons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  /* Center the continue button since back button is removed */
+  justify-content: center;
+}
+
+/* Removed back-button styles since it's no longer needed */
+
+.continue-button {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+}
+
+.continue-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+.continue-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: 40px 20px;
+  }
+
+  .prompt-text {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .method-cards {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .method-card {
+    padding: 30px 20px;
+  }
+
+  .navigation-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .continue-button {
+    width: 100%;
+    padding: 15px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-icon {
+    font-size: 40px;
+    height: 60px;
+    width: 60px;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+
+  .card-description {
+    font-size: 14px;
+  }
+}

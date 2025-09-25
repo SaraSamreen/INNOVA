@@ -1,105 +1,149 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat+Brush&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
+/* Sidebar base styles */
 .sidebar {
-    width: 182px;
+    background-color: #cacacd;
     height: 100%;
-    background-color: #d9d9f5;
-    padding: 20px;
+    padding: 20px 10px;
     display: flex;
     flex-direction: column;
     position: fixed;
     top: 0;
     left: 0;
     overflow: hidden;
+    transition: width 0.3s ease;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    z-index: 100;
 }
-.sidebar-nav a {
-    text-decoration: none; /* removes underline */
-    color: inherit; /* keep the existing text color */
-  }
-  
-  .sidebar-nav a:hover {
-    text-decoration: none; /* ensure no underline on hover */
-  }
-  
 
-.INNOVA {
-    font-family: 'Caveat Brush', cursive;
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #c46acf;
-    text-decoration: none;
-    margin-top: 1rem;
-    display: flex;
+/* Expanded sidebar */
+.sidebar.open {
+    width: 200px;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 60px;
     align-items: center;
 }
+
+/* Toggle button */
+.sidebar-toggle {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    justify-content: flex-end;
+    transition: color 0.2s ease;
+}
+.sidebar-toggle:hover {
+    color: #a442c9;
+}
+
+/* Logo */
+.INNOVA {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #c46acf;
+    margin-bottom: 1rem;
+    transition: opacity 0.3s ease;
+}
+
+/* Nav section */
 .sidebar-nav {
-    margin-top: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow-y: scroll; /* Enables scroll */
-    height: 100%;
-    padding-right: 10px;
-    scrollbar-width: none; /* Firefox */
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 5px;
 }
 .sidebar-nav::-webkit-scrollbar {
-    display: none;
+    display: none; /* Hide scroll bar */
 }
 
-.nav-link {
-    color: #ffffff;
-    text-decoration: none;
+/* Nav item */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 1.1rem;
-    transition: color 0.3s;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+.nav-item:hover {
+    color: #a442c9;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+.nav-item.active {
+    background-color: rgba(164, 66, 201, 0.2);
+    font-weight: 600;
+    color: #a442c9;
 }
 
-.nav-link:hover {
-    color: #c46acf;
-}
-.createreel{
-    background-color: #d7a7cf;
-    border-radius: 35%;
-    width:100%;
-    max-width: 120px;
-    height:7rem; 
-    font-size: 1.8rem;
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    border-color: #fff;
+/* Create Ad button */
+.createreel {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    border-radius: 50px;
+    width: 100%;
+    max-width: 180px;
+    height: 3rem;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
     color: white;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
 }
 
 .createreel:hover {
-    transform: scale(1.05);
-}
-.nav-options {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: #333;
-    margin: 0.5rem 0;
-    cursor: pointer;
-    transition: color 0.2s ease;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #9333ea, #db2777);
 }
 
-.nav-options:hover {
-    color: #a442c9;
-}
-.nav-item {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: #333;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.nav-item:hover {
-    color: #a442c9;
+.createreel:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 
+/* Collapsed button adjustments */
+.sidebar.collapsed .createreel {
+    border-radius: 50%;
+    height: 45px;
+    width: 45px;
+    font-size: 1.2rem;
+}
+
+/* Collapsed text hide */
+.sidebar.collapsed .INNOVA,
+.sidebar.collapsed .nav-item span {
+    display: none;
+}
+
+/* Responsive auto-collapse */
+@media screen and (max-width: 768px) {
+    .sidebar.open {
+        position: fixed;
+        z-index: 1000;
+    }
+    .sidebar.collapsed {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+}
