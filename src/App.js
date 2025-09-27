@@ -14,6 +14,7 @@ import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
+import TemplateEditor from "./TemplateEditor/components/TemplateEditor"
 
 function ConditionalHeader() {
   const location = useLocation();
@@ -40,7 +41,8 @@ function AppWrapper() {
         <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />
-          <Route path="/template-browser" element={<TemplateBrowser />} />
+        <Route path="/template-browser" element={<TemplateBrowser />} />
+         <Route path="/template-editor" element={<TemplateEditor />} />
       </Routes>
     </Router>
   );
