@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import "../../Styles/TemplateBrowser.css"
 
 export default function TemplateBrowser() {
@@ -31,49 +31,44 @@ export default function TemplateBrowser() {
         thumbnail: "/social-media-advertisement-video-template.jpg",
         category: "Advertisement",
       },
-      
+      {
+        id: 4,
+        title: "Service Promotion",
+        thumbnail: "/service-promotion-advertisement-video-template.jpg",
+        category: "Advertisement",
+      },
+    
     ],
     Ecommerce: [
       {
-        id: 4,
+        id: 5,
         title: "Product Showcase",
         thumbnail: "/ecommerce-product-showcase-video-template.jpg",
         category: "Ecommerce",
       },
       {
-        id: 5,
+        id: 6,
         title: "Sale Announcement",
         thumbnail: "/ecommerce-sale-announcement-video-template.jpg",
         category: "Ecommerce",
       },
-      
-      {
-        id: 6,
-        title: "Shopping Guide",
-        thumbnail: "/ecommerce-shopping-guide-video-template.jpg",
-        category: "Ecommerce",
-      },
-    ],
-    Others: [
       {
         id: 7,
-        title: "Training Workshop",
-        thumbnail: "/other-product-showcase-video-template.jpg",
-        category: "Others",
+        title: "Customer Review",
+        thumbnail: "/ecommerce-customer-review-video-template.jpg",
+        category: "Ecommerce",
       },
-      
+
+    
     ],
   }
 
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template)
-    // Navigate to the next step or show template editor
-    // You can replace this with your actual next route
-    alert(`✅ Selected template: ${template.title} (hook this to your template editor)`)
+    navigate("/template-editor", { state: { template } })
   }
 
   const handleBackToCreation = () => {
-    // Navigate back to the reel creation step
     navigate("/reel-creation")
   }
 
@@ -104,7 +99,7 @@ export default function TemplateBrowser() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
-            <span className="search-icon">🔍</span>
+           
           </div>
 
           
@@ -124,12 +119,6 @@ export default function TemplateBrowser() {
           onClick={() => setActiveCategory("Ecommerce")}
         >
           Ecommerce
-        </button>
-        <button
-          className={`category-tab ${activeCategory === "Others" ? "active" : ""}`}
-          onClick={() => setActiveCategory("Others")}
-        >
-          Others
         </button>
       </div>
 
