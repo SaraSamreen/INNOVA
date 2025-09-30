@@ -1,3 +1,6 @@
+"use client"
+
+// File: ReelCreationStep.js
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "../../Styles/ReelCreationStep.css"
@@ -18,10 +21,10 @@ export default function ReelCreationStep() {
 
     switch (selectedMethod) {
       case "ai-assistant":
-        navigate("/create-video") // Navigate to Createvidpg1
+        alert("✅ Starting AI Assistant mode (hook this to your router)")
         break
       case "template":
-        alert("✅ Opening Template Browser (hook this to your router)")
+        navigate("/template-browser")
         break
       case "quick-reel":
         alert("✅ Starting Quick Reel creation (hook this to your router)")
@@ -33,8 +36,6 @@ export default function ReelCreationStep() {
 
   return (
     <div className="reel-creation-container">
-      
-
       <div className="content">
         <h2 className="prompt-text">How do you want to start? 🎬</h2>
         <p className="subtitle">Choose your preferred creation method to get started</p>
