@@ -1,0 +1,506 @@
+/* TemplateEditor.css */
+.template-editor-container {
+  height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Top Toolbar */
+.editor-toolbar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: #e2e8f0;
+}
+
+.aspect-ratio-select {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.brand-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.feedback-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.preview-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.generate-btn {
+  background: #1e293b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+}
+
+.generate-btn:hover {
+  background: #0f172a;
+}
+
+/* Main Content */
+.editor-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left Panel - Script Editor */
+.script-panel {
+   width: 50%; /* was fixed 400px */
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.script-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.template-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.script-scenes {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.script-scene {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.script-scene.active {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.scene-number {
+  width: 24px;
+  height: 24px;
+  background: #1e293b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.scene-content {
+  flex: 1;
+}
+
+.scene-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.avatar-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.avatar-option {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-option.selected {
+  border-color: #3b82f6;
+}
+
+.avatar-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.voice-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.voice-select,
+.emotion-select {
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 12px;
+  background: white;
+}
+
+.play-scene-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.script-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.scene-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.scene-duration {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.enhance-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+/* Center Panel - Video Preview */
+.preview-panel {
+   width: 50%; /* force equal size */
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.video-preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+.video-frame {
+  position: relative;
+  max-width: 600px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-indicator {
+  font-size: 48px;
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Editing Tools Overlay for Video Preview */
+.editing-tools-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  z-index: 10;
+}
+
+.editing-tools-overlay .tools-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 4px;
+  border-bottom: none;
+}
+
+.editing-tools-overlay .tool-tab {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #64748b;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  border-bottom: none;
+}
+
+.editing-tools-overlay .tool-tab:hover {
+  background: rgba(241, 245, 249, 0.8);
+  color: #334155;
+}
+
+.editing-tools-overlay .tool-tab.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-bottom: none;
+}
+
+.editing-tools-overlay .tool-icon {
+  font-size: 16px;
+}
+
+.editing-tools-overlay .tool-label {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Timeline */
+.timeline-container {
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px;
+}
+
+.timeline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.timeline-scene {
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.timeline-scene.active {
+  border-color: #3b82f6;
+}
+
+.scene-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  display: block;
+}
+
+.scene-label {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  padding: 4px;
+  background: white;
+  color: #64748b;
+}
+
+.add-scene-btn {
+  width: 80px;
+  height: 60px;
+  border: 2px dashed #e2e8f0;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.add-scene-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .editor-content {
+    flex-direction: column;
+  }
+
+  .script-panel,
+  .tools-panel {
+    width: 100%;
+    height: 300px;
+  }
+
+  .preview-panel {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar-left,
+  .toolbar-right {
+    gap: 8px;
+  }
+
+  .brand-selector span:not(.brand-icon) {
+    display: none;
+  }
+
+  .script-scenes {
+    padding: 12px;
+  }
+
+  .tools-header {
+    overflow-x: auto;
+  }
+
+  .tool-tab {
+    flex: none;
+    white-space: nowrap;
+  }
+}

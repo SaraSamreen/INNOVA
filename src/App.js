@@ -15,6 +15,8 @@ import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 import Chatbot from "./Dashboard/componentsD/Chatbot";
 import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
+import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
+import TemplateEditor from "./TemplateEditor/components/TemplateEditor";    
 
 function ConditionalHeader() {
   const location = useLocation();
@@ -43,6 +45,8 @@ function AppWrapper() {
         <Route path="/reel-creation" element={<ReelCreationStep />} />
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/logo-generator" element={<LogoGenerator />} />
+        <Route path="/template-browser" element={<TemplateBrowser />} />
+         <Route path="/template-editor" element={<TemplateEditor />} />
       </Routes>
     </Router>
   );
