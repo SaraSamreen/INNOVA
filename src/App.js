@@ -13,6 +13,8 @@ import ProfileSettings from './ProfileSettings/ProfileSettings';
 import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
+import Chatbot from "./Dashboard/componentsD/Chatbot";
+import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
 
 function ConditionalHeader() {
   const location = useLocation();
@@ -39,6 +41,8 @@ function AppWrapper() {
         <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />
+        <Route path="/chatbot" element={<Chatbot />} />
+        <Route path="/logo-generator" element={<LogoGenerator />} />
       </Routes>
     </Router>
   );

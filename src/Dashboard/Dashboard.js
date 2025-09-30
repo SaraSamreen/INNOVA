@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from './componentsD/Sidebar';
 import HeaderD from './componentsD/HeaderD';
+import Chatbot from "./componentsD/Chatbot";
 import "../Styles/Dashboard.css";
 
 const TypewriterText = ({ id, text = "", speed = 250 }) => {
@@ -99,6 +100,7 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      <Chatbot />
     </div>
   );
 }
