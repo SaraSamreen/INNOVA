@@ -785,3 +785,20 @@
 .timeline-track::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+/* Add to TemplateEditor.css */
+
+.flower-image-container {
+  position: relative;
+}
+
+.flower-image-container:hover .flower-edit-overlay {
+  opacity: 1 !important;
+}
+
+.flower-image-container img {
+  transition: transform 0.3s ease;
+}
+
+.flower-image-container:hover img {
+  transform: scale(1.02);
+}

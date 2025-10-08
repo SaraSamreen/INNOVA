@@ -1,4 +1,4 @@
-// src/data/videoTemplates.js - Enhanced for HeyGen-style functionality
+// Update this in your src/data/videoTemplates.js
 
 export const videoTemplates = {
   Advertisement: [
@@ -20,36 +20,68 @@ export const videoTemplates = {
           voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
           elements: [
             {
-              id: "app-title",
+              id: "app-title-1",
               type: "text",
               content: "HeyGen\nApp",
-              position: { x: 150, y: 180 },
+              position: { x: 80, y: 150 },
               style: { 
-                fontSize: "48px", 
+                fontSize: "72px", 
                 fontWeight: "bold", 
                 color: "white",
                 textAlign: "left",
-                lineHeight: "1.2"
+                lineHeight: "1.1",
+                textShadow: "3px 3px 6px rgba(0,0,0,0.3)"
               }
             },
             {
-              id: "app-subtitle", 
+              id: "app-subtitle-1", 
               type: "text",
               content: "Your online high-quality\nFlower Shop",
-              position: { x: 150, y: 280 },
+              position: { x: 80, y: 310 },
               style: { 
-                fontSize: "18px", 
-                color: "rgba(255,255,255,0.9)",
+                fontSize: "22px", 
+                color: "white",
                 textAlign: "left",
-                lineHeight: "1.4"
+                lineHeight: "1.5",
+                fontWeight: "400"
               }
             },
             {
-              id: "store-badges",
-              type: "element",
-              content: "App Store & Google Play badges",
-              position: { x: 150, y: 350 },
-              style: { width: "200px", height: "60px" }
+              id: "store-badge-google-1",
+              type: "text",
+              content: "📱 Google Play",
+              position: { x: 80, y: 390 },
+              style: { 
+                fontSize: "14px", 
+                color: "white",
+                background: "rgba(0,0,0,0.5)",
+                padding: "8px 16px",
+                borderRadius: "8px"
+              }
+            },
+            {
+              id: "store-badge-apple-1",
+              type: "text",
+              content: "🍎 App Store",
+              position: { x: 210, y: 390 },
+              style: { 
+                fontSize: "14px", 
+                color: "white",
+                background: "rgba(0,0,0,0.5)",
+                padding: "8px 16px",
+                borderRadius: "8px"
+              }
+            },
+            {
+              id: "progress-dots-1",
+              type: "text",
+              content: "• • • • • • • •",
+              position: { x: 80, y: 30 },
+              style: { 
+                fontSize: "16px", 
+                color: "rgba(255,255,255,0.6)",
+                letterSpacing: "4px"
+              }
             }
           ]
         },
@@ -62,26 +94,32 @@ export const videoTemplates = {
           voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
           elements: [
             {
-              id: "intro-title",
+              id: "intro-header-2",
               type: "text", 
-              content: "BRIEF INTRO OF THE APP",
-              position: { x: 80, y: 160 },
+              content: "Brief Intro of the App",
+              position: { x: 420, y: 60 },
               style: { 
-                fontSize: "20px", 
+                fontSize: "32px", 
                 fontWeight: "bold", 
                 color: "white",
-                letterSpacing: "1px"
+                textAlign: "center",
+                background: "rgba(147, 112, 147, 0.85)",
+                padding: "20px 40px",
+                borderRadius: "12px",
+                width: "400px"
               }
             },
             {
-              id: "feature-list",
+              id: "intro-description-2",
               type: "text",
-              content: "• Lists flower shops in your city\n• Online flower purchasing\n• Easy to use interface\n• Fast delivery service",
-              position: { x: 80, y: 200 },
+              content: "HeyGen app is an app that lists most of the flower shops in the city and sells a wide variety of flowers.\n\nWe also provide courier service to ensure the freshness of the flowers you order.",
+              position: { x: 420, y: 180 },
               style: { 
                 fontSize: "16px", 
-                color: "rgba(255,255,255,0.9)",
-                lineHeight: "1.8"
+                color: "white",
+                lineHeight: "1.8",
+                textAlign: "center",
+                width: "400px"
               }
             }
           ]
@@ -95,25 +133,76 @@ export const videoTemplates = {
           voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
           elements: [
             {
-              id: "how-to-title",
+              id: "how-to-header-3",
               type: "text",
               content: "HOW TO USE?",
-              position: { x: 150, y: 180 },
+              position: { x: 500, y: 60 },
               style: { 
-                fontSize: "36px", 
+                fontSize: "42px", 
                 fontWeight: "bold", 
                 color: "white",
-                letterSpacing: "2px"
+                letterSpacing: "2px",
+                textAlign: "center",
+                background: "rgba(147, 112, 147, 0.85)",
+                padding: "20px 50px",
+                borderRadius: "12px"
               }
             },
             {
-              id: "steps-subtitle",
+              id: "step-1-3",
               type: "text",
-              content: "Follow these simple steps to get started:",
-              position: { x: 150, y: 240 },
+              content: "1. Log in to create your account.",
+              position: { x: 500, y: 160 },
               style: { 
                 fontSize: "16px", 
-                color: "rgba(255,255,255,0.8)"
+                color: "white",
+                textAlign: "left"
+              }
+            },
+            {
+              id: "step-2-3",
+              type: "text",
+              content: "2. Choose a flower shop near you.",
+              position: { x: 500, y: 195 },
+              style: { 
+                fontSize: "16px", 
+                color: "white",
+                textAlign: "left"
+              }
+            },
+            {
+              id: "step-3-3",
+              type: "text",
+              content: "3. Choose the flower you want to buy.",
+              position: { x: 500, y: 230 },
+              style: { 
+                fontSize: "16px", 
+                color: "white",
+                textAlign: "left"
+              }
+            },
+            {
+              id: "step-4-3",
+              type: "text",
+              content: "4. Pay your bills. We accept Visa,\n   Mastercard and UnionPay.",
+              position: { x: 500, y: 265 },
+              style: { 
+                fontSize: "16px", 
+                color: "white",
+                textAlign: "left",
+                lineHeight: "1.6"
+              }
+            },
+            {
+              id: "step-5-3",
+              type: "text",
+              content: "5. Wait and get your bouquet by\n   delivery.",
+              position: { x: 500, y: 330 },
+              style: { 
+                fontSize: "16px", 
+                color: "white",
+                textAlign: "left",
+                lineHeight: "1.6"
               }
             }
           ]
@@ -127,36 +216,60 @@ export const videoTemplates = {
           voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
           elements: [
             {
-              id: "cta-main",
+              id: "tagline-4",
               type: "text",
-              content: "Download Now!",
-              position: { x: 180, y: 200 },
+              content: "Where Every Bloom Tells a Story",
+              position: { x: 50, y: 60 },
               style: { 
                 fontSize: "42px", 
-                fontWeight: "bold", 
-                color: "#fbbf24",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.5)"
+                fontWeight: "normal",
+                fontFamily: "cursive",
+                color: "white",
+                fontStyle: "italic",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
               }
             },
             {
-              id: "cta-subtitle",
+              id: "logo-4",
               type: "text",
-              content: "Available on App Store & Google Play",
-              position: { x: 180, y: 260 },
+              content: "🌸 LOGO",
+              position: { x: 720, y: 30 },
+              style: { 
+                fontSize: "18px", 
+                color: "rgba(255,255,255,0.9)",
+                background: "rgba(255,255,255,0.2)",
+                padding: "10px 20px",
+                borderRadius: "8px"
+              }
+            },
+            {
+              id: "download-apple-4",
+              type: "text",
+              content: "Download on the\nApp Store",
+              position: { x: 680, y: 330 },
               style: { 
                 fontSize: "14px", 
-                color: "rgba(255,255,255,0.9)"
+                color: "white",
+                background: "rgba(0,0,0,0.7)",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                textAlign: "center",
+                lineHeight: "1.4"
               }
             },
             {
-              id: "tagline",
+              id: "download-google-4",
               type: "text",
-              content: "Let's make a better life with flowers!",
-              position: { x: 180, y: 320 },
+              content: "Available on\nGoogle Play",
+              position: { x: 680, y: 395 },
               style: { 
-                fontSize: "16px", 
+                fontSize: "14px", 
                 color: "white",
-                fontStyle: "italic"
+                background: "rgba(0,0,0,0.7)",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                textAlign: "center",
+                lineHeight: "1.4"
               }
             }
           ]
@@ -164,7 +277,10 @@ export const videoTemplates = {
       ],
       background: {
         type: "gradient",
-        value: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%)"
+        scene1: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%)",
+        scene2: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%)",
+        scene3: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%)",
+        scene4: "linear-gradient(135deg, #7e3a8a 0%, #a64d79 50%, #d87093 100%)"
       }
     },
     {
@@ -399,7 +515,7 @@ export const videoTemplates = {
               type: "text",
               content: "HURRY!\nENDS SOON",
               position: { x: 160, y: 240 },
-              style: { fontSize: "32px", fontWeight: "bold", color: "#f97316", animation: "pulse" }
+              style: { fontSize: "32px", fontWeight: "bold", color: "#f97316" }
             }
           ]
         }
@@ -426,12 +542,6 @@ export const avatarOptions = [
     name: "Emma", 
     thumbnail: "/business-woman-avatar.png",
     description: "Energetic business woman" 
-  },
-  {
-    id: "custom",
-    name: "Custom Avatar",
-    thumbnail: "/upload-avatar-placeholder.png",
-    description: "Upload your own image"
   }
 ];
 
@@ -448,95 +558,3 @@ export const emotionOptions = [
   { value: "calm", label: "Calm", description: "Relaxed and soothing" },
   { value: "excited", label: "Excited", description: "Energetic and enthusiastic" }
 ];
-
-// Helper functions for template management
-export const templateHelpers = {
-  getSceneAtTime: (template, time) => {
-    return template.scenes.find(scene => 
-      time >= scene.startTime && time < scene.endTime
-    );
-  },
-  
-  getTotalDuration: (template) => {
-    return Math.max(...template.scenes.map(scene => scene.endTime));
-  },
-  
-  updateSceneScript: (template, sceneId, newScript) => {
-    return {
-      ...template,
-      scenes: template.scenes.map(scene =>
-        scene.id === sceneId ? { ...scene, script: newScript } : scene
-      )
-    };
-  },
-  
-  updateElementContent: (template, sceneId, elementId, newContent) => {
-    return {
-      ...template,
-      scenes: template.scenes.map(scene => {
-        if (scene.id === sceneId) {
-          return {
-            ...scene,
-            elements: scene.elements.map(element =>
-              element.id === elementId ? { ...element, content: newContent } : element
-            )
-          };
-        }
-        return scene;
-      })
-    };
-  },
-  
-  addNewScene: (template, afterSceneId) => {
-    const afterIndex = template.scenes.findIndex(scene => scene.id === afterSceneId);
-    const newSceneId = Math.max(...template.scenes.map(s => s.id)) + 1;
-    const startTime = afterIndex >= 0 ? template.scenes[afterIndex].endTime : 0;
-    
-    const newScene = {
-      id: newSceneId,
-      startTime: startTime,
-      endTime: startTime + 3,
-      script: "Enter your script here...",
-      avatar: "scarlett",
-      voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
-      elements: [
-        {
-          id: `text-${newSceneId}`,
-          type: "text",
-          content: "Your Text Here",
-          position: { x: 150, y: 200 },
-          style: { fontSize: "32px", fontWeight: "bold", color: "white" }
-        }
-      ]
-    };
-    
-    const newScenes = [...template.scenes];
-    newScenes.splice(afterIndex + 1, 0, newScene);
-    
-    // Adjust timing for subsequent scenes
-    for (let i = afterIndex + 2; i < newScenes.length; i++) {
-      newScenes[i].startTime += 3;
-      newScenes[i].endTime += 3;
-    }
-    
-    return { ...template, scenes: newScenes };
-  },
-  
-  removeScene: (template, sceneId) => {
-    const sceneIndex = template.scenes.findIndex(scene => scene.id === sceneId);
-    if (sceneIndex === -1 || template.scenes.length <= 1) return template;
-    
-    const removedScene = template.scenes[sceneIndex];
-    const duration = removedScene.endTime - removedScene.startTime;
-    
-    const newScenes = template.scenes.filter(scene => scene.id !== sceneId);
-    
-    // Adjust timing for subsequent scenes
-    for (let i = sceneIndex; i < newScenes.length; i++) {
-      newScenes[i].startTime -= duration;
-      newScenes[i].endTime -= duration;
-    }
-    
-    return { ...template, scenes: newScenes };
-  }
-};
