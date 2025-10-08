@@ -3,20 +3,29 @@ import { Link } from 'react-router-dom';
 import "../Styles/Signup.css";
 
 const Signup = () => {
+  const [name, setName] = useState(''); // new username field
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // new confirm password field
 
   const handleEmailSignup = async (e) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+
     try {
       const res = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ name, email, password })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
+      
       alert('Signup successful');
       window.location.href = '/dashboard';
     } catch (err) {
@@ -67,9 +76,18 @@ const Signup = () => {
 
         <form onSubmit={handleEmailSignup}>
           <input
+            type="text"
+            placeholder="Username"
+            className="email-input"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+          />
+          <input
             type="email"
             placeholder="Email"
             className="email-input"
+            value={email}
             onChange={e => setEmail(e.target.value)}
             required
           />
@@ -77,12 +95,20 @@ const Signup = () => {
             type="password"
             placeholder="Password"
             className="email-input"
+            value={password}
             onChange={e => setPassword(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            className="email-input"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
             required
           />
           <button type="submit" className="create-account-button">Create Account</button>
         </form>
-
 
         <div className="login-prompt">
           Already have an account? <Link to="/login" className="login-link">Login</Link>

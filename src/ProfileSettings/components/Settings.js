@@ -5,7 +5,7 @@ import'../../Styles/ProfileSettings.css';
 function App() {
   return (
     <div>
-      <Settings />
+      <Settings /> 
     </div>
   );
 }

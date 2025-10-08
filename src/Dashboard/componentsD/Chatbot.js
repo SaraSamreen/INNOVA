@@ -5,13 +5,13 @@ import "../../Styles/Chatbot.css";
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { from: "bot", text: "Hello! How can I help you today?" },
+    { from: "bot", text: "Hello! I'm your AI assistant. Ask me about content ideas, video scripts, or brainstorming!" },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Backend URL - make sure this matches where your Python backend is running
-  const BACKEND_URL = "http://127.0.0.1:8000";
+  // Updated to use the same backend as script generation (port 5000)
+  const BACKEND_URL = "http://127.0.0.1:5000";
 
   async function handleBrainstorm(action, product, tone) {
     console.log("Sending request:", { action, product, tone });
@@ -36,7 +36,7 @@ export default function Chatbot() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Response error:", errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -58,7 +58,7 @@ export default function Chatbot() {
           ...prev, 
           { 
             from: "bot", 
-            text: `Connection error: Cannot reach backend server at ${BACKEND_URL}. Please make sure your Python backend is running on port 8000.` 
+            text: `⚠️ Cannot connect to AI backend. Please make sure your Flask server is running on port 5000.` 
           }
         ]);
       } else {
@@ -66,7 +66,7 @@ export default function Chatbot() {
           ...prev, 
           { 
             from: "bot", 
-            text: `Sorry, I encountered an error: ${error.message}` 
+            text: `Sorry, I encountered an error. Please try again.` 
           }
         ]);
       }
@@ -86,7 +86,7 @@ export default function Chatbot() {
     
     try {
       // Call brainstorm with user input as product name
-      await handleBrainstorm("idea", userInput, "casual");
+      await handleBrainstorm("idea", userInput, "friendly");
     } catch (error) {
       console.error("Error in sendMessage:", error);
       setMessages((prev) => [
@@ -113,7 +113,14 @@ export default function Chatbot() {
       {isOpen && (
         <div className="chatbot-box">
           <div className="chatbot-header">
-            INNOVA Assistant
+            INNOVA AI Assistant
+            <span style={{
+              fontSize: '10px',
+              marginLeft: '10px',
+              opacity: 0.8
+            }}>
+              (Powered by GPT-Neo)
+            </span>
             <button 
               className="close-btn" 
               onClick={() => setIsOpen(false)}
@@ -146,7 +153,7 @@ export default function Chatbot() {
               <div className="chatbot-message bot">
                 <div className="chatbot-message-content">
                   <div className="typing-indicator">
-                    <span>Generating ideas</span>
+                    <span>AI is thinking</span>
                     <span className="dots">...</span>
                   </div>
                 </div>
@@ -164,7 +171,7 @@ export default function Chatbot() {
                   sendMessage();
                 }
               }}
-              placeholder="What product do you need ideas for?"
+              placeholder="Ask me anything about content creation..."
               className="chatbot-input"
               disabled={isLoading}
             />
@@ -172,6 +179,10 @@ export default function Chatbot() {
               onClick={sendMessage} 
               className="chatbot-send"
               disabled={isLoading || !input.trim()}
+              style={{
+                opacity: (isLoading || !input.trim()) ? 0.5 : 1,
+                cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer'
+              }}
             >
               {isLoading ? "..." : "Send"}
             </button>

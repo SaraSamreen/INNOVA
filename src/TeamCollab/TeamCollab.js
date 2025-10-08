@@ -1,6 +1,5 @@
 import React from "react"
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import ChatInterface from './components/chat-interface';
 import FileSharing from './components/file-sharing';
 import InviteTeamModel from './components/invite-team-model';
@@ -13,7 +12,7 @@ const TeamCollab = () => {
   const [activeTeam, setActiveTeam] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [teams, setTeams] = useState([
+  const [teams] = useState([
     { id: 1, name: 'Marketing Team', members: 5, unreadMessages: 3 },
     { id: 2, name: 'Design Team', members: 3, unreadMessages: 0 },
     { id: 3, name: 'Development Team', members: 4, unreadMessages: 2 }

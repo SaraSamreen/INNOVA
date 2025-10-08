@@ -19,10 +19,12 @@ const Sidebar = () => {
 
       {/* Nav Items */}
       <div className="sidebar-nav">
-        <div className="nav-item">
-          <FaImage />
-          {isOpen && <span>Create image</span>}
-        </div>
+        <Link to="/photo-capture">
+          <div className="nav-item">
+            <FaImage />
+            {isOpen && <span>Photo to video</span>}
+          </div>
+        </Link>
 
         <Link to="/logo-generator">
           <div className="nav-item">
@@ -59,10 +61,7 @@ const Sidebar = () => {
           {isOpen && <span>Create Subtitles</span>}
         </div>
 
-        <div className="nav-item">
-          <FaMicrophone />
-          {isOpen && <span>Create voice over</span>}
-        </div>
+        
 
         <div className="nav-item">
           <FaFileAlt />
@@ -73,11 +72,7 @@ const Sidebar = () => {
           <FaVolumeUp />
           {isOpen && <span>Add Voice to video</span>}
         </div>
-
-        <div className="nav-item">
-          <FaCut />
-          {isOpen && <span>Video Trimmer</span>}
-        </div>
+        
 
         <div className="nav-item">
           <FaEdit />

@@ -30,7 +30,6 @@ app.use((req, res, next) => {
 const mongoURI = process.env.ATLAS_URI;
 console.log('Connecting to MongoDB...', mongoURI ? 'Connection string found' : 'No connection string!');
 
-// MongoDB connection with retry logic
 const connectDB = async () => {
   try {
     await mongoose.connect(mongoURI, {
@@ -39,7 +38,6 @@ const connectDB = async () => {
     });
     console.log('✅ MongoDB connected successfully');
     
-    // List all collections in the database for debugging
     const collections = await mongoose.connection.db.listCollections().toArray();
     console.log('Available collections:', collections.map(c => c.name));
   } catch (err) {
@@ -54,6 +52,9 @@ connectDB();
 // Routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
+
+const mediaRoutes = require('./routes/media'); // Media route
+app.use('/api/media', mediaRoutes);
 
 // Simple test route
 app.get('/api/test', (req, res) => {
