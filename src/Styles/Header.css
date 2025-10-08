@@ -197,4 +197,14 @@
     .mobile-nav {
         display: block;
     }
+    .sticky-header {
+        left: 0;
+        width: 100%;
+    }
+}
+
+/* When sidebar is collapsed */
+.sidebar.collapsed ~ .content-area .sticky-header {
+    left: 60px;
+    width: calc(100% - 60px);
 }

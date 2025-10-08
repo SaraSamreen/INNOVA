@@ -3,10 +3,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 130vh; /* Center content vertically */
+    justify-content: flex-start;
+    min-height: 100vh;
     text-align: center;
-    margin-top: 175vw;
+    margin-top: 0;
+    padding: 20px 0;
   }
   .heading {
   font-size: 3.3rem !important; /* Added !important to override any conflicting styles */

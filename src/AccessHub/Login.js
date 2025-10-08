@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import "../Styles/Signup.css";
-import axios from 'axios'
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -90,7 +89,7 @@ const Login = () => {
         </form>
 
         <div className="forgot-password-link">
-          <Link to="/forgot-password">Forgot Password?</Link>
+          <Link to="/forgotpass">Forgot Password?</Link>
         </div>
 
         <div className="login-prompt">

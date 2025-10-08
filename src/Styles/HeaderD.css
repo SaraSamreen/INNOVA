@@ -1,7 +1,6 @@
 .header-container {
   height: 50px;
-  width: calc(100% - 160px);  /* 100% minus the sidebar width */
-  margin-left: 160px;          
+  width: calc(100% - 200px);  /* 100% minus the sidebar width */
   background-color: #fff;
   color: #333;
   display: flex;
@@ -11,7 +10,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   position: fixed;
   top: 0;
-  left: 20px;                 /* Start where the sidebar ends */
+  left: 200px;                /* Start where the sidebar ends */
   z-index: 100;
   border-radius: 8px;
   gap: 26rem;
@@ -85,4 +84,18 @@
   .header-icons .icon:last-child {
     margin-left: 10px;
   }
+
+/* When sidebar is collapsed */
+.sidebar.collapsed ~ .content-area .header-container {
+  left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .header-container {
+    left: 0;
+    width: 100%;
+  }
+}
     

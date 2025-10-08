@@ -1,123 +1,104 @@
-# main.py - Copy this entire code into your main.py file
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import google.generativeai as genai
-import os
-from dotenv import load_dotenv
+"""
+Updated Flask Backend with GPT-Neo Integration
+Add this to your existing backend/main.py file
+"""
 
-# Load environment variables from .env file
-load_dotenv()
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from transformers import GPTNeoForCausalLM, GPT2Tokenizer
+import torch
 
-# Load API key from environment
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("GEMINI_API_KEY environment variable is not set. Please create a .env file in the backend directory with your API key.")
+app = Flask(__name__)
+CORS(app)  # Enable CORS for React frontend
 
-# Configure Gemini API
-genai.configure(api_key=api_key)
+# Load GPT-Neo model once at startup
+print("Loading GPT-Neo model... This may take a few minutes on first run.")
+model_name = "EleutherAI/gpt-neo-1.3B"  # You can use 125M, 1.3B, or 2.7B
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = GPTNeoForCausalLM.from_pretrained(model_name)
 
-app = FastAPI()
+# Move to GPU if available
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = model.to(device)
+print(f"GPT-Neo model loaded successfully on {device}!")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Request schemas
-class BrainstormRequest(BaseModel):
-    action: str
-    product_name: str
-    tone: str
-
-class ChatRequest(BaseModel):
-    question: str
-
-@app.post("/api/chat/brainstorm")
-async def brainstorm(request: BrainstormRequest):
+@app.route('/api/generate-script', methods=['POST'])
+def generate_script():
+    """
+    Generate enhanced script using GPT-Neo
+    Expected JSON: {
+        "inputText": "user script",
+        "actor": "male/female",
+        "background": "studio/office/etc",
+        "videoType": "informative/storytelling/etc"
+    }
+    """
     try:
-        # Create different prompts based on action
-        if request.action == "idea":
-            prompt = f"""Generate 3-5 creative advertising ideas for {request.product_name}.
+        data = request.get_json()
+        
+        # Extract data from request
+        input_text = data.get('inputText', '')
+        actor = data.get('actor', '')
+        background = data.get('background', '')
+        video_type = data.get('videoType', '')
+        
+        # Validate inputs
+        if not input_text or not actor or not background or not video_type:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Create the prompt
+        prompt = f"""Task: Enhance this script for an AI-generated video.
 
-Please provide innovative advertising concepts that would appeal to the target audience. Include:
-- Creative campaign concepts
-- Unique selling propositions
-- Target audience insights
-- Suggested marketing channels"""
-        
-        elif request.action == "slogan":
-            prompt = f"""Create catchy slogans for {request.product_name}.
+Actor: {actor}
+Background: {background}
+Video Type: {video_type}
 
-Generate 5-7 memorable slogans that capture the essence of the product."""
-        
-        elif request.action == "content":
-            prompt = f"""Create marketing content for {request.product_name}.
+Original Script: {input_text}
 
-Generate social media posts, ad copy, and promotional text that would engage customers."""
+Enhanced Professional Script:"""
         
-        else:
-            prompt = f"""Help with {request.action} for {request.product_name}.
-Provide creative marketing and advertising suggestions."""
+        # Tokenize input
+        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
         
-        # Call Gemini API
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=400,
+        # Generate enhanced script
+        with torch.no_grad():
+            outputs = model.generate(
+                inputs.input_ids,
+                max_length=inputs.input_ids.shape[1] + 500,  # Generate 500 more tokens
                 temperature=0.8,
+                top_p=0.9,
+                do_sample=True,
+                pad_token_id=tokenizer.eos_token_id,
+                repetition_penalty=1.2,
+                no_repeat_ngram_size=3
             )
-        )
         
-        result = response.text
+        # Decode output
+        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        return {"result": result}
+        # Extract only the enhanced part (remove the prompt)
+        enhanced_script = generated_text[len(prompt):].strip()
+        
+        return jsonify({
+            'success': True,
+            'enhanced_script': enhanced_script,
+            'model': model_name
+        })
     
     except Exception as e:
-        print(f"Error in brainstorm endpoint: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating ideas: {str(e)}")
+        print(f"Error generating script: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
-@app.post("/api/chat")
-async def general_chat(request: ChatRequest):
-    """General chat endpoint for any question"""
-    try:
-        prompt = f"""You are an AI assistant specialized in marketing, advertising, and content creation.
-Help users create engaging ads, marketing content, and business ideas.
+@app.route('/api/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'model': model_name,
+        'device': device
+    })
 
-User question: {request.question}
+# Add your other existing routes here...
 
-Please provide helpful, creative suggestions."""
-        
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=300,
-                temperature=0.7,
-            )
-        )
-        
-        answer = response.text
-        return {"answer": answer}
-    
-    except Exception as e:
-        print(f"Error in chat endpoint: {e}")
-        raise HTTPException(status_code=500, detail=f"Error in chat: {str(e)}")
-
-# Test endpoints
-@app.get("/")
-async def root():
-    return {"message": "AI Content Creator API is running"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "message": "API is working without memory features"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
