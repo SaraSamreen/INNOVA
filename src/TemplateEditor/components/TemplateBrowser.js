@@ -2,10 +2,7 @@
 
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
-<<<<<<< HEAD
-=======
 import { videoTemplates } from "../../data/videoTemplates"
->>>>>>> eaba22a5103fc87954126ff6adf3a1d93509d776
 import "../../Styles/TemplateBrowser.css"
 
 export default function TemplateBrowser() {
