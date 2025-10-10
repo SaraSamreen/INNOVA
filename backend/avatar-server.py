@@ -885,13 +885,32 @@ def speak():
     except Exception as e:
         print("❌ Error in /speak:", traceback.format_exc())
         return jsonify({"success": False, "error": str(e)}), 500
-
-# ============= FILE SERVING =============
+#===============ready avatars===============
+@app.route("/ready-avatars")
+def ready_avatars():
+    avatars = []
+    for idx, filename in enumerate(sorted(os.listdir(READY_AVATARS_DIR))):
+        if filename.lower().endswith((".jpg", ".png")):
+            avatars.append({
+                "id": idx,
+                "name": os.path.splitext(filename)[0],  # e.g., avatar01
+                "gender": "Unknown",  # optional
+                "style": "Cartoon",   # optional
+                "url": f"/avatars/{filename}"  # frontend can load this
+            })
+    return jsonify({"success": True, "avatars": avatars})
 
 @app.route("/avatars/<filename>")
 def get_avatar(filename):
-    """Serve generated avatars"""
-    return send_from_directory(AVATAR_DIR, filename)
+    return send_from_directory(READY_AVATARS_DIR, filename)
+
+
+
+
+
+# ============= FILE SERVING =============
+
+
 
 @app.route("/audio/<filename>")
 def get_audio(filename):

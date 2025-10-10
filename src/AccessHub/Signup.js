@@ -3,13 +3,29 @@ import { Link } from 'react-router-dom';
 import "../Styles/Signup.css";
 
 const Signup = () => {
-  const [name, setName] = useState(''); // new username field
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // new confirm password field
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const validateEmail = (email) => {
+    // Reject if email starts with a number
+    if (/^\d/.test(email)) {
+      return false;
+    }
+
+    // Simple regex for general email format
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
 
   const handleEmailSignup = async (e) => {
     e.preventDefault();
+
+    if (!validateEmail(email)) {
+      alert('Please enter a valid email address (cannot start with a number).');
+      return;
+    }
 
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
@@ -25,7 +41,7 @@ const Signup = () => {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      
+
       alert('Signup successful');
       window.location.href = '/dashboard';
     } catch (err) {
@@ -67,7 +83,11 @@ const Signup = () => {
 
         <div className="auth-buttons">
           <button className="auth-button google-button" onClick={handleGoogleSignup}>
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google" className="auth-icon" />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+              alt="Google"
+              className="auth-icon"
+            />
             Join with Google
           </button>
         </div>
@@ -107,11 +127,14 @@ const Signup = () => {
             onChange={e => setConfirmPassword(e.target.value)}
             required
           />
-          <button type="submit" className="create-account-button">Create Account</button>
+          <button type="submit" className="create-account-button">
+            Create Account
+          </button>
         </form>
 
         <div className="login-prompt">
-          Already have an account? <Link to="/login" className="login-link">Login</Link>
+          Already have an account?{' '}
+          <Link to="/login" className="login-link">Login</Link>
         </div>
 
         <div className="terms">

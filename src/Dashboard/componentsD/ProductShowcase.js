@@ -230,7 +230,7 @@ export default function ProductShowcase() {
                   >
                     ✕
                   </button>
-                </div>
+                </div> 
               ) : (
                 <div>
                   <div className="upload-placeholder">📷</div>

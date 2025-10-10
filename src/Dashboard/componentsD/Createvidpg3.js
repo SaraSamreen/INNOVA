@@ -21,7 +21,6 @@ export default function Createvidpg3() {
       try {
         const response = await fetch("http://localhost:5001/ready-avatars")
         const data = await response.json()
-        
         if (data.success && data.avatars) {
           setAvatars(data.avatars)
           console.log("✅ Loaded avatars:", data.avatars)
@@ -35,7 +34,6 @@ export default function Createvidpg3() {
         setLoadingAvatars(false)
       }
     }
-
     fetchAvatars()
   }, [])
 
@@ -52,7 +50,7 @@ export default function Createvidpg3() {
     }
   }, [location.state])
 
-  // Play voice preview with script
+  // Play voice preview
   const playVoice = () => {
     if (!voice || !script) return
     window.speechSynthesis.cancel()
@@ -63,27 +61,18 @@ export default function Createvidpg3() {
     window.speechSynthesis.speak(utterance)
   }
 
-  // Generate video with backend
+  // Generate video
   const handleCreateVideo = async () => {
-    if (selectedAvatar === null) {
-      return alert("Please select an avatar first!")
-    }
-    if (!script) {
-      return alert("No script available. Go back to Step 1 to generate a script.")
-    }
+    if (selectedAvatar === null) return alert("Please select an avatar first!")
+    if (!script) return alert("No script available. Go back to Step 1.")
 
     const selectedAvatarData = avatars[selectedAvatar]
-    
     setIsGenerating(true)
     setVideoUrl(null)
     setAudioUrl(null)
 
     try {
-      console.log("🎬 Generating video with:")
-      console.log("  Avatar:", selectedAvatarData.name)
-      console.log("  Script:", script.substring(0, 50) + "...")
-
-      // Call backend /speak endpoint
+      console.log("🎬 Generating video with:", selectedAvatarData.name)
       const response = await fetch("http://localhost:5001/speak", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,45 +82,17 @@ export default function Createvidpg3() {
           use_ready_avatar: true
         }),
       })
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`)
-      }
-
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
       const result = await response.json()
-      console.log("✅ Video generation result:", result)
-
-      if (result.audio_url) {
-        const fullAudioUrl = `http://localhost:5001${result.audio_url}`
-        setAudioUrl(fullAudioUrl)
-        console.log("🎤 Audio URL:", fullAudioUrl)
-      }
-
-      if (result.lipsync_url) {
-        const fullVideoUrl = `http://localhost:5001${result.lipsync_url}`
-        setVideoUrl(fullVideoUrl)
-        console.log("🎬 Video URL:", fullVideoUrl)
-        alert("Video generated successfully! Check the preview below.")
-      } else if (result.audio_url) {
-        alert("Audio generated! (Lip-sync video not available - Wav2Lip may not be installed)")
-      } else {
-        alert("Generation completed but no media URLs returned.")
-      }
-
+      if (result.audio_url) setAudioUrl(`http://localhost:5001${result.audio_url}`)
+      if (result.lipsync_url) setVideoUrl(`http://localhost:5001${result.lipsync_url}`)
+      alert("Video generation completed!")
     } catch (err) {
       console.error("❌ Video generation failed:", err)
-      alert(`Video generation failed: ${err.message}\n\nMake sure the backend is running on http://localhost:5001`)
+      alert(`Video generation failed: ${err.message}`)
     } finally {
       setIsGenerating(false)
     }
-  }
-
-  const handleGenerateBackground = () => {
-    alert("Background generation coming soon! This will use AI to generate custom backgrounds.")
-  }
-
-  const handleRecreateBackground = () => {
-    alert("Background recreation coming soon! This will allow you to regenerate the background.")
   }
 
   return (
@@ -139,15 +100,10 @@ export default function Createvidpg3() {
       {/* Left Section */}
       <div className="cv3-left">
         <h2 className="cv3-heading">Choose an avatar</h2>
-        <p className="cv3-subtext">Select an avatar for your video</p>
-
         {loadingAvatars ? (
-          <div className="cv3-loading">Loading avatars...</div>
+          <p>Loading avatars...</p>
         ) : avatars.length === 0 ? (
-          <div className="cv3-error">
-            <p>❌ No avatars available</p>
-            <p>Make sure backend is running on http://localhost:5001</p>
-          </div>
+          <p>No avatars found. Check backend.</p>
         ) : (
           <div className="cv3-avatars">
             {avatars.map((avatar, idx) => (
@@ -156,93 +112,45 @@ export default function Createvidpg3() {
                 className={`cv3-avatar-card ${selectedAvatar === idx ? "active" : ""}`}
                 onClick={() => setSelectedAvatar(idx)}
               >
-                {avatar.url ? (
-                  <img
-                    src={`http://localhost:5001${avatar.url}`}
-                    alt={avatar.name}
-                    className="cv3-avatar"
-                    onError={(e) => {
-                      console.error(`Failed to load avatar: ${avatar.name}`)
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3ENo Image%3C/text%3E%3C/svg%3E"
-                    }}
-                  />
-                ) : (
-                  <div className="cv3-avatar-placeholder">
-                    {avatar.name.charAt(0)}
-                  </div>
-                )}
+                <img
+                  src={`http://localhost:5001${avatar.url}`}
+                  alt={avatar.name}
+                  className="cv3-avatar"
+                  onError={(e) => {
+                    console.error("Failed to load avatar:", avatar.name)
+                    e.target.src = "/fallback-avatar.png" // optional fallback image
+                  }}
+                />
                 <div className="cv3-avatar-name">{avatar.name}</div>
-                <div className="cv3-avatar-meta">
-                  {avatar.gender} • {avatar.style}
-                </div>
               </div>
             ))}
           </div>
         )}
 
         <div className="cv3-box">
-          <label>Script (from Step 1)</label>
-          <div className="cv3-info">
-            {script || "No script was provided. Go back to Step 1."}
-          </div>
+          <label>Script</label>
+          <div className="cv3-info">{script || "No script available."}</div>
         </div>
 
         <div className="cv3-box">
-          <label>Selected Voice (from Step 2)</label>
-          <div className="cv3-info">
-            {voice ? voice.name : "No voice selected. Go back to Step 2."}
-          </div>
+          <label>Selected Voice</label>
+          <div className="cv3-info">{voice ? voice.name : "No voice selected."}</div>
           {voice && script && (
-            <button className="cv3-btn" onClick={playVoice}>
-              🔊 Preview Voice
-            </button>
+            <button onClick={playVoice}>🔊 Preview Voice</button>
           )}
         </div>
 
-        <div className="cv3-buttons">
-          <button
-            className="cv3-btn primary"
-            onClick={handleCreateVideo}
-            disabled={isGenerating || selectedAvatar === null || !script}
-          >
-            {isGenerating ? "⏳ Generating..." : "🎬 Create Video"}
-          </button>
-          <button 
-            className="cv3-btn" 
-            onClick={handleGenerateBackground}
-            disabled
-          >
-            🖼️ Generate Background (Soon)
-          </button>
-          <button 
-            className="cv3-btn" 
-            onClick={handleRecreateBackground}
-            disabled
-          >
-            🔄 Recreate Background (Soon)
-          </button>
-        </div>
+        <button
+          onClick={handleCreateVideo}
+          disabled={isGenerating || selectedAvatar === null || !script}
+        >
+          {isGenerating ? "⏳ Generating..." : "🎬 Create Video"}
+        </button>
 
-        {/* Generated Media Display */}
         {(audioUrl || videoUrl) && (
           <div className="cv3-box">
-            <label>Generated Media</label>
-            {audioUrl && (
-              <div className="cv3-media-item">
-                <p>🎤 Audio:</p>
-                <audio controls src={audioUrl} className="cv3-audio">
-                  Your browser does not support audio playback.
-                </audio>
-              </div>
-            )}
-            {videoUrl && (
-              <div className="cv3-media-item">
-                <p>🎬 Lip-sync Video:</p>
-                <video controls src={videoUrl} className="cv3-video">
-                  Your browser does not support video playback.
-                </video>
-              </div>
-            )}
+            {audioUrl && <audio controls src={audioUrl}></audio>}
+            {videoUrl && <video controls src={videoUrl}></video>}
           </div>
         )}
       </div>
@@ -250,49 +158,21 @@ export default function Createvidpg3() {
       {/* Right Section - Preview */}
       <div className="cv3-right">
         <h2 className="cv3-heading">Preview</h2>
-        <p className="cv3-subtext">
-          {selectedAvatar !== null && avatars[selectedAvatar]
-            ? `${avatars[selectedAvatar].name} • ${avatars[selectedAvatar].style}`
-            : "No avatar selected"}
-        </p>
-
         <div className="cv3-preview">
           {selectedAvatar !== null && avatars[selectedAvatar] ? (
-            avatars[selectedAvatar].url ? (
-              <img
-                src={`http://localhost:5001${avatars[selectedAvatar].url}`}
-                alt="Selected Avatar Preview"
-                className="cv3-preview-avatar"
-                onError={(e) => {
-                  e.target.style.display = "none"
-                  e.target.nextSibling.style.display = "flex"
-                }}
-              />
-            ) : (
-              <div className="cv3-preview-placeholder">
-                <div className="cv3-placeholder-icon">👤</div>
-                <p>{avatars[selectedAvatar].name}</p>
-              </div>
-            )
+            <img
+              src={`http://localhost:5001${avatars[selectedAvatar].url}`}
+              alt={avatars[selectedAvatar].name}
+              className="cv3-preview-avatar"
+              onError={(e) => {
+                e.target.style.display = "none"
+              }}
+            />
           ) : (
-            <div className="cv3-preview-placeholder">
-              <div className="cv3-placeholder-icon">🎭</div>
-              <p>Select an avatar to preview</p>
-            </div>
+            <p>Select an avatar to preview</p>
           )}
         </div>
-
-        {/* Video Preview */}
-        {videoUrl && (
-          <div className="cv3-video-preview">
-            <h3>Generated Video</h3>
-            <video controls autoPlay src={videoUrl} className="cv3-final-video">
-              Your browser does not support video playback.
-            </video>
-          </div>
-        )}
       </div>
     </div>
-    
   )
 }
