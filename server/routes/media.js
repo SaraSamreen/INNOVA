@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { supabase, uploadFile, getPublicUrl } = require('../../src/supabaseClient');
-const User = require('../models/User'); // Adjust path if needed
-const Media = require('../models/Media'); // We'll create a Media model
+const { storageBucket } = require('../firebaseAdmin');
+const User = require('../models/User'); 
+const Media = require('../models/Media'); 
 
 // Configure multer for file uploads
-const storage = multer.memoryStorage(); // Keep files in memory to send to Supabase
-const upload = multer({ storage });
+const multerStorage = multer.memoryStorage(); // Keep files in memory to send to Firebase
+const upload = multer({ storage: multerStorage });
 
 // Upload endpoint
 router.post('/upload', upload.single('file'), async (req, res) => {
@@ -15,21 +15,48 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const { userId, type } = req.body; // MongoDB user ID and media type
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-    // 1. Upload file to Supabase
-    const path = await uploadFile(req.file, userId);
-
-    // 2. Save metadata to MongoDB
-    const media = await Media.create({
-      user_id: userId,
-      type,
-      filename: req.file.originalname,
-      supabase_path: path,
-      uploaded_at: new Date(),
+    // 1. Upload file to Firebase Storage
+    const fileName = `${Date.now()}_${req.file.originalname}`;
+    const blob = storageBucket.file(`uploads/${userId}/${fileName}`);
+    
+    const stream = blob.createWriteStream({
+      resumable: false,
+      contentType: req.file.mimetype,
     });
 
-    // 3. Return file info + public URL
-    const publicUrl = getPublicUrl(path);
-    res.json({ media, publicUrl });
+    // Handle stream events
+    stream.on('error', (err) => {
+      console.error('Firebase upload error:', err);
+      res.status(500).json({ message: 'Upload failed', error: err.message });
+    });
+
+    stream.on('finish', async () => {
+      try {
+        // Make the file public
+        await blob.makePublic();
+        
+        // Get the public URL
+        const publicUrl = `https://storage.googleapis.com/${storageBucket.name}/${blob.name}`;
+
+        // 2. Save metadata to MongoDB
+        const media = await Media.create({
+          user_id: userId,
+          type,
+          filename: req.file.originalname,
+          firebase_url: publicUrl,
+          uploaded_at: new Date(),
+        });
+
+        // 3. Return file info + public URL
+        res.json({ media, publicUrl });
+      } catch (err) {
+        console.error('Database save error:', err);
+        res.status(500).json({ message: 'Failed to save media metadata', error: err.message });
+      }
+    });
+
+    // Write the file buffer to the stream
+    stream.end(req.file.buffer);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Upload failed', error: err.message });
@@ -42,7 +69,7 @@ router.get('/:userId', async (req, res) => {
     const mediaList = await Media.find({ user_id: req.params.userId });
     const mediaWithUrls = mediaList.map(m => ({
       ...m.toObject(),
-      publicUrl: getPublicUrl(m.supabase_path),
+      publicUrl: m.firebase_url, // Firebase URL is already public
     }));
     res.json(mediaWithUrls);
   } catch (err) {

@@ -30,3 +30,5 @@ yarn-error.log*
 # Python virtual environment
 /venv
 
+config.env
+server/config.env

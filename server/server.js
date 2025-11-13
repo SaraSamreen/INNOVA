@@ -13,7 +13,7 @@ const app = express();
 const corsOptions = {
   origin: 'http://localhost:3000', // Your React app URL
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 // Middleware
@@ -28,7 +28,10 @@ app.use((req, res, next) => {
 
 // Configure MongoDB connection
 const mongoURI = process.env.ATLAS_URI;
-console.log('Connecting to MongoDB...', mongoURI ? 'Connection string found' : 'No connection string!');
+console.log(
+  'Connecting to MongoDB...',
+  mongoURI ? 'Connection string found' : 'No connection string!'
+);
 
 const connectDB = async () => {
   try {
@@ -37,9 +40,9 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log('✅ MongoDB connected successfully');
-    
+
     const collections = await mongoose.connection.db.listCollections().toArray();
-    console.log('Available collections:', collections.map(c => c.name));
+    console.log('Available collections:', collections.map((c) => c.name));
   } catch (err) {
     console.error('❌ MongoDB connection error:', err);
     console.log('Retrying in 5 seconds...');
@@ -49,11 +52,11 @@ const connectDB = async () => {
 
 connectDB();
 
-// Routes
+// ---------------------- ROUTES ---------------------- //
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-const mediaRoutes = require('./routes/media'); // Media route
+const mediaRoutes = require('./routes/media');
 app.use('/api/media', mediaRoutes);
 
 // Simple test route
@@ -66,8 +69,11 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ message: 'Server error', error: err.message });
 });
+const aiRoutes = require('./routes/aiRoutes');
+app.use('/api/ai', aiRoutes);
 
-// Server
+
+// ---------------------- SERVER ---------------------- //
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

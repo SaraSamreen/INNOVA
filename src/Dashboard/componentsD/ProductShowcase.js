@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import "../../Styles/ProductShowcase.css"; 
+import "../../Styles/ProductShowcase.css";
+
+// Backend server configuration
+const BACKEND_PORT = process.env.REACT_APP_PRODUCT_SERVER_PORT || 5000;
+const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 
 export default function ProductShowcase() {
   const [productImage, setProductImage] = useState(null);
@@ -11,68 +15,29 @@ export default function ProductShowcase() {
   const [backendStatus, setBackendStatus] = useState("checking");
   const fileInputRef = useRef(null);
 
-  // Predefined model girls
   const modelGirls = {
-    model1: {
-      name: "Sophia",
-      description: "Elegant & Professional",
-      seed: 42,
-      style: "professional, elegant, business casual",
-    },
-    model2: {
-      name: "Emma",
-      description: "Casual & Friendly",
-      seed: 123,
-      style: "casual, friendly, lifestyle",
-    },
-    model3: {
-      name: "Aria",
-      description: "Modern & Chic",
-      seed: 456,
-      style: "modern, chic, fashionable",
-    },
-    model4: {
-      name: "Zara",
-      description: "Bold & Confident",
-      seed: 789,
-      style: "bold, confident, editorial",
-    },
-    model5: {
-      name: "Maya",
-      description: "Natural & Fresh",
-      seed: 999,
-      style: "natural, fresh, minimalist",
-    },
+    model1: { name: "Sophia", description: "Elegant & Professional", seed: 42, style: "professional, elegant, business casual" },
+    model2: { name: "Emma", description: "Casual & Friendly", seed: 123, style: "casual, friendly, lifestyle" },
+    model3: { name: "Aria", description: "Modern & Chic", seed: 456, style: "modern, chic, fashionable" },
+    model4: { name: "Zara", description: "Bold & Confident", seed: 789, style: "bold, confident, editorial" },
+    model5: { name: "Maya", description: "Natural & Fresh", seed: 999, style: "natural, fresh, minimalist" },
   };
 
-  // Check backend status on mount and periodically
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch("http://localhost:5004/status");
+        const response = await fetch(`${BACKEND_URL}/health`);
         const data = await response.json();
-        
-        if (data.ready) {
-          setBackendStatus("ready");
-        } else if (data.loading) {
-          setBackendStatus("loading");
-        } else {
-          setBackendStatus("error");
-        }
-      } catch (error) {
+        if (data.status === "ok") setBackendStatus("ready");
+        else setBackendStatus("error");
+      } catch {
         setBackendStatus("offline");
       }
     };
-
     checkStatus();
-    
-    // Check every 3 seconds if not ready
     const interval = setInterval(() => {
-      if (backendStatus !== "ready") {
-        checkStatus();
-      }
+      if (backendStatus !== "ready") checkStatus();
     }, 3000);
-
     return () => clearInterval(interval);
   }, [backendStatus]);
 
@@ -91,9 +56,8 @@ export default function ProductShowcase() {
       alert("Please upload a product image and select a model");
       return;
     }
-
     if (backendStatus !== "ready") {
-      alert("Backend is not ready yet. Please wait for models to load.");
+      alert("Backend not ready. Wait until models load.");
       return;
     }
 
@@ -102,27 +66,38 @@ export default function ProductShowcase() {
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("product_image", productImage);
-      formData.append("model_id", selectedModel);
-
-      const response = await fetch("http://localhost:5004/generate-showcase", {
-        method: "POST",
-        body: formData,
+      // Convert image to base64
+      const reader = new FileReader();
+      const imageBase64 = await new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          // Remove data:image/...;base64, prefix
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(productImage);
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate images");
-      }
+      const response = await fetch(`${BACKEND_URL}/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_image: imageBase64,
+        }),
+      });
 
+      if (!response.ok) throw new Error("Failed to generate images");
       const data = await response.json();
-
-      if (data.success && data.images) {
-        setGeneratedImages(data.images);
-      } else {
-        throw new Error(data.error || "Unknown error");
-      }
+      if (data.results) {
+        // Convert backend response format to frontend format
+        const images = Object.entries(data.results).map(([poseName, result]) => ({
+          angle: poseName.charAt(0).toUpperCase() + poseName.slice(1),
+          url: `data:image/png;base64,${result.base64}`,
+        }));
+        setGeneratedImages(images);
+      } else throw new Error(data.error || "Unknown error");
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to generate images: " + error.message);
@@ -151,39 +126,42 @@ export default function ProductShowcase() {
     });
   };
 
-  // Status banner component
+  const shareImage = async (imageUrl, platform) => {
+    const base64Data = imageUrl.startsWith("data:")
+      ? imageUrl
+      : await fetch(imageUrl)
+          .then((r) => r.blob())
+          .then(
+            (b) =>
+              new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(b);
+              })
+          );
+
+    if (platform === "facebook") {
+      window.open(
+        "https://www.facebook.com/sharer/sharer.php?u=" +
+          encodeURIComponent(window.location.href),
+        "_blank"
+      );
+    } else if (platform === "instagram") {
+      alert(
+        "Instagram API does not allow direct uploads from client side. Integrate server-side Meta Graph API for publishing."
+      );
+    }
+  };
+
   const StatusBanner = () => {
     if (backendStatus === "ready") return null;
-
     const statusConfig = {
-      loading: {
-        bg: "bg-blue-100",
-        text: "text-blue-800",
-        icon: "⏳",
-        message: "AI models are loading... This may take 1-5 minutes on first run."
-      },
-      offline: {
-        bg: "bg-red-100",
-        text: "text-red-800",
-        icon: "❌",
-        message: "Backend server is offline. Please start product-server.py"
-      },
-      error: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
-        icon: "⚠️",
-        message: "Models failed to load. Check server logs."
-      },
-      checking: {
-        bg: "bg-gray-100",
-        text: "text-gray-800",
-        icon: "🔍",
-        message: "Checking server status..."
-      }
+      loading: { bg: "bg-blue-100", text: "text-blue-800", icon: "⏳", message: "AI models are loading..." },
+      offline: { bg: "bg-red-100", text: "text-red-800", icon: "❌", message: "Backend offline." },
+      error: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⚠️", message: "Model load error." },
+      checking: { bg: "bg-gray-100", text: "text-gray-800", icon: "🔍", message: "Checking server..." },
     };
-
     const config = statusConfig[backendStatus];
-
     return (
       <div className={`status-banner ${config.bg} ${config.text}`}>
         <span className="status-icon">{config.icon}</span>
@@ -196,10 +174,7 @@ export default function ProductShowcase() {
     <div className="showcase-container">
       <div className="showcase-header animate-fadeIn">
         <h1>👜 AI Product Showcase Generator</h1>
-        <p>
-          Upload your product and see it showcased by AI-generated models with
-          consistent faces
-        </p>
+        <p>Upload your product and see it showcased by AI-generated models</p>
         <StatusBanner />
       </div>
 
@@ -207,8 +182,6 @@ export default function ProductShowcase() {
         {/* Left Panel */}
         <div className="left-panel animate-slideUp">
           <h2>Setup Your Showcase</h2>
-
-          {/* Upload */}
           <div className="upload-section">
             <label>📸 Upload Product Image</label>
             <div
@@ -217,10 +190,7 @@ export default function ProductShowcase() {
             >
               {productPreview ? (
                 <div className="preview-container">
-                  <img
-                    src={productPreview}
-                    alt="Product"
-                  />
+                  <img src={productPreview} alt="Product" />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -230,13 +200,12 @@ export default function ProductShowcase() {
                   >
                     ✕
                   </button>
-                </div> 
+                </div>
               ) : (
                 <div>
                   <div className="upload-placeholder">📷</div>
                   <p>Click to upload product image</p>
                   <p className="upload-text">PNG, JPG up to 10MB</p>
-                  
                 </div>
               )}
             </div>
@@ -249,26 +218,21 @@ export default function ProductShowcase() {
             />
           </div>
 
-          {/* Model selection */}
           <div className="model-select">
-            <label>👩 Select Model (Consistent Face)</label>
+            <label>👩 Select Model</label>
             <div className="model-grid">
               {Object.entries(modelGirls).map(([key, model]) => (
                 <button
                   key={key}
                   onClick={() => setSelectedModel(key)}
-                  className={`model-btn ${selectedModel === key ? 'active' : ''}`}
+                  className={`model-btn ${
+                    selectedModel === key ? "active" : ""
+                  }`}
                 >
                   <div>
-                    <div className="model-name">
-                      {model.name}
-                    </div>
-                    <div className="model-description">
-                      {model.description}
-                    </div>
-                    <div className="model-details">
-                      Seed: {model.seed}
-                    </div>
+                    <div className="model-name">{model.name}</div>
+                    <div className="model-description">{model.description}</div>
+                    <div className="model-details">Seed: {model.seed}</div>
                   </div>
                   {selectedModel === key && (
                     <div className="model-check">✓</div>
@@ -278,31 +242,19 @@ export default function ProductShowcase() {
             </div>
           </div>
 
-          {/* Generate */}
           <button
             onClick={generateShowcaseImages}
-            disabled={loading || !productImage || !selectedModel || backendStatus !== "ready"}
-            className={`generate-btn ${loading || !productImage || !selectedModel || backendStatus !== "ready" ? 'disabled' : ''}`}
+            disabled={
+              loading || !productImage || !selectedModel || backendStatus !== "ready"
+            }
+            className={`generate-btn ${
+              loading || !productImage || !selectedModel || backendStatus !== "ready"
+                ? "disabled"
+                : ""
+            }`}
           >
-            {loading ? (
-              <div className="loading-container">
-                <div className="loading-spinner" />
-                <span>Generating images...</span>
-              </div>
-            ) : backendStatus === "loading" ? (
-              "⏳ Waiting for models to load..."
-            ) : backendStatus === "offline" ? (
-              "❌ Server Offline"
-            ) : (
-              "✨ Generate 4 Showcase Images"
-            )}
+            {loading ? "Generating..." : "✨ Generate 4 Showcase Images"}
           </button>
-
-          {backendStatus === "ready" && (
-            <div className="status-indicator ready">
-              ✓ Backend Ready
-            </div>
-          )}
         </div>
 
         {/* Right Panel */}
@@ -310,61 +262,45 @@ export default function ProductShowcase() {
           <div className="panel-header">
             <h2>Generated Showcase</h2>
             {generatedImages.length > 0 && (
-              <button
-                onClick={downloadAllImages}
-                className="download-all-btn"
-              >
+              <button onClick={downloadAllImages} className="download-all-btn">
                 ⬇️ Download All
               </button>
             )}
           </div>
 
-          {generatedImages.length === 0 && !loading ? (
-            <div className="empty-state">
-              <div className="empty-content">
-                <div className="empty-icon">🎨</div>
-                <p className="empty-title">
-                  Your showcase images will appear here
-                </p>
-                <p className="empty-subtitle">
-                  Upload a product and select a model to start
-                </p>
+          <div className="image-grid">
+            {generatedImages.map((img, index) => (
+              <div key={index} className="image-wrapper">
+                <img
+                  src={img.url}
+                  alt={`Showcase ${index + 1}`}
+                  className="result-image"
+                />
+                <div className="pose-badge">{img.angle}</div>
+
+                <div className="image-actions">
+                  <button
+                    onClick={() => downloadImage(img.url, index)}
+                    className="download-btn"
+                  >
+                    ⬇️ Download
+                  </button>
+                  <button
+                    onClick={() => shareImage(img.url, "facebook")}
+                    className="share-btn fb"
+                  >
+                    📘 Share
+                  </button>
+                  <button
+                    onClick={() => shareImage(img.url, "instagram")}
+                    className="share-btn ig"
+                  >
+                    📸 Share
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="image-grid">
-              {loading
-                ? [1, 2, 3, 4].map((i) => (
-                    <div key={i} className="loading-placeholder">
-                      <div className="loading-text-container">
-                        <div className="loading-text-box">
-                          <span className="loading-text">
-                            Generating pose {i}...
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                : generatedImages.map((img, index) => (
-                    <div key={index} className="image-wrapper">
-                      <img
-                        src={img.url}
-                        alt={`Showcase ${index + 1}`}
-                        className="result-image"
-                      />
-                      <button
-                        onClick={() => downloadImage(img.url, index)}
-                        className="download-btn"
-                      >
-                        ⬇️ Download
-                      </button>
-                      <div className="pose-badge">
-                        {img.angle}
-                      </div>
-                    </div>
-                  ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </div>

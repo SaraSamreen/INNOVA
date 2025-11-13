@@ -17,7 +17,7 @@
   
   .toggle-switch .active {
     font-weight: bold;
-    color: #5316e1;
+    color: #3E8EDE;
   }
   .pricing-heading{
   font-size: 2rem;
@@ -67,7 +67,7 @@
   }
   
   input:checked + .slider {
-    background-color: #5316e1;
+    background-color: #3E8EDE;
   }
   
   input:checked + .slider:before {
@@ -117,7 +117,7 @@
   }
   
   .btn {
-    background: linear-gradient(to right, #5316e1, #eb8f67);
+    background: linear-gradient(to right, #3E8EDE, #2E7BC8);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -128,14 +128,14 @@
   }
   
   .popular {
-    border: 2px solid #5316e1;
+    border: 2px solid #3E8EDE;
   }
   
   .badge {
     position: absolute;
     top: -10px;
     right: -10px;
-    background: #5316e1;
+    background: #3E8EDE;
     color: white;
     padding: 5px 10px;
     border-radius: 20px;

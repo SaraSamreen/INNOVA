@@ -13,7 +13,7 @@
 .showcase-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(to right, #7e22ce, #db2777);
+  background: linear-gradient(to right, #3E8EDE, #2E7BC8);
   -webkit-background-clip: text;
   color: transparent;
 }
@@ -41,7 +41,7 @@
 }
 
 .upload-section:hover {
-  border-color: #a855f7;
+  border-color: #3E8EDE;
   background: #faf5ff;
 }
 
@@ -84,14 +84,14 @@
 }
 
 .model-btn.active {
-  border-color: #a855f7;
+  border-color: #3E8EDE;
   background: #faf5ff;
   box-shadow: 0 2px 8px rgba(168,85,247,0.2);
 }
 
 .generate-btn {
   width: 100%;
-  background: linear-gradient(to right, #9333ea, #db2777);
+  background: linear-gradient(to right, #3E8EDE, #2E7BC8);
   color: white;
   border: none;
   border-radius: 1rem;
@@ -214,7 +214,7 @@
 }
 
 .upload-box:hover {
-  border-color: #a855f7;
+  border-color: #3E8EDE;
   background-color: #faf5ff;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .model-check {
-  color: #a855f7;
+  color: #3E8EDE;
   font-size: 1.5rem;
 }
 
@@ -376,7 +376,7 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
-  background: #9333ea;
+  background: #3E8EDE;
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;

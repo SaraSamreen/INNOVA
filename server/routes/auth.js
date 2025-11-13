@@ -3,6 +3,9 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const { authAdmin } = require('../firebaseAdmin'); // for google-login verification
 
 // Helper to generate JWT
 const generateToken = (userId) => {
@@ -11,6 +14,23 @@ const generateToken = (userId) => {
     process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production',
     { expiresIn: '1h' }
   );
+};
+
+// ---------------------- AUTH MIDDLEWARE ----------------------
+const authMiddleware = (req, res, next) => {
+  const token = req.header('x-auth-token');
+  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production'
+    );
+    req.userId = decoded.userId;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
 };
 
 // ---------------------- SIGNUP ----------------------
@@ -84,23 +104,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ---------------------- AUTH MIDDLEWARE ----------------------
-const authMiddleware = (req, res, next) => {
-  const token = req.header('x-auth-token');
-  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
-
-  try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production'
-    );
-    req.userId = decoded.userId;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
-};
-
 // ---------------------- PROFILE ----------------------
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
@@ -144,42 +147,6 @@ router.get('/get-drafts', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching drafts' });
   }
 });
-
-
-// ---------------------- UPDATE PROFILE ----------------------
-router.put("/update-profile", authMiddleware, async (req, res) => {
-  try {
-    const updates = req.body;
-
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      { $set: updates },
-      { new: true }
-    ).select("-password");
-
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.status(200).json({ message: "Profile updated successfully", user });
-  } catch (err) {
-    console.error("Update profile error:", err);
-    res.status(500).json({ message: "Server error while updating profile" });
-  }
-});
-
-// ---------------------- DELETE ACCOUNT ----------------------
-router.delete("/delete-account", authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.status(200).json({ message: "Account deleted successfully" });
-  } catch (err) {
-    console.error("Delete account error:", err);
-    res.status(500).json({ message: "Server error while deleting account" });
-  }
-});
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
 
 // ---------------------- FORGOT PASSWORD ----------------------
 router.post("/forgot-password", async (req, res) => {
@@ -257,7 +224,6 @@ router.post("/reset-password/:token", async (req, res) => {
     }
 
     // Hash the new password
-    const bcrypt = require("bcrypt");
     user.password = await bcrypt.hash(password, 10);
 
     // Clear token fields
@@ -273,5 +239,53 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 });
 
+// ---------------------- GOOGLE LOGIN ----------------------
+router.post("/google-login", async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ message: "ID token is required" });
+    }
+
+    // Verify the Firebase ID token
+    const decodedToken = await authAdmin.verifyIdToken(idToken);
+    const { uid, email, name } = decodedToken;
+
+    // Check if user exists in MongoDB
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email,
+        firebaseUid: uid,
+        provider: "google"
+      });
+    } else {
+      // Update existing user with Firebase UID if not set
+      if (!user.firebaseUid) {
+        user.firebaseUid = uid;
+        user.provider = "google";
+        await user.save();
+      }
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id);
+
+    console.log('✅ Google login successful:', { id: user._id, email: user.email });
+
+    res.status(200).json({
+      message: 'Google login successful',
+      token,
+      user: { id: user._id, email: user.email, name: user.name, provider: user.provider }
+    });
+  } catch (err) {
+    console.error('Google login error:', err);
+    res.status(500).json({ message: 'Server error during Google login', error: err.message });
+  }
+});
 
 module.exports = router;

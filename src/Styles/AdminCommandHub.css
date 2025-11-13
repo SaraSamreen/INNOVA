@@ -1,16 +1,16 @@
 /* ===== ADMIN COMMAND HUB - MAIN LAYOUT ===== */
 /* Add these to the top of your CSS files */
 :root {
-  --primary-color: #d7a7cf;
-  --primary-dark: #c490b8;
-  --primary-light: #e6c9df;
-  --primary-lighter: #f3e8f0;
-  --primary-purple: #8b5cf6;
-  --primary-pink: #ec4899;
-  --light-purple: #e6e6fa;
-  --medium-purple: #dda0dd;
-  --gradient-main: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-  --gradient-sidebar: linear-gradient(180deg, #e6e6fa 0%, #dda0dd 100%);
+  --primary-color: #3E8EDE;
+  --primary-dark: #2E7BC8;
+  --primary-light: #6BA3E8;
+  --primary-lighter: #E3F2FD;
+  --primary-purple: #3E8EDE;
+  --primary-pink: #3E8EDE;
+  --light-purple: #E3F2FD;
+  --medium-purple: #6BA3E8;
+  --gradient-main: linear-gradient(135deg, #3E8EDE 0%, #2E7BC8 100%);
+  --gradient-sidebar: linear-gradient(180deg, #E3F2FD 0%, #6BA3E8 100%);
   --light-bg: #f8fafc;
 }
 .admin-command-hub {
@@ -37,7 +37,7 @@
   
   /* ===== ADMIN HEADER ===== */
   .admin-header {
-    background: linear-gradient(135deg, #667eea 0%, #a583c6 50%);
+    background: linear-gradient(135deg, #3E8EDE 0%, #2E7BC8 50%);
     color: white;
     padding: 20px 14px;
     display: flex;
@@ -115,7 +115,7 @@
     right: -15px;
     width: 30px;
     height: 30px;
-    background: #667eea;
+    background: #3E8EDE;
     color: white;
     border-radius: 50%;
     display: flex;
@@ -146,11 +146,11 @@
     text-align: left;
   }
   .admin-sidebar-header {
-  background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%); /* Match the theme */
+  background: linear-gradient(135deg, #3E8EDE 0%, #2E7BC8 100%); /* Match the theme */
 }
 
 .admin-sidebar-item.active {
-  background: #DDA0DD; /* Purple for active state */
+  background: #6BA3E8; /* Tufts blue for active state */
 }
   
   .sidebar-item:hover {
@@ -429,7 +429,7 @@
   }
   
   .add-plan-btn {
-    background: #667eea;
+    background: #3E8EDE;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -457,7 +457,7 @@
   }
   
   .plan-card:hover {
-    border-color: #667eea;
+    border-color: #3E8EDE;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   }
   
@@ -481,7 +481,7 @@
   .plan-price {
     font-size: 32px;
     font-weight: 700;
-    color: #667eea;
+    color: #3E8EDE;
   }
   
   .plan-features {
@@ -590,7 +590,7 @@
   }
   
   .save-btn {
-    background: #667eea;
+    background: #3E8EDE;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -635,7 +635,7 @@
   }
   
   .stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3E8EDE 0%, #2E7BC8 100%);
     color: white;
     padding: 20px;
     border-radius: 12px;
@@ -746,7 +746,7 @@
   }
   
   .add-discount-btn {
-    background: #667eea;
+    background: #3E8EDE;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -786,7 +786,7 @@
   .discount-code {
     font-family: "Courier New", monospace;
     font-weight: 600;
-    color: #667eea;
+    color: #3E8EDE;
   }
   
   .delete-btn {
