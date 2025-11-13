@@ -1,34 +1,26 @@
 "use client"
 
-// File: ReelCreationStep.js
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Link } from "react-router-dom";
-import "../../Styles/ReelCreationStep.css"
 
 export default function ReelCreationStep() {
-  const [selectedMethod, setSelectedMethod] = useState("")
+  const [selectedMethod, setSelectedMethod] = useState(null)
   const navigate = useNavigate()
 
-  const handleMethodSelect = (method) => {
+  const handleSelect = (method) => {
     setSelectedMethod(method)
   }
 
   const handleContinue = () => {
-    if (!selectedMethod) {
-      alert(" Please select a creation method to continue.")
-      return
-    }
-
     switch (selectedMethod) {
       case "ai-assistant":
-        navigate("/create-video")
+        navigate("/create/step2")
         break
       case "template":
         navigate("/template-browser")
         break
       case "quick-reel":
-        navigate("/quick-reel") // replace with actual route
+        navigate("/quick-reel")
         break
       default:
         break
@@ -36,58 +28,60 @@ export default function ReelCreationStep() {
   }
 
   return (
-    <div className="reel-creation-container">
-      <div className="content">
-        <h2 className="prompt-text">How do you want to start?</h2>
-        <p className="subtitle">Choose your preferred creation method to get started</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+      <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+        Choose Reel Creation Method
+      </h1>
 
-        <div className="method-cards">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-3xl">
+        {/* AI Assistant */}
+        <button
+          onClick={() => handleSelect("ai-assistant")}
+          className={`p-6 rounded-2xl shadow-md text-lg font-medium transition-all ${
+            selectedMethod === "ai-assistant"
+              ? "bg-blue-600 text-white scale-105"
+              : "bg-white hover:bg-blue-50 text-gray-800"
+          }`}
+        >
+          AI Assistant
+        </button>
 
-          {/* AI Assistant Card */}
-          <div
-            className={`method-card ${selectedMethod === "ai-assistant" ? "selected" : ""}`}
-            onClick={() => handleMethodSelect("ai-assistant")}
-          >
-            <div className="card-icon ai-icon"></div>
-            <h3 className="card-title">AI Assistant</h3>
-            <p className="card-description">
-              Let AI guide you step by step through the creation process
-            </p>
-            <Link to="/create/step2">
-              <button className="card-button">Get Started</button>
-            </Link>
-          </div>
+        {/* Template Browser */}
+        <button
+          onClick={() => handleSelect("template")}
+          className={`p-6 rounded-2xl shadow-md text-lg font-medium transition-all ${
+            selectedMethod === "template"
+              ? "bg-blue-600 text-white scale-105"
+              : "bg-white hover:bg-blue-50 text-gray-800"
+          }`}
+        >
+          Template Browser
+        </button>
 
-          {/* Template Card */}
-          <div
-            className={`method-card ${selectedMethod === "template" ? "selected" : ""}`}
-            onClick={() => handleMethodSelect("template")}
-          >
-            <div className="card-icon template-icon"></div>
-            <h3 className="card-title">Template</h3>
-            <p className="card-description">Browse ready-made templates and customize them</p>
-            <button className="card-button">Browse Templates</button>
-          </div>
-
-          {/* Quick Reel Card */}
-          <div
-            className={`method-card ${selectedMethod === "quick-reel" ? "selected" : ""}`}
-            onClick={() => handleMethodSelect("quick-reel")}
-          >
-            <div className="card-icon quick-icon"></div>
-            <h3 className="card-title">Quick Reel</h3>
-            <p className="card-description">Upload product & create fast with minimal setup</p>
-            <button className="card-button">Quick Create</button>
-          </div>
-
-        </div>
-
-        <div className="navigation-buttons">
-          <button className="continue-button" onClick={handleContinue}>
-            Continue
-          </button>
-        </div>
+        {/* Quick Reel */}
+        <button
+          onClick={() => handleSelect("quick-reel")}
+          className={`p-6 rounded-2xl shadow-md text-lg font-medium transition-all ${
+            selectedMethod === "quick-reel"
+              ? "bg-blue-600 text-white scale-105"
+              : "bg-white hover:bg-blue-50 text-gray-800"
+          }`}
+        >
+          Quick Reel
+        </button>
       </div>
+
+      <button
+        onClick={handleContinue}
+        disabled={!selectedMethod}
+        className={`mt-10 px-8 py-3 rounded-full text-white font-medium transition-all ${
+          selectedMethod
+            ? "bg-blue-600 hover:bg-blue-700"
+            : "bg-gray-300 cursor-not-allowed"
+        }`}
+      >
+        Continue
+      </button>
     </div>
   )
 }

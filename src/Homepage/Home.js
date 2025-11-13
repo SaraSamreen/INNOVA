@@ -222,7 +222,6 @@ const StepsHome = () => {
   );
 };
 
-// Pricing Component
 const Homepricing = () => {
   const [isYearly, setIsYearly] = useState(false);
 
