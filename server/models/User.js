@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false }, // Optional for Google Auth users
   phone: String,
   username: String,
   socialLinks: {
@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema({
   ],
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  firebaseUid: { type: String, unique: true, sparse: true }, // Sparse allows null values
+  provider: { type: String, enum: ["google", "email"], default: "email" },
 
 });
 

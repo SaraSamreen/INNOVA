@@ -1,25 +1,24 @@
-/* pg3-like dark theme + lavender accent, simplified layout, no Tailwind */
+/* Light theme with lavender accent and dark text */
 
-/* Theme */
 :root {
-  --bg: #f7f8fb; /* light app background */
-  --surface: #ffffff; /* card/panel */
-  --muted: #f5f6f8; /* inputs, subtle blocks */
-  --border: #e5e7eb; /* light border */
-  --text: #111827; /* main text */
-  --text-dim: #6b7280; /* secondary text */
-  --accent: #a78bfa; /* lavender accent (kept) */
-  --accent-600: #a78bfa; /* accent shades retained */
-  --accent-700: #a78bfa;
-  --shadow: 0 8px 28px rgba(224, 226, 228, 0.08); /* softer on light */
+  --bg: #c3d5ef; /* pure white background */
+  --surface: #f9fafb; /* light card/panel */
+  --muted: #f1f3f5; /* for inputs and subtle areas */
+  --border: #d1d5db; /* soft gray borders */
+  --text: #111827; /* dark text */
+  --text-dim: #374151; /* slightly lighter text */
+  --accent: #3E8EDE; /* Tufts blue accent */
+  --accent-600: #2E7BC8;
+  --accent-700: #1E6BB0;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* light shadow */
   --radius: 14px;
 }
 
 /* Page chrome */
 .cv1-wrapper {
   min-height: 100dvh;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(255, 255, 255, 0.08), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(255, 255, 255, 0.06), transparent 60%), var(--bg);
+  background: var(--bg) !important;
+  color: var(--text) !important;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -38,12 +37,12 @@
   font-size: 28px;
   line-height: 1.2;
   letter-spacing: 0.2px;
-  color: var(--text);
+  color: var(--text) !important;
 }
 
 .cv1-subtitle {
   margin: 6px 0 0;
-  color: var(--text-dim);
+  color: var(--text-dim) !important;
   font-size: 14px;
 }
 
@@ -92,7 +91,7 @@
 .cv1-pill:is(:hover, :focus-visible) {
   transform: translateY(-1px);
   border-color: var(--accent);
-  box-shadow: 0 4px 14px rgba(167, 139, 250, 0.25);
+  box-shadow: 0 4px 14px rgba(62, 142, 222, 0.25);
 }
 .cv1-pill.is-active {
   background: linear-gradient(180deg, var(--accent-600), var(--accent-700));
@@ -119,7 +118,7 @@
 }
 .cv1-select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+  box-shadow: 0 0 0 3px rgba(62, 142, 222, 0.25);
 }
 
 /* Grid of options */
@@ -153,12 +152,12 @@
 .cv1-option:is(:hover, :focus-visible) {
   transform: translateY(-1px);
   border-color: var(--accent);
-  box-shadow: 0 6px 18px rgba(167, 139, 250, 0.25);
+  box-shadow: 0 6px 18px rgba(62, 142, 222, 0.25);
 }
 .cv1-option.is-active {
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.08));
+  background: linear-gradient(180deg, rgba(62, 142, 222, 0.15), rgba(62, 142, 222, 0.08));
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(62, 142, 222, 0.35);
 }
 
 /* Textarea */
@@ -182,7 +181,7 @@
 }
 .cv1-textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+  box-shadow: 0 0 0 3px rgba(62, 142, 222, 0.25);
 }
 .cv1-counter {
   position: absolute;
@@ -215,7 +214,7 @@
 .cv1-btn:is(:hover, :focus-visible) {
   transform: translateY(-1px);
   border-color: var(--accent);
-  box-shadow: 0 6px 18px rgba(167, 139, 250, 0.25);
+  box-shadow: 0 6px 18px rgba(62, 142, 222, 0.25);
 }
 .cv1-primary {
   background: linear-gradient(180deg, var(--accent-600), var(--accent-700));
@@ -233,7 +232,6 @@
   color: var(--text);
 }
 
-/* add disabled styling for secondary button to align with primary's disabled behavior */
 .cv1-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -245,7 +243,7 @@
 .cv1-output {
   margin-top: 14px;
   border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.06), rgba(167, 139, 250, 0.03));
+  background: linear-gradient(180deg, rgba(62, 142, 222, 0.06), rgba(62, 142, 222, 0.03));
   border-radius: 12px;
   padding: 14px;
 }
@@ -260,7 +258,7 @@
   height: 10px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 12px rgba(167, 139, 250, 0.7);
+  box-shadow: 0 0 12px rgba(62, 142, 222, 0.7);
 }
 .cv1-output-title {
   margin: 0;

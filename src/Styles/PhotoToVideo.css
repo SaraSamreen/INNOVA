@@ -111,12 +111,12 @@
 }
 
 .ca-btn.primary {
-  background: #4f46e5;
+  background: #3E8EDE;
   color: white;
 }
 
 .ca-btn.primary:hover:not(:disabled) {
-  background: #4338ca;
+  background: #2E7BC8;
 }
 
 .ca-btn:disabled {
@@ -172,11 +172,11 @@
 }
 
 .ca-select:hover {
-  border-color: #4f46e5;
+  border-color: #3E8EDE;
 }
 
 .ca-select:focus {
-  border-color: #4f46e5;
+  border-color: #3E8EDE;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -212,7 +212,7 @@
 }
 
 .ca-textarea:focus {
-  border-color: #4f46e5;
+  border-color: #3E8EDE;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -225,7 +225,7 @@
   padding: 0.75rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: #4f46e5;
+  background: #3E8EDE;
   color: white;
   font-weight: 500;
   cursor: pointer;
@@ -234,7 +234,7 @@
 }
 
 .ca-speak-btn:hover:not(:disabled) {
-  background: #4338ca;
+  background: #2E7BC8;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -299,7 +299,7 @@
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background: #4f46e5;
+  background: #3E8EDE;
   color: white;
   border-radius: 2rem;
   font-size: 0.9rem;

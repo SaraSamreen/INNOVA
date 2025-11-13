@@ -19,12 +19,6 @@ const Sidebar = () => {
 
       {/* Nav Items */}
       <div className="sidebar-nav">
-        <Link to="/photo-capture">
-          <div className="nav-item">
-            <FaImage />
-            {isOpen && <span>Photo to video</span>}
-          </div>
-        </Link>
 
         <Link to="/logo-generator">
           <div className="nav-item">
@@ -33,13 +27,22 @@ const Sidebar = () => {
           </div>
         </Link>
 
-        <div className="nav-item">
+        <Link to="/poster-generator">
+          <div className="nav-item">
           <FaPhotoVideo />
           {isOpen && <span>Poster Generator</span>}
         </div>
+        </Link>
 
-        <Link to="/create-script">
+        <Link to="/create/step2">
           <button className="createreel">{isOpen ? "+ Create Ad" : "+"}</button>
+        </Link>
+
+        <Link to="/product-showcase">
+          <div className="nav-item">
+            <FaUsers />
+            {isOpen && <span>Model with product</span>}
+          </div>
         </Link>
 
         <Link to="/team-collaboration">
@@ -49,12 +52,7 @@ const Sidebar = () => {
           </div>
         </Link>
 
-        <Link to="/admin">
-          <div className={`nav-item ${location.pathname === "/admin" ? "active" : ""}`}>
-            <FaShieldAlt />
-            {isOpen && <span>Admin Panel</span>}
-          </div>
-        </Link>
+        
 
         <div className="nav-item">
           <FaClosedCaptioning />

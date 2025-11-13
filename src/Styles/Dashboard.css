@@ -60,15 +60,15 @@
 /* Outline button variant */
 .ai-video-btn {
   /* light neutral with subtle accent text */
-  background:  #a78bfa;
+  background:  #3E8EDE;
   color: white;
   border-color: transparent; /* neutral border */
   margin-left: 0; /* remove offset that pushed layout */
 }
 
 .ai-video-btn:hover {
-  background:  #a78bfa;
-  color: black;
+  background:  #2E7BC8;
+  color: white;
   border-color: transparent; /* neutral border */
   margin-left: 0;
   
@@ -79,14 +79,14 @@
 .educational-video-btn {
   /* replace bright purple with a calmer teal-blue accent */
   background: white; /* accent */
-  color:  #a78bfa; /* contrast text */
+  color:  #3E8EDE; /* contrast text */
   border-color: transparent; 
 }
 
 .educational-video-btn:hover {
   /* darker shade for hover instead of gradient */
   background: white; /* accent */
-  color:  black; /* contrast text */
+  color:  #2E7BC8; /* contrast text */
   border-color: transparent; 
 }
 

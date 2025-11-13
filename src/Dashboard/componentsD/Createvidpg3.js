@@ -1,178 +1,231 @@
-"use client"
+import React, { useState } from "react";
+import "../../Styles/Createvidpg3.css";
 
-import React, { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
-import "../../Styles/Createvidpg3.css"
+export default function UnifiedCreateVideo() {
+  const [inputText, setInputText] = useState("");
+  const [charCount, setCharCount] = useState(0);
+  const [selectedAvatar, setSelectedAvatar] = useState("");
+  const [background, setBackground] = useState("");
+  const [videoType, setVideoType] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default function Createvidpg3() {
-  const location = useLocation()
-  const [selectedAvatar, setSelectedAvatar] = useState(null)
-  const [avatars, setAvatars] = useState([])
-  const [loadingAvatars, setLoadingAvatars] = useState(true)
-  const [script, setScript] = useState("")
-  const [voice, setVoice] = useState(null)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [videoUrl, setVideoUrl] = useState(null)
-  const [audioUrl, setAudioUrl] = useState(null)
+  // Video generation loading + url
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoLoading, setVideoLoading] = useState(false);
 
-  // Load ready avatars from backend
-  useEffect(() => {
-    const fetchAvatars = async () => {
-      try {
-        const response = await fetch("http://localhost:5001/ready-avatars")
-        const data = await response.json()
-        if (data.success && data.avatars) {
-          setAvatars(data.avatars)
-          console.log("✅ Loaded avatars:", data.avatars)
-        } else {
-          console.error("❌ Failed to load avatars:", data)
-        }
-      } catch (error) {
-        console.error("❌ Error fetching avatars:", error)
-        alert("Failed to load avatars. Make sure backend is running on http://localhost:5001")
-      } finally {
-        setLoadingAvatars(false)
-      }
+  const API_BASE = "http://localhost:5000";
+
+  const avatars = [
+    { id: "avatar1", img: "/avatar/avatar1.jpg" },
+    { id: "avatar2", img: "/avatar/avatar2.jpg" },
+    { id: "avatar3", img: "/avatar/avatar3.jpg" },
+    { id: "avatar4", img: "/avatar/avatar4.jpg" },
+  ];
+
+  const backgrounds = ["studio", "office", "nature", "portrait", "abstract"];
+  const videoTypes = [
+    "product-ad",
+    "service-promo",
+    "brand-awareness",
+    "social-reel",
+  ];
+
+  const handleInputChange = (e) => {
+    const text = e.target.value;
+    setInputText(text);
+    setCharCount(text.length);
+  };
+
+  // Directly generate video using user input text
+  const generateVideo = async () => {
+    if (!inputText.trim() || !selectedAvatar || !background || !videoType) {
+      alert(
+        "Please select Avatar, Background, Video Type, and provide a video idea."
+      );
+      return;
     }
-    fetchAvatars()
-  }, [])
 
-  // Load script and voice from location.state or localStorage
-  useEffect(() => {
-    if (location.state) {
-      if (location.state.script) setScript(location.state.script)
-      if (location.state.selectedVoice) setVoice(location.state.selectedVoice)
-    } else {
-      const storedScript = localStorage.getItem("script")
-      if (storedScript) setScript(JSON.parse(storedScript))
-      const storedVoice = localStorage.getItem("selectedVoice")
-      if (storedVoice) setVoice(JSON.parse(storedVoice))
-    }
-  }, [location.state])
-
-  // Play voice preview
-  const playVoice = () => {
-    if (!voice || !script) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(script)
-    utterance.rate = voice.rate || 1
-    utterance.pitch = voice.pitch || 1
-    utterance.lang = voice.lang || "en-US"
-    window.speechSynthesis.speak(utterance)
-  }
-
-  // Generate video
-  const handleCreateVideo = async () => {
-    if (selectedAvatar === null) return alert("Please select an avatar first!")
-    if (!script) return alert("No script available. Go back to Step 1.")
-
-    const selectedAvatarData = avatars[selectedAvatar]
-    setIsGenerating(true)
-    setVideoUrl(null)
-    setAudioUrl(null)
+    setVideoLoading(true);
+    setVideoUrl("");
 
     try {
-      console.log("🎬 Generating video with:", selectedAvatarData.name)
-      const response = await fetch("http://localhost:5001/speak", {
+      const res = await fetch(`${API_BASE}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: script,
-          avatar_id: selectedAvatarData.id,
-          use_ready_avatar: true
+          text: inputText,
+          avatar_id: selectedAvatar,
+          background,
+          videoType,
         }),
-      })
-      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
-      const result = await response.json()
-      if (result.audio_url) setAudioUrl(`http://localhost:5001${result.audio_url}`)
-      if (result.lipsync_url) setVideoUrl(`http://localhost:5001${result.lipsync_url}`)
-      alert("Video generation completed!")
-    } catch (err) {
-      console.error("❌ Video generation failed:", err)
-      alert(`Video generation failed: ${err.message}`)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setVideoUrl(data.video_url);
+      } else {
+        alert("Video generation failed: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
+      alert("Error generating video: " + error.message);
     } finally {
-      setIsGenerating(false)
+      setVideoLoading(false);
     }
-  }
+  };
+
+  const moveToStep2 = () => {
+    if (!selectedAvatar || !background || !videoType) {
+      alert("Please select Avatar, Background, and Video Type.");
+      return;
+    }
+    if (!videoUrl) {
+      alert("Please generate the video first before proceeding.");
+      return;
+    }
+  
+    // Pass data via URL params instead of localStorage
+    const params = new URLSearchParams({
+      inputText,
+      avatar: selectedAvatar,
+      background,
+      videoType,
+      videoUrl
+    });
+    
+    window.location.href = `/create/step2?${params.toString()}`;
+  };
 
   return (
-    <div className="cv3-container">
-      {/* Left Section */}
-      <div className="cv3-left">
-        <h2 className="cv3-heading">Choose an avatar</h2>
-        {loadingAvatars ? (
-          <p>Loading avatars...</p>
-        ) : avatars.length === 0 ? (
-          <p>No avatars found. Check backend.</p>
-        ) : (
-          <div className="cv3-avatars">
-            {avatars.map((avatar, idx) => (
-              <div
-                key={avatar.id}
-                className={`cv3-avatar-card ${selectedAvatar === idx ? "active" : ""}`}
-                onClick={() => setSelectedAvatar(idx)}
-              >
+    <div className="avatar-page">
+      {/* Left Panel */}
+      <div className="left-panel">
+        <h1 className="title">Create Your AI Avatar Video</h1>
+
+        <div className="avatar-form">
+          {/* Avatar Selection */}
+          <div className="cv1-group">
+            <label className="cv1-label">Select Your Avatar</label>
+            <div className="avatar-grid">
+              {avatars.map((avatar) => (
                 <img
-                  src={`http://localhost:5001${avatar.url}`}
-                  alt={avatar.name}
-                  className="cv3-avatar"
-                  onError={(e) => {
-                    console.error("Failed to load avatar:", avatar.name)
-                    e.target.src = "/fallback-avatar.png" // optional fallback image
-                  }}
+                  key={avatar.id}
+                  src={avatar.img}
+                  alt={avatar.id}
+                  className={`avatar-thumb ${
+                    selectedAvatar === avatar.id ? "selected" : ""
+                  }`}
+                  onClick={() => setSelectedAvatar(avatar.id)}
                 />
-                <div className="cv3-avatar-name">{avatar.name}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
 
-        <div className="cv3-box">
-          <label>Script</label>
-          <div className="cv3-info">{script || "No script available."}</div>
-        </div>
-
-        <div className="cv3-box">
-          <label>Selected Voice</label>
-          <div className="cv3-info">{voice ? voice.name : "No voice selected."}</div>
-          {voice && script && (
-            <button onClick={playVoice}>🔊 Preview Voice</button>
-          )}
-        </div>
-
-        <button
-          onClick={handleCreateVideo}
-          disabled={isGenerating || selectedAvatar === null || !script}
-        >
-          {isGenerating ? "⏳ Generating..." : "🎬 Create Video"}
-        </button>
-
-        {(audioUrl || videoUrl) && (
-          <div className="cv3-box">
-            {audioUrl && <audio controls src={audioUrl}></audio>}
-            {videoUrl && <video controls src={videoUrl}></video>}
+          {/* Background Selection */}
+          <div className="cv1-group">
+            <label className="cv1-label" htmlFor="bg-select">
+              Select Background
+            </label>
+            <select
+              id="bg-select"
+              className="cv1-select"
+              value={background}
+              onChange={(e) => setBackground(e.target.value)}
+            >
+              <option value="">Choose Background</option>
+              {backgrounds.map((bg) => (
+                <option key={bg} value={bg}>
+                  {bg.charAt(0).toUpperCase() + bg.slice(1)}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+
+          {/* Video Type */}
+          <div className="cv1-group">
+            <label className="cv1-label">Ad Reel Type</label>
+            <div className="cv1-pills">
+              {videoTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={`cv1-pill ${videoType === type ? "is-active" : ""}`}
+                  onClick={() => setVideoType(type)}
+                >
+                  {type.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Video Idea Input */}
+          <div className="cv1-group">
+            <label className="cv1-label" htmlFor="script-input">
+              Describe Your Video Idea
+            </label>
+            <textarea
+              id="script-input"
+              className="input-textarea"
+              value={inputText}
+              onChange={handleInputChange}
+              placeholder="e.g., Promote eco-friendly shoes for Gen Z audience..."
+              maxLength={32000}
+              rows={6}
+            />
+            <div className="char-counter">{charCount}/32000</div>
+          </div>
+
+          {/* Generate Video Button */}
+          <button
+            className="generate-btn"
+            onClick={generateVideo}
+            disabled={videoLoading || loading}
+          >
+            {videoLoading ? "Generating Video..." : "Generate Video"}
+          </button>
+
+          {/* Generate Final Ad */}
+          <button className="next-btn" onClick={moveToStep2}>
+            Generate Ad
+          </button>
+        </div>
       </div>
 
-      {/* Right Section - Preview */}
-      <div className="cv3-right">
-        <h2 className="cv3-heading">Preview</h2>
-        <div className="cv3-preview">
-          {selectedAvatar !== null && avatars[selectedAvatar] ? (
+      {/* Right Panel */}
+      <div className="right-panel">
+        {/* Display Selected Avatar Full Size */}
+        {selectedAvatar ? (
+          <div className="selected-avatar-full">
             <img
-              src={`http://localhost:5001${avatars[selectedAvatar].url}`}
-              alt={avatars[selectedAvatar].name}
-              className="cv3-preview-avatar"
-              onError={(e) => {
-                e.target.style.display = "none"
-              }}
+              src={avatars.find((a) => a.id === selectedAvatar)?.img}
+              alt="Selected Avatar"
+              className="full-avatar-image"
             />
-          ) : (
-            <p>Select an avatar to preview</p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="no-avatar-msg">
+            <p>Select an avatar to preview it here.</p>
+          </div>
+        )}
+
+        {/* Video Preview */}
+        {videoUrl ? (
+          <div className="video-preview" style={{ marginTop: 20 }}>
+            <h2 className="subtitle">Video Preview</h2>
+            <video
+              src={videoUrl}
+              controls
+              autoPlay
+              muted
+              style={{ maxWidth: "100%", borderRadius: 10 }}
+            />
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p className="status-text">Generate your video to preview it here.</p>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

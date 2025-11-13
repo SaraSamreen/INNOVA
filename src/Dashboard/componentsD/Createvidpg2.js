@@ -1,104 +1,41 @@
-// "use client" needed if used in Next.js App Router
-"use client"
+"use client";
 
-import React  from "react"
-import { Link, useNavigate, useLocation } from "react-router-dom"
-import "../../Styles/Createvidpg2.css"
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import "../../Styles/Createvidpg2.css";
+import { API_BASE } from "../../api/config"; 
 
 const VOICES = [
-  {
-    id: "voice-a",
-    name: "Nova (Warm, Female)",
-    description: "Clear, friendly tone suitable for explainers.",
-    script:
-      "Hello! I'm Nova. I have a warm and friendly tone that's perfect for explaining complex topics in an approachable way.",
-    voiceName: "Google US English",
-    rate: 0.9,
-    pitch: 1.1,
-    lang: "en-US",
-  },
-  {
-    id: "voice-b",
-    name: "Orion (Confident, Male)",
-    description: "Authoritative and engaging for announcements.",
-    script:
-      "Greetings. I'm Orion. My confident and authoritative voice is ideal for announcements and professional presentations.",
-    voiceName: "Google UK English Male",
-    rate: 0.95,
-    pitch: 0.9,
-    lang: "en-GB",
-  },
-  {
-    id: "voice-c",
-    name: "Lyra (Calm, Female)",
-    description: "Soft and relaxed for meditative content.",
-    script:
-      "Welcome. I'm Lyra. My calm and soothing voice creates a peaceful atmosphere for meditation and relaxation content.",
-    voiceName: "Google US English",
-    rate: 0.8,
-    pitch: 1.0,
-    lang: "en-US",
-  },
-  {
-    id: "voice-d",
-    name: "Atlas (Energetic, Male)",
-    description: "High energy for promos and ads.",
-    script:
-      "Hey there! I'm Atlas! My energetic and dynamic voice brings excitement to your promotional content and advertisements!",
-    voiceName: "Google UK English Male",
-    rate: 1.1,
-    pitch: 1.0,
-    lang: "en-GB",
-  },
-  {
-    id: "voice-e",
-    name: "Iris (Neutral, Female)",
-    description: "Balanced delivery for tutorials.",
-    script:
-      "Hi, I'm Iris. My neutral and balanced voice provides clear instruction for tutorials and educational content.",
-    voiceName: "Google US English",
-    rate: 0.95,
-    pitch: 1.0,
-    lang: "en-US",
-  },
-  {
-    id: "voice-f",
-    name: "Cedar (Natural, Male)",
-    description: "Warm and natural for storytelling.",
-    script:
-      "Hello friend, I'm Cedar. My warm and natural voice brings stories to life with an authentic, engaging quality.",
-    voiceName: "Google UK English Male",
-    rate: 0.9,
-    pitch: 0.95,
-    lang: "en-GB",
-  },
-]
+  { id: "voice-a", name: "Nova (Warm, Female)", description: "Clear, friendly tone suitable for explainers.", voiceCode: "nova" },
+  { id: "voice-b", name: "Orion (Confident, Male)", description: "Authoritative and engaging for announcements.", voiceCode: "orion" },
+  { id: "voice-c", name: "Lyra (Calm, Female)", description: "Soft and relaxed for meditative content.", voiceCode: "lyra" },
+  { id: "voice-d", name: "Atlas (Energetic, Male)", description: "High energy for promos and ads.", voiceCode: "atlas" },
+  { id: "voice-e", name: "Iris (Neutral, Female)", description: "Balanced delivery for tutorials.", voiceCode: "iris" },
+  { id: "voice-f", name: "Cedar (Natural, Male)", description: "Warm and natural for storytelling.", voiceCode: "cedar" },
+];
 
 function VoiceCard({ id, name, description, selected, onSelect, onPlay, onStop, isPlaying }) {
-  const handleCardClick = () => onSelect(id)
+  const handleCardClick = () => onSelect(id);
   const handlePlayClick = (e) => {
-    e.stopPropagation()
-    if (isPlaying) onStop()
-    else onPlay()
-  }
+    e.stopPropagation();
+    isPlaying ? onStop() : onPlay();
+  };
 
-  
   return (
     <div
       className={`v2-card ${selected ? "selected" : ""} ${isPlaying ? "playing" : ""}`}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleCardClick()}
       aria-pressed={selected}
-      aria-label={`Voice option: ${name}`}
     >
       <div className="v2-card-head">
         <h3 className="v2-name">{name}</h3>
         {selected && <span className="v2-badge">Selected</span>}
       </div>
       <p className="v2-desc">{description}</p>
-      <button className="v2-play" onClick={handlePlayClick} aria-label={isPlaying ? "Stop preview" : "Play preview"}>
+
+      <button className="v2-play" onClick={handlePlayClick}>
         {isPlaying ? (
           <>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -117,92 +54,91 @@ function VoiceCard({ id, name, description, selected, onSelect, onPlay, onStop, 
         )}
       </button>
     </div>
-  )
+  );
 }
 
 export default function Createvidpg2() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const step1Data = location.state || {}
-  const { script, actor, background, videoType, inputText } = step1Data
-  const [selected, setSelected] = React.useState(null)
-  const [voices, setVoices] = React.useState([])
-  const [currentlyPlaying, setCurrentlyPlaying] = React.useState(null)
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  const storedData = JSON.parse(localStorage.getItem("create_video_payload")) || {};
+  const step1Data = location.state || storedData;
+  const { script, actor, background, videoType, inputText } = step1Data;
 
-  React.useEffect(() => {
-    const loadVoices = () => {
-      const available = window.speechSynthesis.getVoices()
-      setVoices(available)
+  const [selected, setSelected] = useState(JSON.parse(localStorage.getItem("selectedVoice"))?.id || null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audio, setAudio] = useState(null);
+
+  useEffect(() => () => audio && audio.pause(), [audio]);
+
+  const playVoicePreview = async (voice) => {
+    if (isPlaying) {
+      stopAudio();
+      return;
     }
-    loadVoices()
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices
+
+    try {
+      setIsPlaying(true);
+      const res = await fetch(`${API_BASE}/preview-voice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: script || "This is a short preview of the selected voice.",
+          voice: voice.voiceCode,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch voice preview");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audioEl = new Audio(url);
+      setAudio(audioEl);
+      audioEl.play();
+      audioEl.onended = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(url);
+      };
+    } catch (err) {
+      console.error("Preview error:", err);
+      alert("Failed to load voice preview.");
+      setIsPlaying(false);
     }
-    return () => window.speechSynthesis.cancel()
-  }, [])
-
-  React.useEffect(() => {
-    const savedVoice = JSON.parse(localStorage.getItem("selectedVoice"))
-    if (savedVoice) setSelected(savedVoice.id)
-  }, [])
-
-  const playSceneAudio = (voiceConfig) => {
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(voiceConfig.script)
-    utterance.rate = voiceConfig.rate
-    utterance.pitch = voiceConfig.pitch
-    utterance.lang = voiceConfig.lang
-
-    const match = voices.find(
-      (v) =>
-        v.name.includes(voiceConfig.voiceName) ||
-        (voiceConfig.name.includes("Female") && v.name.toLowerCase().includes("female")) ||
-        (voiceConfig.name.includes("Male") && v.name.toLowerCase().includes("male")),
-    )
-    if (match) utterance.voice = match
-
-    setCurrentlyPlaying(voiceConfig.id)
-    utterance.onend = () => setCurrentlyPlaying(null)
-    utterance.onerror = () => setCurrentlyPlaying(null)
-    window.speechSynthesis.speak(utterance)
-  }
+  };
 
   const stopAudio = () => {
-    window.speechSynthesis.cancel()
-    setCurrentlyPlaying(null)
-  }
+    if (audio) {
+      audio.pause();
+      setIsPlaying(false);
+    }
+  };
 
   const handleNext = () => {
     if (!selected) {
-      alert("Please select a voice before proceeding to Step 3.")
-      return
+      alert("Please select a voice before continuing.");
+      return;
     }
-    
-    const selectedVoice = VOICES.find((v) => v.id === selected)
-    localStorage.setItem("selectedVoice", JSON.stringify(selectedVoice))
+
+    const selectedVoice = VOICES.find((v) => v.id === selected);
+    localStorage.setItem("selectedVoice", JSON.stringify(selectedVoice));
+
     navigate("/create/step3", {
-      state: {
-        ...step1Data,
-        selectedVoice,
-        voiceId: selected,
-      },
-    })
-  }
+      state: { ...step1Data, selectedVoice },
+    });
+  };
+
+  const handleBack = () => navigate(-1);
 
   return (
     <div className="v2-shell">
       <header className="v2-header">
         <div>
           <h1 className="v2-title">Choose Your Voice</h1>
-          <p className="v2-subtitle">Preview samples and select one to continue to Step 3.</p>
+          <p className="v2-subtitle">Preview and select a voice to continue to Step 3.</p>
         </div>
-        <Link to="/" className="v2-back">
-          Back to Start
-        </Link>
+        <button onClick={handleBack} className="v2-back">← Back</button>
       </header>
 
-      <section className="v2-grid" aria-label="Voice samples">
+      <section className="v2-grid">
         {VOICES.map((voice) => (
           <VoiceCard
             key={voice.id}
@@ -211,9 +147,9 @@ export default function Createvidpg2() {
             description={voice.description}
             selected={selected === voice.id}
             onSelect={setSelected}
-            onPlay={() => playSceneAudio(voice)}
+            onPlay={() => playVoicePreview(voice)}
             onStop={stopAudio}
-            isPlaying={currentlyPlaying === voice.id}
+            isPlaying={isPlaying && selected === voice.id}
           />
         ))}
       </section>
@@ -222,21 +158,19 @@ export default function Createvidpg2() {
         <div className="v2-status">
           {selected ? (
             <span>
-              Selected: <strong className="v2-selected">{selected}</strong>
+              Selected: <strong className="v2-selected">{VOICES.find(v => v.id === selected).name}</strong>
             </span>
           ) : (
             <span>No voice selected</span>
           )}
         </div>
         <div className="v2-actions">
-          <Link to="/" className="btn btn-outline">
-            Back
-          </Link>
+          <button className="btn btn-outline" onClick={handleBack}>← Back</button>
           <button className="btn btn-primary" onClick={handleNext} disabled={!selected}>
-            Move to Step 3 ➝
+            Next ➝
           </button>
         </div>
       </footer>
     </div>
-  )
+  );
 }

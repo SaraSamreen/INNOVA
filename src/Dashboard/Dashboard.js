@@ -52,9 +52,9 @@ export default function Dashboard() {
               </button>
             </Link>
 
-            <Link to="/educational-video" style={{ textDecoration: "none" }}>
+            <Link to="/design-product" style={{ textDecoration: "none" }}>
               <button className="educational-video-btn">
-                <h2 className="btn-heading">Create Product Reel with Avatar</h2>
+                <h2 className="btn-heading">Design Your Product</h2>
               </button>
             </Link>
           </div>

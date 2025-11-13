@@ -5,7 +5,7 @@ const LogoGenerator = () => {
   const [companyName, setCompanyName] = useState('Your Company');
   const [brandDescription, setBrandDescription] = useState('');
   const [selectedFont, setSelectedFont] = useState('Poppins');
-  const [selectedColor, setSelectedColor] = useState('#8B7AB8');
+  const [selectedColor, setSelectedColor] = useState('#3E8EDE');
   const [backgroundImage, setBackgroundImage] = useState('');
   const [showEditor, setShowEditor] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -14,19 +14,31 @@ const LogoGenerator = () => {
     {
       id: 1,
       name: 'Modern Circle',
-      svg: (name, color, bgImage) => (
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern1" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={color} stopOpacity="0.05" />
+            </linearGradient>
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern1)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.85" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern1)" />}
-          <circle cx="150" cy="150" r="140" fill={color} opacity="0.1" />
-          <circle cx="150" cy="150" r="120" fill="none" stroke={color} strokeWidth="3" />
-          <text x="150" y="160" textAnchor="middle" fill={color} fontSize="32" fontFamily={selectedFont} fontWeight="600">
+          <circle cx="150" cy="150" r="140" fill="url(#grad1)" />
+          <circle cx="150" cy="150" r="120" fill="none" stroke={color} strokeWidth="4" />
+          <circle cx="150" cy="150" r="100" fill="none" stroke={color} strokeWidth="2" opacity="0.4" />
+          <text x="150" y="165" textAnchor="middle" fill={color} fontSize="32" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -34,20 +46,29 @@ const LogoGenerator = () => {
     },
     {
       id: 2,
-      name: 'Minimalist Square',
-      svg: (name, color, bgImage) => (
+      name: 'Geometric Shield',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern2" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern2)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.9" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern2)" />}
-          <rect x="30" y="30" width="240" height="240" fill="none" stroke={color} strokeWidth="4" />
-          <rect x="50" y="50" width="200" height="200" fill={color} opacity="0.08" />
-          <text x="150" y="160" textAnchor="middle" fill={color} fontSize="28" fontFamily={selectedFont} fontWeight="600">
+          <path d="M 150 40 L 240 90 L 240 180 L 150 250 L 60 180 L 60 90 Z" fill={color} opacity="0.12" />
+          <path d="M 150 50 L 230 95 L 230 175 L 150 240 L 70 175 L 70 95 Z" fill="none" stroke={color} strokeWidth="3" />
+          <line x1="150" y1="50" x2="150" y2="90" stroke={color} strokeWidth="2" />
+          <line x1="150" y1="240" x2="150" y2="200" stroke={color} strokeWidth="2" />
+          <text x="150" y="165" textAnchor="middle" fill={color} fontSize="28" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -55,20 +76,28 @@ const LogoGenerator = () => {
     },
     {
       id: 3,
-      name: 'Elegant Badge',
-      svg: (name, color, bgImage) => (
+      name: 'Dynamic Wave',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern3" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern3)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.85" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern3)" />}
-          <polygon points="150,20 250,80 250,220 150,280 50,220 50,80" fill={color} opacity="0.1" />
-          <polygon points="150,30 240,85 240,215 150,270 60,215 60,85" fill="none" stroke={color} strokeWidth="3" />
-          <text x="150" y="160" textAnchor="middle" fill={color} fontSize="26" fontFamily={selectedFont} fontWeight="600">
+          <path d="M 30 120 Q 90 80 150 120 T 270 120" fill="none" stroke={color} strokeWidth="5" />
+          <path d="M 30 140 Q 90 100 150 140 T 270 140" fill="none" stroke={color} strokeWidth="3" opacity="0.6" />
+          <path d="M 30 160 Q 90 120 150 160 T 270 160" fill="none" stroke={color} strokeWidth="2" opacity="0.3" />
+          <text x="150" y="210" textAnchor="middle" fill={color} fontSize="34" fontFamily={font} fontWeight="800">
             {name}
           </text>
         </svg>
@@ -76,19 +105,31 @@ const LogoGenerator = () => {
     },
     {
       id: 4,
-      name: 'Bold Typography',
-      svg: (name, color, bgImage) => (
+      name: 'Bold Frame',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern4" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+            <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={color} />
+              <stop offset="100%" stopColor={color} stopOpacity="0.7" />
+            </linearGradient>
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern4)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.8" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern4)" />}
-          <rect x="40" y="120" width="220" height="60" fill={color} />
-          <text x="150" y="162" textAnchor="middle" fill="white" fontSize="34" fontFamily={selectedFont} fontWeight="700">
+          <rect x="30" y="30" width="240" height="240" fill="none" stroke={color} strokeWidth="6" />
+          <rect x="45" y="130" width="210" height="50" fill="url(#grad4)" />
+          <text x="150" y="167" textAnchor="middle" fill="white" fontSize="30" fontFamily={font} fontWeight="800">
             {name}
           </text>
         </svg>
@@ -96,20 +137,29 @@ const LogoGenerator = () => {
     },
     {
       id: 5,
-      name: 'Creative Arc',
-      svg: (name, color, bgImage) => (
+      name: 'Infinity Loop',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern5" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern5)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.9" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern5)" />}
-          <path d="M 50 200 Q 150 50 250 200" fill="none" stroke={color} strokeWidth="4" />
-          <path d="M 60 210 Q 150 80 240 210" fill={color} opacity="0.1" />
-          <text x="150" y="240" textAnchor="middle" fill={color} fontSize="30" fontFamily={selectedFont} fontWeight="600">
+          <path d="M 70 120 Q 70 80 100 80 Q 130 80 150 110 Q 170 80 200 80 Q 230 80 230 120 Q 230 160 200 160 Q 170 160 150 130 Q 130 160 100 160 Q 70 160 70 120" 
+                fill="none" stroke={color} strokeWidth="5" />
+          <circle cx="100" cy="120" r="8" fill={color} />
+          <circle cx="200" cy="120" r="8" fill={color} />
+          <text x="150" y="220" textAnchor="middle" fill={color} fontSize="32" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -117,20 +167,28 @@ const LogoGenerator = () => {
     },
     {
       id: 6,
-      name: 'Diamond Frame',
-      svg: (name, color, bgImage) => (
+      name: 'Diamond Split',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern6" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern6)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.85" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern6)" />}
-          <rect x="150" y="150" width="160" height="160" fill={color} opacity="0.1" transform="rotate(45 150 150)" />
-          <rect x="150" y="150" width="140" height="140" fill="none" stroke={color} strokeWidth="3" transform="rotate(45 150 150)" />
-          <text x="150" y="160" textAnchor="middle" fill={color} fontSize="28" fontFamily={selectedFont} fontWeight="600">
+          <rect x="150" y="150" width="180" height="180" fill={color} opacity="0.15" transform="rotate(45 150 150)" />
+          <rect x="150" y="150" width="160" height="160" fill="none" stroke={color} strokeWidth="4" transform="rotate(45 150 150)" />
+          <line x1="150" y1="37" x2="150" y2="263" stroke={color} strokeWidth="2" opacity="0.5" />
+          <text x="150" y="165" textAnchor="middle" fill={color} fontSize="30" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -138,20 +196,35 @@ const LogoGenerator = () => {
     },
     {
       id: 7,
-      name: 'Wave Design',
-      svg: (name, color, bgImage) => (
+      name: 'Tech Circuit',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern7" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern7)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.9" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern7)" />}
-          <path d="M 30 150 Q 90 100 150 150 T 270 150" fill="none" stroke={color} strokeWidth="4" />
-          <path d="M 30 170 Q 90 120 150 170 T 270 170" fill="none" stroke={color} strokeWidth="2" opacity="0.5" />
-          <text x="150" y="220" textAnchor="middle" fill={color} fontSize="30" fontFamily={selectedFont} fontWeight="600">
+          <circle cx="150" cy="150" r="100" fill="none" stroke={color} strokeWidth="3" />
+          <circle cx="150" cy="150" r="80" fill={color} opacity="0.08" />
+          <circle cx="150" cy="80" r="8" fill={color} />
+          <circle cx="220" cy="150" r="8" fill={color} />
+          <circle cx="150" cy="220" r="8" fill={color} />
+          <circle cx="80" cy="150" r="8" fill={color} />
+          <line x1="150" y1="88" x2="150" y2="120" stroke={color} strokeWidth="2" />
+          <line x1="212" y1="150" x2="180" y2="150" stroke={color} strokeWidth="2" />
+          <line x1="150" y1="212" x2="150" y2="180" stroke={color} strokeWidth="2" />
+          <line x1="88" y1="150" x2="120" y2="150" stroke={color} strokeWidth="2" />
+          <text x="150" y="162" textAnchor="middle" fill={color} fontSize="28" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -159,21 +232,149 @@ const LogoGenerator = () => {
     },
     {
       id: 8,
-      name: 'Dual Ring',
-      svg: (name, color, bgImage) => (
+      name: 'Crown Emblem',
+      svg: (name, color, bgImage, font) => (
         <svg viewBox="0 0 300 300" className="template-svg">
-          {bgImage && (
-            <defs>
+          <defs>
+            {bgImage && (
               <pattern id="bgPattern8" x="0" y="0" width="100%" height="100%">
-                <image href={bgImage} x="0" y="0" width="300" height="300" opacity="1" />
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
               </pattern>
-            </defs>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern8)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.88" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
           )}
-          {bgImage && <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern8)" />}
-          <circle cx="150" cy="150" r="130" fill="none" stroke={color} strokeWidth="2" />
-          <circle cx="150" cy="150" r="110" fill="none" stroke={color} strokeWidth="4" />
-          <circle cx="150" cy="150" r="95" fill={color} opacity="0.08" />
-          <text x="150" y="160" textAnchor="middle" fill={color} fontSize="26" fontFamily={selectedFont} fontWeight="600">
+          <path d="M 60 120 L 90 80 L 120 120 L 150 60 L 180 120 L 210 80 L 240 120 L 230 180 L 70 180 Z" 
+                fill={color} opacity="0.15" />
+          <path d="M 60 120 L 90 80 L 120 120 L 150 60 L 180 120 L 210 80 L 240 120 L 230 180 L 70 180 Z" 
+                fill="none" stroke={color} strokeWidth="3" />
+          <circle cx="90" cy="80" r="6" fill={color} />
+          <circle cx="150" cy="60" r="8" fill={color} />
+          <circle cx="210" cy="80" r="6" fill={color} />
+          <text x="150" y="215" textAnchor="middle" fill={color} fontSize="30" fontFamily={font} fontWeight="700">
+            {name}
+          </text>
+        </svg>
+      )
+    },
+    {
+      id: 9,
+      name: 'Abstract Flow',
+      svg: (name, color, bgImage, font) => (
+        <svg viewBox="0 0 300 300" className="template-svg">
+          <defs>
+            {bgImage && (
+              <pattern id="bgPattern9" x="0" y="0" width="100%" height="100%">
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern9)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.87" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
+          )}
+          <path d="M 50 100 Q 100 60 150 100 Q 200 140 250 100" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" />
+          <path d="M 50 140 Q 100 100 150 140 Q 200 180 250 140" fill="none" stroke={color} strokeWidth="6" opacity="0.6" strokeLinecap="round" />
+          <path d="M 50 180 Q 100 140 150 180 Q 200 220 250 180" fill="none" stroke={color} strokeWidth="4" opacity="0.3" strokeLinecap="round" />
+          <text x="150" y="235" textAnchor="middle" fill={color} fontSize="32" fontFamily={font} fontWeight="700">
+            {name}
+          </text>
+        </svg>
+      )
+    },
+    {
+      id: 10,
+      name: 'Layered Rings',
+      svg: (name, color, bgImage, font) => (
+        <svg viewBox="0 0 300 300" className="template-svg">
+          <defs>
+            {bgImage && (
+              <pattern id="bgPattern10" x="0" y="0" width="100%" height="100%">
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern10)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.86" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
+          )}
+          <circle cx="150" cy="150" r="130" fill="none" stroke={color} strokeWidth="2" opacity="0.3" />
+          <circle cx="150" cy="150" r="110" fill="none" stroke={color} strokeWidth="3" opacity="0.5" />
+          <circle cx="150" cy="150" r="90" fill="none" stroke={color} strokeWidth="5" />
+          <circle cx="150" cy="150" r="70" fill={color} opacity="0.1" />
+          <text x="150" y="162" textAnchor="middle" fill={color} fontSize="28" fontFamily={font} fontWeight="800">
+            {name}
+          </text>
+        </svg>
+      )
+    },
+    {
+      id: 11,
+      name: 'Mountain Peak',
+      svg: (name, color, bgImage, font) => (
+        <svg viewBox="0 0 300 300" className="template-svg">
+          <defs>
+            {bgImage && (
+              <pattern id="bgPattern11" x="0" y="0" width="100%" height="100%">
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern11)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.88" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
+          )}
+          <path d="M 30 180 L 100 80 L 150 120 L 200 60 L 270 180 Z" fill={color} opacity="0.12" />
+          <path d="M 30 180 L 100 80 L 150 120 L 200 60 L 270 180" fill="none" stroke={color} strokeWidth="4" strokeLinejoin="round" />
+          <circle cx="200" cy="60" r="6" fill={color} />
+          <text x="150" y="230" textAnchor="middle" fill={color} fontSize="32" fontFamily={font} fontWeight="700">
+            {name}
+          </text>
+        </svg>
+      )
+    },
+    {
+      id: 12,
+      name: 'Hexagon Grid',
+      svg: (name, color, bgImage, font) => (
+        <svg viewBox="0 0 300 300" className="template-svg">
+          <defs>
+            {bgImage && (
+              <pattern id="bgPattern12" x="0" y="0" width="100%" height="100%">
+                <image href={bgImage} x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            )}
+          </defs>
+          {bgImage ? (
+            <>
+              <rect x="0" y="0" width="300" height="300" fill="url(#bgPattern12)" />
+              <rect x="0" y="0" width="300" height="300" fill="white" opacity="0.9" />
+            </>
+          ) : (
+            <rect x="0" y="0" width="300" height="300" fill="white" />
+          )}
+          <polygon points="150,50 210,85 210,155 150,190 90,155 90,85" fill={color} opacity="0.1" />
+          <polygon points="150,60 200,90 200,150 150,180 100,150 100,90" fill="none" stroke={color} strokeWidth="4" />
+          <polygon points="150,80 180,98 180,132 150,150 120,132 120,98" fill="none" stroke={color} strokeWidth="2" />
+          <text x="150" y="230" textAnchor="middle" fill={color} fontSize="30" fontFamily={font} fontWeight="700">
             {name}
           </text>
         </svg>
@@ -193,9 +394,9 @@ const LogoGenerator = () => {
   ];
 
   const colors = [
-    '#8B7AB8', // Light Purple
-    '#6B5B95', // Medium Purple
-    '#9B8AC4', // Soft Purple
+    '#3E8EDE', // Tufts Blue
+    '#2E7BC8', // Darker Blue
+    '#6BA3E8', // Light Blue
     '#4A4A4A', // Dark Gray
     '#2C2C2C', // Charcoal
     '#E94B3C', // Red
@@ -221,11 +422,11 @@ const LogoGenerator = () => {
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
         {
           headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_HF_API_KEY}`, // put in .env
+            Authorization: `Bearer ${process.env.REACT_APP_HF_API_KEY}`,
             "Content-Type": "application/json",
           },
           method: "POST",
-          body: JSON.stringify({ inputs: `Background image for ${brandDescription}` }),
+          body: JSON.stringify({ inputs: `Professional background for ${brandDescription}, abstract, minimalist, high quality` }),
         }
       );
   
@@ -233,7 +434,6 @@ const LogoGenerator = () => {
         throw new Error(`HF API error: ${response.status}`);
       }
   
-      // Get the generated image as a blob
       const blob = await response.blob();
       const imgUrl = URL.createObjectURL(blob);
   
@@ -245,7 +445,6 @@ const LogoGenerator = () => {
       setIsGenerating(false);
     }
   };
-  
 
   const handleDownload = () => {
     const svgElement = document.getElementById('logo-preview').querySelector('svg');
@@ -277,7 +476,7 @@ const LogoGenerator = () => {
     setCompanyName('Your Company');
     setBrandDescription('');
     setSelectedFont('Poppins');
-    setSelectedColor('#8B7AB8');
+    setSelectedColor('#3E8EDE');
     setBackgroundImage('');
   };
 
@@ -302,7 +501,7 @@ const LogoGenerator = () => {
               onClick={() => handleTemplateSelect(template)}
             >
               <div style={styles.templatePreview}>
-                {template.svg('Company', '#8B7AB8', '')}
+                {template.svg('Company', '#3E8EDE', '', 'Poppins')}
               </div>
               <p style={styles.templateName}>{template.name}</p>
             </div>
@@ -428,7 +627,7 @@ const LogoGenerator = () => {
           <div style={styles.previewArea}>
             <h3 style={styles.previewTitle}>Preview</h3>
             <div style={styles.logoPreview} id="logo-preview">
-              {selectedTemplate && selectedTemplate.svg(companyName, selectedColor, backgroundImage)}
+              {selectedTemplate && selectedTemplate.svg(companyName, selectedColor, backgroundImage, selectedFont)}
             </div>
             <button onClick={handleDownload} style={styles.downloadButton}>
               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style={{marginRight: '10px'}}>
@@ -465,7 +664,7 @@ const styles = {
     gap: '15px'
   },
   icon: {
-    color: '#8B7AB8'
+    color: '#3E8EDE'
   },
   subtitle: {
     fontSize: '18px',
@@ -486,7 +685,7 @@ const styles = {
     padding: '30px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    boxShadow: '0 4px 12px rgba(139, 122, 184, 0.1)',
+    boxShadow: '0 4px 12px rgba(62, 142, 222, 0.1)',
     border: '2px solid transparent'
   },
   templatePreview: {
@@ -518,7 +717,7 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '16px',
     padding: '30px',
-    boxShadow: '0 4px 12px rgba(139, 122, 184, 0.1)',
+    boxShadow: '0 4px 12px rgba(62, 142, 222, 0.1)',
     height: 'fit-content',
     maxHeight: '90vh',
     overflowY: 'auto'
@@ -542,7 +741,7 @@ const styles = {
     marginBottom: '12px'
   },
   smallIcon: {
-    color: '#8B7AB8'
+    color: '#3E8EDE'
   },
   input: {
     width: '100%',
@@ -576,7 +775,7 @@ const styles = {
     padding: '12px 24px',
     borderRadius: '10px',
     border: 'none',
-    backgroundColor: '#8B7AB8',
+    backgroundColor: '#3E8EDE',
     color: 'white',
     fontSize: '14px',
     fontWeight: '600',
@@ -626,8 +825,8 @@ const styles = {
     textAlign: 'left'
   },
   fontButtonActive: {
-    borderColor: '#8B7AB8',
-    backgroundColor: '#F5F3F9'
+    borderColor: '#3E8EDE',
+    backgroundColor: '#E3F2FD'
   },
   colorGrid: {
     display: 'grid',
@@ -669,9 +868,9 @@ const styles = {
   backButton: {
     padding: '12px 24px',
     borderRadius: '10px',
-    border: '2px solid #8B7AB8',
+    border: '2px solid #3E8EDE',
     backgroundColor: 'white',
-    color: '#8B7AB8',
+    color: '#3E8EDE',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
@@ -681,7 +880,7 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '16px',
     padding: '40px',
-    boxShadow: '0 4px 12px rgba(139, 122, 184, 0.1)',
+    boxShadow: '0 4px 12px rgba(62, 142, 222, 0.1)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -708,7 +907,7 @@ const styles = {
     padding: '16px 40px',
     borderRadius: '12px',
     border: 'none',
-    backgroundColor: '#8B7AB8',
+    backgroundColor: '#3E8EDE',
     color: 'white',
     fontSize: '16px',
     fontWeight: '600',
@@ -716,23 +915,28 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     transition: 'all 0.3s ease',
-    boxShadow: '0 4px 12px rgba(139, 122, 184, 0.3)'
+    boxShadow: '0 4px 12px rgba(62, 142, 222, 0.3)'
   }
 };
 
-// Add spinner animation
+// Add spinner animation and SVG styles
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+  
+  .template-svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 document.head.appendChild(styleSheet);
 
 // Add Google Fonts
 const fontLink = document.createElement('link');
-fontLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Raleway:wght@400;600;700&family=Inter:wght@400;600;700&display=swap';
+fontLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Raleway:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap';
 fontLink.rel = 'stylesheet';
 document.head.appendChild(fontLink);
 

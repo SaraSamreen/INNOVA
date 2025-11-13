@@ -1,94 +1,84 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom" // ✅ add this
-import "../../Styles/Createvidpg1.css"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../Styles/Createvidpg1.css";
+import { API_BASE } from "../../api/config";
 
 export default function Createvidpg1() {
-  const [inputText, setInputText] = useState("")
-  const [charCount, setCharCount] = useState(0)
-  const [actor, setActor] = useState("")
-  const [background, setBackground] = useState("")
-  const [videoType, setVideoType] = useState("")
-  const [script, setScript] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [inputText, setInputText] = useState("");
+  const [charCount, setCharCount] = useState(0);
+  const [actor, setActor] = useState("");
+  const [background, setBackground] = useState("");
+  const [videoType, setVideoType] = useState("");
+  const [script, setScript] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
-    const text = e.target.value
-    setInputText(text)
-    setCharCount(text.length)
-  }
+    const text = e.target.value;
+    setInputText(text);
+    setCharCount(text.length);
+  };
 
+  // Call backend to generate script via Gemini
   const generateScript = async () => {
     if (!inputText.trim() || !actor || !background || !videoType) {
-      alert("Please fill in Actor, Background, Video Type, and description before generating.")
-      return
+      alert("Please fill in Actor, Background, Video Type, and description before generating.");
+      return;
     }
 
-    setLoading(true)
-    setScript("")
+    setLoading(true);
+    setScript("");
 
     try {
-      const response = await fetch("http://localhost:5001/api/generate-script", {
+      const res = await fetch(`${API_BASE}/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inputText,
-          actor,
-          background,
-          videoType,
+          mode: "generate_script",
+          keywords: `${inputText}, actor: ${actor}, background: ${background}, type: ${videoType}`,
         }),
-      })
+      });
 
-      const data = await response.json()
+      if (!res.ok) {
+        const txt = await res.text().catch(() => null);
+        throw new Error(txt || `Server returned ${res.status}`);
+      }
 
-      if (data?.success && data?.enhanced_script) {
-        setScript(data.enhanced_script)
-        console.log(`✅ Generated using ${data.model}`)
+      const data = await res.json();
+      if (data?.success && data?.output) {
+        setScript(data.output);
+        console.log(`✅ Script generated using ${data.model || "unknown model"}`);
       } else {
-        setScript("No script generated. Try again.")
-        console.warn("⚠️ Unexpected response:", data)
+        setScript("No script generated. Try again.");
       }
     } catch (error) {
-      console.error("❌ Error generating script:", error)
-      setScript("Error connecting to server. Make sure http://localhost:5001 is running.")
+      console.error("❌ Error generating script:", error);
+      setScript("Error connecting to backend. Ensure it's running.");
+      alert("Failed to generate script. Check backend and console for details.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const moveToStep2 = () => {
     if (!actor || !background || !videoType) {
-      alert("Please select Actor, Background, and Video Type.")
-      return
+      alert("Please select Actor, Background, and Video Type.");
+      return;
     }
     if (!script || script.trim() === "") {
-      alert("Please generate the script first before moving to Step 2.")
-      return
+      alert("Please generate the script first before moving to Step 2.");
+      return;
     }
 
-    const payload = {
-      script,
-      actor,
-      background,
-      videoType,
-      inputText,
-    }
+    const payload = { script, actor, background, videoType, inputText };
+    localStorage.setItem("create_video_payload", JSON.stringify(payload));
+    navigate("/create/step2", { state: payload });
+  };
 
-    // optional backup
-    localStorage.setItem("script", script)
-    localStorage.setItem("actor", actor)
-    localStorage.setItem("background", background)
-    localStorage.setItem("videoType", videoType)
-    localStorage.setItem("inputText", inputText)
-
-    // ✅ navigate with state
-    navigate("/create/step2", { state: payload })
-  }
-
-  const videoTypes = ["product-ad", "service-promo", "brand-awareness", "social-reel"]
+  const videoTypes = ["product-ad", "service-promo", "brand-awareness", "social-reel"];
 
   return (
     <main className="cv1-wrapper">
@@ -98,28 +88,10 @@ export default function Createvidpg1() {
       </header>
 
       <section className="cv1-card">
-        {/* Actor */}
-        <div className="cv1-group">
-          <label className="cv1-label">Choose Actor</label>
-          <div className="cv1-pills">
-            <button
-              type="button"
-              className={`cv1-pill ${actor === "male" ? "is-active" : ""}`}
-              onClick={() => setActor("male")}
-            >
-              Male
-            </button>
-            <button
-              type="button"
-              className={`cv1-pill ${actor === "female" ? "is-active" : ""}`}
-              onClick={() => setActor("female")}
-            >
-              Female
-            </button>
-          </div>
-        </div>
+        {/* Actor selection */}
 
-        {/* Background */}
+
+        {/* Background selection */}
         <div className="cv1-group">
           <label className="cv1-label" htmlFor="bg-select">
             Select Background
@@ -141,28 +113,24 @@ export default function Createvidpg1() {
           </div>
         </div>
 
-        {/* Video Type */}
+        {/* Video type */}
         <div className="cv1-group">
           <label className="cv1-label">Ad Reel Type</label>
           <div className="cv1-grid">
-            {videoTypes.map((type) => {
-              const active = videoType === type
-              const label = type.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  className={`cv1-option ${active ? "is-active" : ""}`}
-                  onClick={() => setVideoType(type)}
-                >
-                  {label}
-                </button>
-              )
-            })}
+            {videoTypes.map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={`cv1-option ${videoType === type ? "is-active" : ""}`}
+                onClick={() => setVideoType(type)}
+              >
+                {type.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Script Input */}
+        {/* Idea input */}
         <div className="cv1-group">
           <label className="cv1-label" htmlFor="idea-input">
             Describe your idea
@@ -183,10 +151,20 @@ export default function Createvidpg1() {
 
         {/* Actions */}
         <div className="cv1-actions">
-          <button className="cv1-btn cv1-primary" onClick={generateScript} disabled={loading}>
+          <button
+            className="cv1-btn cv1-primary"
+            onClick={generateScript}
+            disabled={loading}
+          >
             {loading ? "Generating Script..." : "Generate Script with AI"}
           </button>
-          <button className="cv1-btn cv1-secondary" onClick={moveToStep2}>
+
+          <button
+            className="cv1-btn cv1-secondary"
+            onClick={moveToStep2}
+            disabled={!script || script.trim() === ""}
+            title={!script ? "Generate script first" : "Go to Step 2"}
+          >
             Move to Step 2 →
           </button>
         </div>
@@ -198,10 +176,12 @@ export default function Createvidpg1() {
               <span className="cv1-dot" aria-hidden="true"></span>
               <h3 className="cv1-output-title">Enhanced Ad Script</h3>
             </div>
-            <p className="cv1-output-text">{script}</p>
+            <p className="cv1-output-text" style={{ whiteSpace: "pre-wrap" }}>
+              {script}
+            </p>
           </div>
         )}
       </section>
     </main>
-  )
+  );
 }

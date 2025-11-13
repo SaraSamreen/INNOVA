@@ -15,7 +15,7 @@
   font-family: Georgia, 'Times New Roman', Times, serif;
   
   /* Gradient text setup - standard and webkit versions */
-  background: linear-gradient(to right, #5316e1, #eb99e9);
+  background: linear-gradient(to right, #3E8EDE, #2E7BC8);
   background-clip: text; /* Standard property */
   -webkit-background-clip: text; /* For webkit browsers */
   -webkit-text-fill-color: transparent;

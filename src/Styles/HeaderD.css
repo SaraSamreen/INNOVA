@@ -28,7 +28,7 @@
   }
   
   .search-bar input:focus {
-    border-color: #c46acf;
+    border-color: #3E8EDE;
   }
   
   .header-icons {
@@ -47,7 +47,7 @@
   }
   
   .icon:hover {
-    color: #c46acf;
+    color: #3E8EDE;
   }
   
   .profile-pic {
