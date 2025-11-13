@@ -4,7 +4,6 @@ import Home from "./Homepage/Home";
 import Login from "./AccessHub/Login";
 import ResetPassword from "./AccessHub/ResetPassword";
 import Dashboard from "./Dashboard/Dashboard";
-import ScriptGenerator from './Dashboard/componentsD/Createvidpg1';
 import VoiceGenerator from './Dashboard/componentsD/Createvidpg2';
 import VideoGenerator from './Dashboard/componentsD/Createvidpg3';
 import TeamCollab from "./TeamCollab/TeamCollab";
@@ -29,8 +28,6 @@ function AppWrapper() {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/create-video" element={<ScriptGenerator />} />
-       
         <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />

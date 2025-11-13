@@ -12,6 +12,10 @@ from dotenv import load_dotenv
 from PIL import Image
 from rembg import remove
 from google.cloud import aiplatform
+from gtts import gTTS
+from flask import send_file
+import tempfile
+
 
 # ===================== #
 #      CONFIG SETUP     #
@@ -101,6 +105,32 @@ def login_user():
 
     token = generate_token(user["_id"])
     return jsonify({"message": "Login successful", "token": token})
+
+# ===================== #
+#   VOICE PREVIEW API   #
+# ===================== #
+@app.route("/preview-voice", methods=["POST"])
+def preview_voice():
+    data = request.get_json()
+    text = data.get("text")
+    voice_code = data.get("voice")  # you can use this for future voice mapping
+
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    try:
+        # Simple TTS using gTTS (Google Text-to-Speech)
+        # You can extend this to map 'voice_code' to different TTS accents or engines
+        tts = gTTS(text=text, lang="en")  
+
+        # Save to temporary file
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        tts.save(tmp_file.name)
+
+        return send_file(tmp_file.name, mimetype="audio/mpeg")
+    except Exception as e:
+        print("TTS error:", e)
+        return jsonify({"error": f"Failed to generate voice preview: {str(e)}"}), 500
 
 # ===================== #
 #   PROFILE MANAGEMENT  #
