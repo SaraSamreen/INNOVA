@@ -40,7 +40,7 @@ const AuthPage = () => {
       if (!res.ok) throw new Error(data.message);
 
       alert('Login successful');
-      window.location.href = '/dashboard';
+      window.location.href = loginRole === 'admin' ? '/admin' : '/dashboard';
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -129,16 +129,17 @@ const AuthPage = () => {
   />
 </div>
             
-            <div className="relative z-10 h-full flex flex-col items-center justify-center p-8 text-white">
-              <div className="max-w-lg text-center">
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  INNOVA
-                </h1>
-                <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
-                  Empowering innovation through elegant design and cutting-edge technology
-                </p>
-              </div>
-            </div>
+            <div className="relative z-10 h-full flex flex-col items-center justify-center -mt-16 p-8 text-white">
+  <div className="max-w-lg text-center">
+    <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+      INNOVA
+    </h1>
+    <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
+      Empowering innovation through elegant design and cutting-edge technology
+    </p>
+  </div>
+</div>
+
           </div>
 
           {/* Forms Side */}

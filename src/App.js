@@ -9,13 +9,12 @@ import VideoGenerator from './Dashboard/componentsD/Createvidpg3';
 import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
-import Chatbot from "./Dashboard/componentsD/Chatbot";
 import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
 import PosterGenerator from "./Dashboard/componentsD/PosterGenerator";
 import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
 import TemplateEditor from "./TemplateEditor/components/TemplateEditor";   
 import ProductShowcase from './Dashboard/componentsD/ProductShowcase';
-import Designproduct from './Dashboard/componentsD/DesignProduct';
+import Designproduct from './DesignProduct/DesignProduct';
 import Forgotpass from './AccessHub/Forgotpass';
 
 
@@ -31,7 +30,6 @@ function AppWrapper() {
         <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />
-        <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/logo-generator" element={<LogoGenerator />} />
         <Route path="/poster-generator" element={<PosterGenerator />} />
         <Route path="/template-browser" element={<TemplateBrowser />} />

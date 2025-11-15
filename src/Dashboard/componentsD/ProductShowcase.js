@@ -1,306 +1,150 @@
-import React, { useState, useRef, useEffect } from "react";
-import "../../Styles/ProductShowcase.css";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
-// Backend server configuration
-const BACKEND_PORT = process.env.REACT_APP_PRODUCT_SERVER_PORT || 5000;
+const BACKEND_PORT = process.env.REACT_APP_PRODUCT_SERVER_PORT || 5002;
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 
 export default function ProductShowcase() {
-  const [productImage, setProductImage] = useState(null);
+  const location = useLocation();
+  const selectedModel = location.state?.model;
+
+  const [productFile, setProductFile] = useState(null);
   const [productPreview, setProductPreview] = useState(null);
-  const [selectedModel, setSelectedModel] = useState("model1");
   const [loading, setLoading] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState([]);
-  const [progress, setProgress] = useState(0);
-  const [backendStatus, setBackendStatus] = useState("checking");
-  const fileInputRef = useRef(null);
+  const [finalImage, setFinalImage] = useState(null);
+  const fileRef = useRef();
 
-  const modelGirls = {
-    model1: { name: "Sophia", description: "Elegant & Professional", seed: 42, style: "professional, elegant, business casual" },
-    model2: { name: "Emma", description: "Casual & Friendly", seed: 123, style: "casual, friendly, lifestyle" },
-    model3: { name: "Aria", description: "Modern & Chic", seed: 456, style: "modern, chic, fashionable" },
-    model4: { name: "Zara", description: "Bold & Confident", seed: 789, style: "bold, confident, editorial" },
-    model5: { name: "Maya", description: "Natural & Fresh", seed: 999, style: "natural, fresh, minimalist" },
-  };
-
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/health`);
-        const data = await response.json();
-        if (data.status === "ok") setBackendStatus("ready");
-        else setBackendStatus("error");
-      } catch {
-        setBackendStatus("offline");
-      }
-    };
-    checkStatus();
-    const interval = setInterval(() => {
-      if (backendStatus !== "ready") checkStatus();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [backendStatus]);
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProductImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setProductPreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const generateShowcaseImages = async () => {
-    if (!productImage || !selectedModel) {
-      alert("Please upload a product image and select a model");
-      return;
-    }
-    if (backendStatus !== "ready") {
-      alert("Backend not ready. Wait until models load.");
-      return;
-    }
-
-    setLoading(true);
-    setGeneratedImages([]);
-    setProgress(0);
-
-    try {
-      // Convert image to base64
-      const reader = new FileReader();
-      const imageBase64 = await new Promise((resolve, reject) => {
-        reader.onloadend = () => {
-          // Remove data:image/...;base64, prefix
-          const base64String = reader.result.split(',')[1];
-          resolve(base64String);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(productImage);
-      });
-
-      const response = await fetch(`${BACKEND_URL}/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product_image: imageBase64,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate images");
-      const data = await response.json();
-      if (data.results) {
-        // Convert backend response format to frontend format
-        const images = Object.entries(data.results).map(([poseName, result]) => ({
-          angle: poseName.charAt(0).toUpperCase() + poseName.slice(1),
-          url: `data:image/png;base64,${result.base64}`,
-        }));
-        setGeneratedImages(images);
-      } else throw new Error(data.error || "Unknown error");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to generate images: " + error.message);
-    } finally {
-      setLoading(false);
-      setProgress(0);
-    }
-  };
-
-  const downloadImage = (imageUrl, index) => {
-    fetch(imageUrl)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `showcase-${selectedModel}-${index + 1}.png`;
-        link.click();
-        URL.revokeObjectURL(url);
-      });
-  };
-
-  const downloadAllImages = () => {
-    generatedImages.forEach((img, index) => {
-      setTimeout(() => downloadImage(img.url, index), index * 500);
-    });
-  };
-
-  const shareImage = async (imageUrl, platform) => {
-    const base64Data = imageUrl.startsWith("data:")
-      ? imageUrl
-      : await fetch(imageUrl)
-          .then((r) => r.blob())
-          .then(
-            (b) =>
-              new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(b);
-              })
-          );
-
-    if (platform === "facebook") {
-      window.open(
-        "https://www.facebook.com/sharer/sharer.php?u=" +
-          encodeURIComponent(window.location.href),
-        "_blank"
-      );
-    } else if (platform === "instagram") {
-      alert(
-        "Instagram API does not allow direct uploads from client side. Integrate server-side Meta Graph API for publishing."
-      );
-    }
-  };
-
-  const StatusBanner = () => {
-    if (backendStatus === "ready") return null;
-    const statusConfig = {
-      loading: { bg: "bg-blue-100", text: "text-blue-800", icon: "⏳", message: "AI models are loading..." },
-      offline: { bg: "bg-red-100", text: "text-red-800", icon: "❌", message: "Backend offline." },
-      error: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⚠️", message: "Model load error." },
-      checking: { bg: "bg-gray-100", text: "text-gray-800", icon: "🔍", message: "Checking server..." },
-    };
-    const config = statusConfig[backendStatus];
+  if (!selectedModel) {
     return (
-      <div className={`status-banner ${config.bg} ${config.text}`}>
-        <span className="status-icon">{config.icon}</span>
-        <span className="status-message">{config.message}</span>
+      <div className="min-h-screen bg-blue-50 p-8 text-center text-red-600">
+        No model selected. Please go back to the home page.
       </div>
     );
+  }
+
+  // Convert file → base64 (returns ONLY the raw base64)
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setProductFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setProductPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  // --- Generate final image ---
+  const generateFinal = async () => {
+    if (!productFile) {
+      alert("Please upload a product image first.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setFinalImage(null);
+
+      const productB64 = await fileToBase64(productFile);
+
+      const payload = {
+        model_image_path: selectedModel, // homepage selected model
+        product_image: productB64,       // raw base64 of product
+      };
+
+      const res = await fetch(`${BACKEND_URL}/generate-final`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generation failed");
+
+      // Backend returns: { success: true, final: "<base64>" }
+      setFinalImage(`data:image/png;base64,${data.final}`);
+    } catch (err) {
+      console.error(err);
+      alert("Generation error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="showcase-container">
-      <div className="showcase-header animate-fadeIn">
-        <h1>👜 AI Product Showcase Generator</h1>
-        <p>Upload your product and see it showcased by AI-generated models</p>
-        <StatusBanner />
-      </div>
-
-      <div className="showcase-grid">
-        {/* Left Panel */}
-        <div className="left-panel animate-slideUp">
-          <h2>Setup Your Showcase</h2>
-          <div className="upload-section">
-            <label>📸 Upload Product Image</label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="upload-box"
-            >
-              {productPreview ? (
-                <div className="preview-container">
-                  <img src={productPreview} alt="Product" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setProductImage(null);
-                      setProductPreview(null);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="upload-placeholder">📷</div>
-                  <p>Click to upload product image</p>
-                  <p className="upload-text">PNG, JPG up to 10MB</p>
-                </div>
-              )}
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ display: "none" }}
-            />
-          </div>
-
-          <div className="model-select">
-            <label>👩 Select Model</label>
-            <div className="model-grid">
-              {Object.entries(modelGirls).map(([key, model]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedModel(key)}
-                  className={`model-btn ${
-                    selectedModel === key ? "active" : ""
-                  }`}
-                >
-                  <div>
-                    <div className="model-name">{model.name}</div>
-                    <div className="model-description">{model.description}</div>
-                    <div className="model-details">Seed: {model.seed}</div>
-                  </div>
-                  {selectedModel === key && (
-                    <div className="model-check">✓</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={generateShowcaseImages}
-            disabled={
-              loading || !productImage || !selectedModel || backendStatus !== "ready"
-            }
-            className={`generate-btn ${
-              loading || !productImage || !selectedModel || backendStatus !== "ready"
-                ? "disabled"
-                : ""
-            }`}
-          >
-            {loading ? "Generating..." : "✨ Generate 4 Showcase Images"}
-          </button>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Selected Model */}
+        <div className="bg-white p-4 rounded shadow mb-6">
+          <h2 className="font-semibold mb-2">Selected Model</h2>
+          <img
+            src={selectedModel}
+            alt="Model"
+            className="max-h-72 mx-auto rounded"
+          />
         </div>
 
-        {/* Right Panel */}
-        <div className="right-panel animate-slideUp">
-          <div className="panel-header">
-            <h2>Generated Showcase</h2>
-            {generatedImages.length > 0 && (
-              <button onClick={downloadAllImages} className="download-all-btn">
-                ⬇️ Download All
-              </button>
+        {/* Product Upload */}
+        <div className="bg-white p-4 rounded shadow mb-6">
+          <h2 className="font-semibold mb-2">Upload Bag / Product</h2>
+
+          <div
+            className="border-2 border-dashed p-4 rounded text-center cursor-pointer"
+            onClick={() => fileRef.current?.click()}
+          >
+            {productPreview ? (
+              <img
+                src={productPreview}
+                alt="preview"
+                className="max-h-40 mx-auto"
+              />
+            ) : (
+              <div className="text-gray-500">
+                <div className="text-4xl mb-2">👜</div>
+                <div>Select product image</div>
+              </div>
             )}
           </div>
 
-          <div className="image-grid">
-            {generatedImages.map((img, index) => (
-              <div key={index} className="image-wrapper">
-                <img
-                  src={img.url}
-                  alt={`Showcase ${index + 1}`}
-                  className="result-image"
-                />
-                <div className="pose-badge">{img.angle}</div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFile}
+          />
+        </div>
 
-                <div className="image-actions">
-                  <button
-                    onClick={() => downloadImage(img.url, index)}
-                    className="download-btn"
-                  >
-                    ⬇️ Download
-                  </button>
-                  <button
-                    onClick={() => shareImage(img.url, "facebook")}
-                    className="share-btn fb"
-                  >
-                    📘 Share
-                  </button>
-                  <button
-                    onClick={() => shareImage(img.url, "instagram")}
-                    className="share-btn ig"
-                  >
-                    📸 Share
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Generate Button */}
+        <button
+          onClick={generateFinal}
+          disabled={loading}
+          className={`w-full py-3 rounded text-white font-medium ${
+            loading ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700"
+          }`}
+        >
+          {loading ? "Generating..." : "Generate Final Image"}
+        </button>
+
+        {/* Output */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-3">Final Output</h2>
+
+          {!finalImage ? (
+            <div className="h-56 border-2 border-dashed rounded flex items-center justify-center text-gray-400">
+              No result yet
+            </div>
+          ) : (
+            <img src={finalImage} className="w-full rounded shadow" alt="Result" />
+          )}
         </div>
       </div>
     </div>

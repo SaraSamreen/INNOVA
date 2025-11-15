@@ -13,7 +13,7 @@ export default function UnifiedCreateVideo() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoLoading, setVideoLoading] = useState(false);
 
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "http://localhost:5002";
 
   const avatars = [
     { id: "avatar1", img: "/avatar/avatar1.jpg" },

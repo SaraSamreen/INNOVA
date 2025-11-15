@@ -353,7 +353,7 @@ export default function Home() {
       
       <div className="py-16 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-[#3E8EDE] mb-6">AI-Powered Content Creator</h1>
+          <h1 className="text-5xl md:text-6xl font-bold text-[#3E8EDE] mb-6">Transform Idea to Visual</h1>
           <p className="text-lg md:text-xl text-[#374151] mb-12 max-w-4xl mx-auto leading-relaxed">
             Effortlessly craft viral Instagram reels with InVideo's AI-driven reel generator.  
             Simply choose a topic, and the AI will generate your script, design scenes, add voiceovers,  
