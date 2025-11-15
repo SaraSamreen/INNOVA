@@ -14,7 +14,7 @@ import {
 
 const Sidebar = () => {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
@@ -30,7 +30,7 @@ const Sidebar = () => {
     <div
       className={`${
         isOpen ? "w-64" : "w-20"
-      } bg-card/50 backdrop-blur-xl h-screen fixed left-0 top-0 flex flex-col p-4 gap-6 transition-all duration-300 ease-in-out border-r border-border/50 z-50 shadow-card`}
+      } bg-white h-screen fixed left-0 top-0 flex flex-col p-4 gap-6 transition-all duration-300 ease-in-out border-r border-border/50 z-50 shadow-card`}
     >
       {/* Header */}
       <div className="flex items-center justify-between">

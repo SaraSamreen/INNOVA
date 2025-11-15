@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../Styles/Createvidpg2.css";
-import { API_BASE } from "../../api/config"; 
+import { API_BASE } from "../../api/config";
 
 const VOICES = [
   { id: "voice-a", name: "Nova (Warm, Female)", description: "Clear, friendly tone suitable for explainers.", voiceCode: "nova" },
@@ -63,13 +63,18 @@ export default function Createvidpg2() {
 
   const storedData = JSON.parse(localStorage.getItem("create_video_payload")) || {};
   const step1Data = location.state || storedData;
-  const { script, actor, background, videoType, inputText } = step1Data;
+  // Script removed from destructuring
+  const { actor, background, videoType, inputText } = step1Data;
 
   const [selected, setSelected] = useState(JSON.parse(localStorage.getItem("selectedVoice"))?.id || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState(null);
 
-  useEffect(() => () => audio && audio.pause(), [audio]);
+  useEffect(() => {
+    return () => {
+      if (audio) audio.pause();
+    };
+  }, [audio]);
 
   const playVoicePreview = async (voice) => {
     if (isPlaying) {
@@ -83,7 +88,7 @@ export default function Createvidpg2() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: script || "This is a short preview of the selected voice.",
+          text: "This is a short preview of the selected voice.",
           voice: voice.voiceCode,
         }),
       });
@@ -133,7 +138,7 @@ export default function Createvidpg2() {
       <header className="v2-header">
         <div>
           <h1 className="v2-title">Choose Your Voice</h1>
-          <p className="v2-subtitle">Preview and select a voice to continue to Step 3.</p>
+          <p className="v2-subtitle">Preview and select a voice to continue to Step 2.</p>
         </div>
         <button onClick={handleBack} className="v2-back">← Back</button>
       </header>

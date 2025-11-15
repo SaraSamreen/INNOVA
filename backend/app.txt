@@ -1,0 +1,259 @@
+# app.py
+import io
+import base64
+import os
+from flask import Flask, request, jsonify, send_file, abort
+from flask_cors import CORS
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from utils import base64_to_image, image_to_base64, save_base64_to_file
+
+# Optional: load environment variables from .env
+from dotenv import load_dotenv
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+# ---------- Helper: simple placeholder image generator ----------
+def make_placeholder_image(text="DesignMind\n(placeholder)", size=(1024,1024), bgcolor=(245,245,250)):
+    img = Image.new("RGBA", size, bgcolor)
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arial.ttf", 40)
+    except Exception:
+        font = ImageFont.load_default()
+    w, h = draw.multiline_textsize(text, font=font)
+    draw.multiline_text(((size[0]-w)/2,(size[1]-h)/2), text, fill=(30,30,40), font=font, align="center")
+    return img
+
+# ---------- Route: Generate design from prompt ----------
+@app.route("/api/design/generate", methods=["POST"])
+def generate_design():
+    """
+    Accepts JSON: { prompt: str, style: str (optional), options: {...} }
+    Returns: { success: bool, image: base64_str, metadata: { session_id ... } }
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data or "prompt" not in data:
+        return jsonify({"success": False, "message": "Missing 'prompt' in request body"}), 400
+
+    prompt = data.get("prompt")
+    style = data.get("style", "default")
+    options = data.get("options", {})
+
+    # --- Replace this block with real image generation (OpenAI / SD / etc.) ---
+    # Example: call Stable Diffusion API or OpenAI image generation
+    # For now we create a mock placeholder image containing the prompt text.
+    img = make_placeholder_image(text=f"{style}\n\n{prompt[:120]}", size=(1024,1024))
+    buffered = io.BytesIO()
+    img.convert("RGB").save(buffered, format="PNG")
+    b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    # -----------------------------------------------------------------------
+
+    # Session metadata (simple)
+    session_id = f"dm_{int(os.times()[4]*1000)}"
+    metadata = {"session_id": session_id, "style": style}
+
+    return jsonify({"success": True, "image": b64, "metadata": metadata}), 200
+
+
+# ---------- Route: Refine design / Chat-driven refine ----------
+@app.route("/api/design/refine", methods=["POST"])
+def refine_design():
+    """
+    Accepts JSON: { message: str, currentImage: base64 (optional), instructions: {...} }
+    Returns: { response: str, updatedImage: base64 (optional) }
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data or "message" not in data:
+        return jsonify({"success": False, "message": "Missing 'message'"}), 400
+
+    message = data["message"]
+    current_image_b64 = data.get("currentImage")
+
+    # Mock assistant response (replace with LLM)
+    assistant_response = f"Assistant: I understood '{message}'. I'll apply a mock change."
+
+    updated_b64 = None
+    if current_image_b64:
+        try:
+            img = base64_to_image(current_image_b64)
+            # Apply a simple mock transformation based on keywords
+            msg_lower = message.lower()
+            if "metal" in msg_lower or "metallic" in msg_lower:
+                # apply a slight shine via overlay
+                overlay = Image.new("RGBA", img.size, (230,230,230,40))
+                img = Image.alpha_composite(img.convert("RGBA"), overlay)
+            elif "short" in msg_lower or "shorter" in msg_lower:
+                # crop slightly from the bottom (mock "handle shorter")
+                w, h = img.size
+                img = img.crop((0, 0, w, int(h*0.85)))
+                img = img.resize((w,h))
+            elif "recolor" in msg_lower or "color" in msg_lower:
+                # tint image (simple)
+                tint = Image.new("RGBA", img.size, (200,180,255,60))
+                img = Image.alpha_composite(img.convert("RGBA"), tint)
+            else:
+                # small blur to simulate 'change'
+                img = img.filter(ImageFilter.GaussianBlur(radius=1.2))
+
+            updated_b64 = image_to_base64(img)
+        except Exception as e:
+            print("Error processing currentImage:", e)
+            assistant_response += " (but failed to update image)"
+    else:
+        assistant_response += " (no image provided to update)"
+
+    return jsonify({"success": True, "response": assistant_response, "updatedImage": updated_b64}), 200
+
+
+# ---------- Route: Editor operations (resize/recolor/reposition) ----------
+@app.route("/api/design/editor", methods=["POST"])
+def design_editor():
+    """
+    Accepts JSON: { action: 'resize'|'recolor'|'crop'|..., params: {...}, image: base64 }
+    Returns: { success: bool, updatedImage: base64 }
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data or "action" not in data or "image" not in data:
+        return jsonify({"success": False, "message": "Missing 'action' or 'image'"}), 400
+
+    action = data["action"]
+    params = data.get("params", {})
+    image_b64 = data["image"]
+
+    try:
+        img = base64_to_image(image_b64)
+    except Exception as e:
+        return jsonify({"success": False, "message": "Invalid image data", "error": str(e)}), 400
+
+    # Simple operations for demo
+    if action == "resize":
+        w = int(params.get("width", img.width))
+        h = int(params.get("height", img.height))
+        img = img.resize((w, h))
+    elif action == "recolor":
+        # apply tint
+        color = params.get("color", "#CCCCCC")
+        # parse hex
+        color = color.lstrip("#")
+        rc = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+        tint = Image.new("RGBA", img.size, (*rc, 80))
+        img = Image.alpha_composite(img.convert("RGBA"), tint)
+    elif action == "crop":
+        left = int(params.get("left", 0))
+        top = int(params.get("top", 0))
+        right = int(params.get("right", img.width))
+        bottom = int(params.get("bottom", img.height))
+        img = img.crop((left, top, right, bottom))
+    else:
+        return jsonify({"success": False, "message": f"Unknown action '{action}'"}), 400
+
+    updated_b64 = image_to_base64(img)
+    return jsonify({"success": True, "updatedImage": updated_b64}), 200
+
+
+# ---------- Route: Export (returns file stream) ----------
+@app.route("/api/design/export", methods=["POST"])
+def design_export():
+    """
+    Accepts JSON: { format: 'png'|'jpg'|'obj'|'glb', image: base64, options: {...} }
+    Returns: file stream or link
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data or "format" not in data or "image" not in data:
+        return jsonify({"success": False, "message": "Missing 'format' or 'image'"}), 400
+
+    fmt = data["format"].lower()
+    image_b64 = data["image"]
+    filename = data.get("filename", "design_export")
+
+    # If format is 3d, we return a mock zip / message for now
+    if fmt in ("obj", "glb", "3d"):
+        # In a real system you'd convert 2D -> 3D or return stored 3D model
+        return jsonify({"success": True, "message": "3D export not implemented in mock", "download": None}), 200
+
+    if fmt in ("png", "jpg", "jpeg"):
+        try:
+            img = base64_to_image(image_b64)
+            buf = io.BytesIO()
+            out_fmt = "PNG" if fmt == "png" else "JPEG"
+            img.convert("RGB").save(buf, format=out_fmt)
+            buf.seek(0)
+            mimetype = "image/png" if fmt == "png" else "image/jpeg"
+            return send_file(buf, mimetype=mimetype, as_attachment=True, download_name=f"{filename}.{fmt}")
+        except Exception as e:
+            return jsonify({"success": False, "message": "Failed to export image", "error": str(e)}), 500
+
+    return jsonify({"success": False, "message": f"Unsupported format '{fmt}'"}), 400
+
+
+# ---------- Route: Market-fit evaluator ----------
+@app.route("/api/design/market-fit", methods=["POST"])
+def market_fit():
+    """
+    Accepts JSON: { image: base64 (optional), description: str (optional), attributes: {aesthetics: int,...} }
+    Returns: { trendScore: int, sustainability: str, details: {...} }
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    attrs = data.get("attributes", {})
+    # simple heuristic similar to frontend
+    aesthetics = int(attrs.get("aesthetics", 6))
+    sustainability = int(attrs.get("sustainability", 6))
+    price_sensitivity = int(attrs.get("priceSensitivity", 5))
+    usability = int(attrs.get("usability", 6))
+    novelty = int(attrs.get("novelty", 6))
+
+    score = (aesthetics * 0.25 + sustainability * 0.2 + (10 - price_sensitivity) * 0.15 + usability * 0.25 + novelty * 0.15)
+    trend_score = round((score / 10) * 100)
+
+    # sustainability grade (mock)
+    if sustainability >= 8:
+        s_grade = "A"
+    elif sustainability >= 6:
+        s_grade = "B"
+    else:
+        s_grade = "C"
+
+    details = {
+        "aesthetics": aesthetics,
+        "sustainability": sustainability,
+        "priceSensitivity": price_sensitivity,
+        "usability": usability,
+        "novelty": novelty
+    }
+
+    return jsonify({"success": True, "trendScore": trend_score, "sustainabilityGrade": s_grade, "details": details}), 200
+
+
+# ---------- Route: Insights (analysis) ----------
+@app.route("/api/design/insights", methods=["POST"])
+def design_insights():
+    """
+    Accepts JSON: { image: base64 (optional), description: str (optional) }
+    Returns a mock insights JSON.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    desc = data.get("description", "")
+    # This should be replaced by LLM + vision model analysis
+    insights = {
+        "summary": f"Quick analysis for: {desc[:200]}",
+        "strengths": ["Clean silhouette", "Strong visual hierarchy"],
+        "weaknesses": ["Material choice might raise cost", "Consider accessibility improvements"],
+        "recommendations": [
+            "Consider recyclable materials to improve sustainability score",
+            "Test price sensitivity with a small focus group"
+        ]
+    }
+    return jsonify({"success": True, "insights": insights}), 200
+
+
+# ---------- Simple health check ----------
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "service": "DesignMind Backend"}), 200
+
+
+if __name__ == "__main__":
+    # For development only. Use gunicorn/uvicorn in production
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)

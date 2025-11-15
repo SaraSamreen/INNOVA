@@ -3,6 +3,7 @@ import os
 import base64
 import datetime
 import jwt
+import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
@@ -15,18 +16,33 @@ from google.cloud import aiplatform
 from gtts import gTTS
 from flask import send_file
 import tempfile
+from flask import send_from_directory
+import requests
+import json
 
 
-# ===================== #
-#      CONFIG SETUP     #
-# ===================== #
 load_dotenv()
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 bcrypt = Bcrypt(app)
+# Create videos directory
+VIDEOS_DIR = os.path.join(os.getcwd(), "generated_videos")
+AUDIO_DIR = os.path.join(os.getcwd(), "generated_audio")
+os.makedirs(VIDEOS_DIR, exist_ok=True)
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
+@app.route("/videos/<filename>")
+def serve_video(filename):
+    return send_from_directory(VIDEOS_DIR, filename)
+
+@app.route("/audio/<filename>")
+def serve_audio(filename):
+    return send_from_directory(AUDIO_DIR, filename)
+
 
 # Secret key for JWT
 app.config['SECRET_KEY'] = os.getenv("JWT_SECRET", "supersecretkey")
+D_ID_API_KEY = os.getenv("D_ID_API_KEY")
 
 # MongoDB Setup
 mongo_uri = os.getenv("ATLAS_URI")
@@ -131,6 +147,102 @@ def preview_voice():
     except Exception as e:
         print("TTS error:", e)
         return jsonify({"error": f"Failed to generate voice preview: {str(e)}"}), 500
+  # Add to your .env file
+
+@app.route("/speak", methods=["POST", "OPTIONS"])
+def generate_avatar_video():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+    
+    data = request.get_json()
+    text = data.get("text")
+    avatar_id = data.get("avatar_id")
+    background = data.get("background")
+
+    if not text or not avatar_id:
+        return jsonify({"success": False, "error": "Missing text or avatar"}), 400
+
+    try:
+        # Map avatar_id to avatar image path
+        avatar_images = {
+            "avatar1": "/avatar/avatar1.jpg",
+            "avatar2": "/avatar/avatar2.jpg",
+            "avatar3": "/avatar/avatar3.jpg",
+            "avatar4": "/avatar/avatar4.jpg"
+        }
+
+        avatar_image_path = avatar_images.get(avatar_id)
+        if not avatar_image_path:
+            return jsonify({"success": False, "error": "Invalid avatar"}), 400
+
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        avatar_full_path = os.path.join(base_dir, "public", avatar_image_path.lstrip("/"))
+
+        with open(avatar_full_path, "rb") as img_file:
+            avatar_b64 = base64.b64encode(img_file.read()).decode("utf-8")
+
+        # Prepare Base64 authorization for D-ID API
+        auth_header = base64.b64encode(f"{D_ID_API_KEY}:".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {auth_header}",
+            "Content-Type": "application/json"
+        }
+
+        # Call D-ID API
+        did_response = requests.post(
+            "https://api.d-id.com/talks",
+            headers=headers,
+            json={
+                "script": {
+                    "type": "text",
+                    "input": text,
+                    "provider": {
+                        "type": "microsoft",
+                        "voice_id": "en-US-JennyNeural"
+                    }
+                },
+                "source_url": f"data:image/jpeg;base64,{avatar_b64}",
+                "config": {
+                    "fluent": True,
+                    "pad_audio": 0
+                }
+            }
+        )
+
+        if did_response.status_code != 201:
+            return jsonify({
+                "success": False,
+                "error": f"D-ID API error: {did_response.text}"
+            }), 500
+
+        talk_id = did_response.json()["id"]
+
+        # Poll for video completion
+        video_url = None
+        for _ in range(30):
+            import time
+            time.sleep(2)
+
+            status_response = requests.get(
+                f"https://api.d-id.com/talks/{talk_id}",
+                headers=headers
+            )
+            status_data = status_response.json()
+            if status_data["status"] == "done":
+                video_url = status_data["result_url"]
+                break
+
+        if not video_url:
+            return jsonify({
+                "success": False,
+                "error": "Video generation timeout"
+            }), 500
+
+        return jsonify({"success": True, "video_url": video_url})
+
+    except Exception as e:
+        print("Video generation error:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # ===================== #
 #   PROFILE MANAGEMENT  #
@@ -225,6 +337,6 @@ def health():
 #       MAIN ENTRY      #
 # ===================== #
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 5002))
     print(f"🚀 Server running on http://localhost:{port}")
     app.run(host="0.0.0.0", port=port)
