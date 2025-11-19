@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./Homepage/Home";
-import Login from "./AccessHub/Login";
+import Login from "./AccessHub/AuthPage";
 import ResetPassword from "./AccessHub/ResetPassword";
 import Dashboard from "./Dashboard/Dashboard";
 import VoiceGenerator from './Dashboard/componentsD/Createvidpg2';
@@ -12,10 +12,11 @@ import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
 import PosterGenerator from "./Dashboard/componentsD/PosterGenerator";
 import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
-import TemplateEditor from "./TemplateEditor/components/TemplateEditor";   
-import ProductShowcase from './Dashboard/componentsD/ProductShowcase';
+import TemplateEditor from "./TemplateEditor/components/TemplateEditor";
 import Designproduct from './DesignProduct/DesignProduct';
+import ProductBeautifier from './Dashboard/componentsD/ProductBeautifier';
 import Forgotpass from './AccessHub/Forgotpass';
+import Drafts from './Drafts';
 
 
 
@@ -37,8 +38,9 @@ function AppWrapper() {
          <Route path="/create/step2" element={<VoiceGenerator />} />
          <Route path="/create/step3" element={<VideoGenerator />} />
          <Route path="/forgotpass" element={<Forgotpass/>} />
+         <Route path="/product-beautifier" element={<ProductBeautifier />} />
          <Route path="/design-product" element={<Designproduct />} />
-         <Route path="/product-showcase" element={<ProductShowcase/>} />
+          <Route path="/drafts" element={<Drafts/>} />
       </Routes>
     </Router>
   );
