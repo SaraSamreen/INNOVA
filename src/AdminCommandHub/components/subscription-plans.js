@@ -1,6 +1,4 @@
-import React from "react"
-import { useState } from "react"
-import "../../Styles/AdminCommandHub.css"
+import React, { useState } from "react";
 
 const SubscriptionPlans = () => {
   const [plans, setPlans] = useState([
@@ -22,57 +20,90 @@ const SubscriptionPlans = () => {
       id: 3,
       name: "Enterprise",
       price: 49.99,
-      features: ["Unlimited Reels", "Custom Templates", "24/7 Support", "Advanced AI", "Team Collaboration"],
+      features: [
+        "Unlimited Reels",
+        "Custom Templates",
+        "24/7 Support",
+        "Advanced AI",
+        "Team Collaboration",
+      ],
       active: true,
     },
-  ])
+  ]);
 
-  const [editingPlan, setEditingPlan] = useState(null)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const handleEditPlan = (plan) => {
-    setEditingPlan({ ...plan })
-  }
+    setEditingPlan({ ...plan });
+  };
 
   const handleSavePlan = () => {
-    setPlans((prev) => prev.map((plan) => (plan.id === editingPlan.id ? editingPlan : plan)))
-    setEditingPlan(null)
-  }
+    setPlans((prev) =>
+      prev.map((p) => (p.id === editingPlan.id ? editingPlan : p))
+    );
+    setEditingPlan(null);
+  };
 
   const handleTogglePlan = (id) => {
-    setPlans((prev) => prev.map((plan) => (plan.id === id ? { ...plan, active: !plan.active } : plan)))
-  }
+    setPlans((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, active: !p.active } : p
+      )
+    );
+  };
 
   return (
-    <div className="subscription-plans">
-      <div className="plans-header">
-        <h2>Subscription Plans & Pricing</h2>
-        <button className="add-plan-btn" onClick={() => setShowAddForm(true)}>
+    <div className="p-6 space-y-6">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Subscription Plans & Pricing</h2>
+
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
+        >
           Add New Plan
         </button>
       </div>
 
-      <div className="plans-grid">
+      {/* Plans Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => (
-          <div key={plan.id} className={`plan-card ${!plan.active ? "inactive" : ""}`}>
-            <div className="plan-header">
-              <h3>{plan.name}</h3>
-              <div className="plan-price">${plan.price}/month</div>
+          <div
+            key={plan.id}
+            className={`p-5 rounded-xl shadow bg-white border ${
+              !plan.active ? "opacity-50" : ""
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <span className="text-xl font-bold">${plan.price}/mo</span>
             </div>
-            <div className="plan-features">
-              {plan.features.map((feature, index) => (
-                <div key={index} className="feature-item">
-                  ✓ {feature}
+
+            <div className="space-y-2 mt-3 text-sm">
+              {plan.features.map((feature, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  {feature}
                 </div>
               ))}
             </div>
-            <div className="plan-actions">
-              <button className="edit-btn" onClick={() => handleEditPlan(plan)}>
+
+            <div className="mt-5 flex gap-3">
+              <button
+                className="px-3 py-1 text-sm bg-gray-100 rounded"
+                onClick={() => handleEditPlan(plan)}
+              >
                 Edit
               </button>
+
               <button
-                className={`toggle-btn ${plan.active ? "deactivate" : "activate"}`}
                 onClick={() => handleTogglePlan(plan.id)}
+                className={`px-3 py-1 text-sm rounded text-white ${
+                  plan.active ? "bg-red-500" : "bg-green-600"
+                }`}
               >
                 {plan.active ? "Deactivate" : "Activate"}
               </button>
@@ -81,40 +112,78 @@ const SubscriptionPlans = () => {
         ))}
       </div>
 
+      {/* Edit Modal */}
       {editingPlan && (
-        <div className="edit-modal">
-          <div className="modal-content">
-            <h3>Edit Plan: {editingPlan.name}</h3>
-            <div className="form-group">
-              <label>Plan Name:</label>
-              <input
-                type="text"
-                value={editingPlan.name}
-                onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
-              />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">
+              Edit Plan: {editingPlan.name}
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Plan Name:</label>
+                <input
+                  type="text"
+                  value={editingPlan.name}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, name: e.target.value })
+                  }
+                  className="w-full mt-1 border rounded-lg px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Price ($):</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editingPlan.price}
+                  onChange={(e) =>
+                    setEditingPlan({
+                      ...editingPlan,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full mt-1 border rounded-lg px-3 py-2"
+                />
+              </div>
             </div>
-            <div className="form-group">
-              <label>Price ($):</label>
-              <input
-                type="number"
-                step="0.01"
-                value={editingPlan.price}
-                onChange={(e) => setEditingPlan({ ...editingPlan, price: Number.parseFloat(e.target.value) })}
-              />
-            </div>
-            <div className="modal-actions">
-              <button onClick={handleSavePlan} className="save-btn">
-                Save
-              </button>
-              <button onClick={() => setEditingPlan(null)} className="cancel-btn">
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+                onClick={() => setEditingPlan(null)}
+              >
                 Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                onClick={handleSavePlan}
+              >
+                Save
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
-  )
-}
 
-export default SubscriptionPlans
+      {/* Add New Plan Modal (if you want later) */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md shadow-lg text-center">
+            <p className="text-sm">Add Plan form coming soon</p>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="mt-4 px-4 py-2 bg-gray-200 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SubscriptionPlans;
