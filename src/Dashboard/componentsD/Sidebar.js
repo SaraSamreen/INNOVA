@@ -19,9 +19,7 @@ const Sidebar = () => {
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
-    { path: "/product-showcase", icon: Palette, label: "Model with Product" },
     { path: "/team-collaboration", icon: Users, label: "Team Collaboration" },
-    { path: "/subtitles", icon: FileText, label: "Create Subtitles" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
     { path: "/editor", icon: Edit, label: "Editor" },
   ];

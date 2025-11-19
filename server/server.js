@@ -72,6 +72,9 @@ app.use((err, req, res, next) => {
 const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
 
 // ---------------------- SERVER ---------------------- //
 const PORT = process.env.PORT || 5000;

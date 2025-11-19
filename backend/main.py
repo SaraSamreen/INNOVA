@@ -1,361 +1,268 @@
-from huggingface_hub import InferenceClient
+# backend/main.py
+import os
+import io
 import time
+import base64
+import tempfile
+import requests
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
+from dotenv import load_dotenv
+from gtts import gTTS
+from werkzeug.utils import secure_filename
 
-class ReelMakerAI:
-    """
-    Complete AI assistant for Reel Maker App
-    Handles: Script Generation, Captions, Hashtags, Editing
-    """
-    
-    def __init__(self, hf_token):
-        self.client = InferenceClient(token=hf_token)
-        self.model = "inclusionAI/Ring-1T-preview"
-    
-    def _generate(self, prompt, max_tokens=400, temperature=0.7):
-        """Internal method with error handling and retry logic"""
-        max_retries = 3
-        
-        for attempt in range(max_retries):
-            try:
-                response = self.client.text_generation(
-                    prompt,
-                    model=self.model,
-                    max_new_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=0.9,
-                    repetition_penalty=1.1
-                )
-                return response
-            except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {str(e)}")
-                if attempt < max_retries - 1:
-                    time.sleep(2)  # Wait before retry
-                else:
-                    return f"Error: Unable to generate content after {max_retries} attempts."
-    
-    # ========== MODULE 3: AI SCRIPT GENERATOR ==========
-    
-    def generate_script(self, keywords, tone="professional", duration="30 seconds", style="engaging"):
-        """
-        FE-2: Generate complete video script with scene breakdown
-        
-        Args:
-            keywords (str): Product keywords/features
-            tone (str): Script tone (professional, casual, energetic, etc.)
-            duration (str): Video length (15s, 30s, 60s)
-            style (str): Script style (engaging, informative, humorous, etc.)
-        
-        Returns:
-            str: Complete video script with scenes
-        """
-        
-        prompt = f"""Create a {duration} video script for a social media reel.
+load_dotenv()
 
-Keywords: {keywords}
-Tone: {tone}
-Style: {style}
+app = Flask(__name__)
+CORS(app)
 
-Format the script with:
-[SCENE 1 - 0-5s] Hook - Attention-grabbing opening
-[SCENE 2 - 5-15s] Problem/Feature - Showcase the product
-[SCENE 3 - 15-25s] Benefits - Why they need it
-[SCENE 4 - 25-30s] CTA - Clear call-to-action
+# ==========================
+# CONFIG (from .env)
+# ==========================
+HEYGEN_API_KEY = os.getenv("HEYGEN_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+PORT = int(os.getenv("PORT", 5002))
 
-For each scene, include:
-- Visual description
-- Voice-over text
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-Keep it conversational and suitable for vertical video format."""
+# ==========================
+# In-memory / simple store
+# ==========================
+# For production, persist per-user (DB or session). This is minimal.
+SELECTED_VOICE = None
 
-        return self._generate(prompt, max_tokens=500, temperature=0.7)
-    
-    def edit_script(self, original_script, instructions):
-        """
-        FE-3: Edit generated script based on user feedback
-        
-        Args:
-            original_script (str): The original script
-            instructions (str): Edit instructions
-        
-        Returns:
-            str: Edited script
-        """
-        
-        prompt = f"""Edit this video script based on the instructions below.
+# voice mapping used for preview + audio generation
+VOICE_MAP = {
+    "nova": {"lang": "en", "tld": "co.uk"},
+    "orion": {"lang": "en", "tld": "com.au"},
+    "lyra": {"lang": "en", "tld": "ie"},
+    "atlas": {"lang": "en", "tld": "us"},
+    "iris": {"lang": "en", "tld": "in"},
+    "cedar": {"lang": "en", "tld": "ca"},
+}
 
-ORIGINAL SCRIPT:
-{original_script}
+# ==========================
+# Health
+# ==========================
+@app.get("/")
+def home():
+    return jsonify({"status": "ok", "service": "avatar-backend"})
 
-EDIT INSTRUCTIONS:
-{instructions}
+# ==========================
+# Preview voice (Page 2)
+# POST { text, voice }
+# returns MP3 audio
+# ==========================
+@app.route("/preview-voice", methods=["POST"])
+def preview_voice():
+    try:
+        data = request.get_json(force=True)
+        text = data.get("text")
+        voice_code = data.get("voice")
 
-Provide only the edited script, maintaining the same format and structure:"""
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
 
-        return self._generate(prompt, max_tokens=500, temperature=0.7)
-    
-    def suggest_tone_style(self, product_type, target_audience):
-        """
-        FE-4: AI suggests best tone and style
-        
-        Args:
-            product_type (str): Type of product
-            target_audience (str): Target demographic
-        
-        Returns:
-            str: Recommended tone and style
-        """
-        
-        prompt = f"""Suggest the best tone and style for a video about {product_type} targeting {target_audience}.
+        v = VOICE_MAP.get(voice_code, {"lang": "en", "tld": "us"})
+        tts = gTTS(text=text, lang=v["lang"], tld=v["tld"], slow=False)
 
-Provide:
-1. Recommended Tone (e.g., professional, casual, energetic, humorous)
-2. Recommended Style (e.g., inspirational, informative, entertaining)
-3. Brief reasoning (2-3 sentences)
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        tts.save(tmp.name)
+        return send_file(tmp.name, mimetype="audio/mpeg")
 
-Format:
-Tone: [your recommendation]
-Style: [your recommendation]
-Reasoning: [why this works best]"""
+    except Exception as e:
+        app.logger.exception("preview_voice failed")
+        return jsonify({"error": str(e)}), 500
 
-        return self._generate(prompt, max_tokens=200, temperature=0.7)
-    
-    def summarize_script(self, long_script, target_duration="15 seconds"):
-        """
-        FE-5: Auto-summarization for shorter versions
-        
-        Args:
-            long_script (str): Original longer script
-            target_duration (str): Desired duration
-        
-        Returns:
-            str: Shortened script
-        """
-        
-        prompt = f"""Shorten this video script to {target_duration} while keeping the core message and impact.
+# ==========================
+# Save selected voice (Page 2 -> Page 3)
+# POST { voiceCode }
+# ==========================
+@app.route("/save-selected-voice", methods=["POST"])
+def save_selected_voice():
+    global SELECTED_VOICE
+    data = request.get_json(force=True)
+    voice = data.get("voiceCode")
+    if not voice:
+        return jsonify({"error": "voiceCode required"}), 400
+    if voice not in VOICE_MAP:
+        return jsonify({"error": "unknown voiceCode"}), 400
+    SELECTED_VOICE = voice
+    return jsonify({"message": "voice saved", "voice": SELECTED_VOICE})
 
-ORIGINAL SCRIPT:
-{long_script}
+# ==========================
+# Enhance script (Gemini)
+# POST { text }
+# ==========================
+@app.route("/enhance-script", methods=["POST"])
+def enhance_script():
+    try:
+        data = request.get_json(force=True)
+        text = data.get("text")
+        if not text:
+            return jsonify({"error": "text required"}), 400
 
-Create a condensed version that:
-- Maintains the hook and CTA
-- Keeps the main benefit/message
-- Fits the {target_duration} timeframe
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateText"
+        payload = {"prompt": f"Rewrite and enhance this ad script professionally:\n\n{text}"}
+        resp = requests.post(f"{url}?key={GEMINI_API_KEY}", json=payload, timeout=30)
+        resp.raise_for_status()
+        result = resp.json()
+        enhanced = result.get("candidates", [{}])[0].get("output_text")
+        if not enhanced:
+            return jsonify({"error": "Gemini returned no text", "raw": result}), 500
+        return jsonify({"enhancedText": enhanced})
+    except Exception as e:
+        app.logger.exception("enhance_script failed")
+        return jsonify({"error": str(e)}), 500
 
-Provide only the shortened script:"""
+# ==========================
+# Generate HeyGen Video
+# POST form-data:
+#   text, avatar_id, background, videoType, optional avatar_image (file)
+# Flow:
+#   - Ensure SELECTED_VOICE exists
+#   - Generate TTS audio with gTTS according to selected voice
+#   - Convert audio to base64 and send to HeyGen's generation endpoint
+#   - Poll HeyGen status until done or timeout; return final video URL
+# ==========================
+@app.route("/generate-heygen-video", methods=["POST"])
+def generate_heygen_video():
+    global SELECTED_VOICE
+    try:
+        if SELECTED_VOICE is None:
+            return jsonify({"error": "No voice selected. Call /save-selected-voice first."}), 400
 
-        return self._generate(prompt, max_tokens=300, temperature=0.7)
-    
-    # ========== MODULE 9: SOCIAL SYNC ==========
-    
-    def generate_caption(self, product_info, platform="Instagram", include_emojis=True):
-        """
-        FE-4: AI Caption Generation
-        
-        Args:
-            product_info (str): Product description/features
-            platform (str): Social media platform
-            include_emojis (bool): Whether to include emojis
-        
-        Returns:
-            str: Engaging caption
-        """
-        
-        emoji_instruction = "Include 3-5 relevant emojis." if include_emojis else "No emojis."
-        
-        prompt = f"""Write an engaging {platform} caption for this product:
+        # accept both application/json and multipart/form-data (form preferred for files)
+        if request.content_type and request.content_type.startswith("multipart/form-data"):
+            text = request.form.get("text")
+            avatar_id = request.form.get("avatar_id")
+            background = request.form.get("background")
+            video_type = request.form.get("videoType")
+            avatar_file = request.files.get("avatar_image")
+        else:
+            # fallback to JSON body
+            data = request.get_json(force=True)
+            text = data.get("text")
+            avatar_id = data.get("avatar_id")
+            background = data.get("background")
+            video_type = data.get("videoType")
+            avatar_file = None
 
-{product_info}
+        if not text or not avatar_id:
+            return jsonify({"error": "Missing text or avatar_id"}), 400
 
-Requirements:
-- Start with an attention-grabbing hook
-- Highlight key benefits/features
-- {emoji_instruction}
-- Include a clear call-to-action
-- Keep it under 150 words
-- Make it shareable and conversational
+        # If custom avatar file uploaded, save it and prepare base64
+        avatar_payload = None
+        if avatar_id == "custom" and avatar_file:
+            filename = secure_filename(avatar_file.filename)
+            save_path = os.path.join(UPLOAD_FOLDER, filename)
+            avatar_file.save(save_path)
+            with open(save_path, "rb") as f:
+                avatar_b64 = base64.b64encode(f.read()).decode("utf-8")
+            avatar_payload = {"type": "image", "image_base64": avatar_b64}
+        else:
+            avatar_payload = {"type": "preset", "avatar_id": avatar_id}
 
-Provide only the caption:"""
+        # 1) Generate TTS audio using the previously selected voice
+        voice_spec = VOICE_MAP.get(SELECTED_VOICE, {"lang": "en", "tld": "us"})
+        tts = gTTS(text=text, lang=voice_spec["lang"], tld=voice_spec["tld"], slow=False)
+        audio_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        tts.save(audio_tmp.name)
 
-        return self._generate(prompt, max_tokens=200, temperature=0.8)
-    
-    def generate_hashtags(self, description, niche="general", count=15, strategy="balanced"):
-        """
-        FE-5: AI Hashtag Generation
-        
-        Args:
-            description (str): Product/content description
-            niche (str): Industry/niche
-            count (int): Number of hashtags (10-30)
-            strategy (str): "popular" (high reach) or "balanced" (mix) or "niche" (targeted)
-        
-        Returns:
-            str: List of hashtags
-        """
-        
-        if strategy == "popular":
-            mix = "Focus on high-volume hashtags (100k+ posts)"
-        elif strategy == "niche":
-            mix = "Focus on niche-specific hashtags (1k-50k posts)"
-        else:  # balanced
-            mix = "Mix of: 5 popular (100k+), 7 medium (10k-100k), 3 niche (1k-10k) hashtags"
-        
-        prompt = f"""Generate {count} strategic hashtags for:
+        with open(audio_tmp.name, "rb") as f:
+            audio_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-Description: {description}
-Niche: {niche}
-Strategy: {mix}
-
-Requirements:
-- All hashtags must be relevant and trending
-- Include both broad and specific tags
-- No spaces in hashtags
-- Format: #hashtag1 #hashtag2 #hashtag3
-
-Provide only the hashtags, no explanations:"""
-
-        return self._generate(prompt, max_tokens=150, temperature=0.7)
-    
-    def generate_multiple_captions(self, product_info, platform="Instagram", count=3):
-        """
-        Generate multiple caption variations for A/B testing
-        
-        Args:
-            product_info (str): Product description
-            platform (str): Social platform
-            count (int): Number of variations
-        
-        Returns:
-            str: Multiple caption options
-        """
-        
-        prompt = f"""Generate {count} different caption variations for {platform}:
-
-Product: {product_info}
-
-Create {count} unique captions with different approaches:
-1. Emotional/Storytelling approach
-2. Benefit-focused approach
-3. Question/Engagement approach
-
-Label each as "Option 1:", "Option 2:", etc.
-Each caption should include emojis and a CTA."""
-
-        return self._generate(prompt, max_tokens=400, temperature=0.9)
-    
-    # ========== CONVENIENCE METHODS ==========
-    
-    def generate_complete_post(self, product_name, product_description, 
-                              platform="Instagram", hashtag_count=15):
-        """
-        Generate everything at once: script + caption + hashtags
-        
-        Args:
-            product_name (str): Product name
-            product_description (str): Features/benefits
-            platform (str): Target platform
-            hashtag_count (int): Number of hashtags
-        
-        Returns:
-            dict: Complete content package
-        """
-        
-        print("🎬 Generating video script...")
-        script = self.generate_script(
-            keywords=product_description,
-            tone="engaging and friendly",
-            duration="30 seconds"
-        )
-        
-        print("💬 Generating caption...")
-        caption = self.generate_caption(
-            product_info=f"{product_name} - {product_description}",
-            platform=platform
-        )
-        
-        print("#️⃣ Generating hashtags...")
-        hashtags = self.generate_hashtags(
-            description=product_description,
-            niche=product_name,
-            count=hashtag_count
-        )
-        
-        return {
-            "script": script,
-            "caption": caption,
-            "hashtags": hashtags,
-            "platform": platform
+        # 2) Construct HeyGen payload
+        # NOTE: HeyGen has multiple endpoints/versions; adapt based on the HeyGen API contract you have.
+        heygen_payload = {
+            "video_inputs": [
+                {
+                    "type": "avatar",
+                    "avatar": avatar_payload,
+                    "voice": {
+                        "type": "audio",
+                        # we pass the SELECTED_VOICE as an identifier; HeyGen may ignore it if audio is present
+                        "voice_id": SELECTED_VOICE,
+                        "audio_base64": audio_b64
+                    },
+                    "background": background or "studio",
+                    "video_style": video_type or "product-ad"
+                }
+            ]
         }
 
+        headers = {"X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json"}
+        gen_resp = requests.post("https://api.heygen.com/v2/video/generate", json=heygen_payload, headers=headers, timeout=60)
+        # If HeyGen returns non-JSON or an error body, raise
+        try:
+            gen_json = gen_resp.json()
+        except Exception:
+            return jsonify({"error": "HeyGen returned non-JSON", "status": gen_resp.status_code, "text": gen_resp.text}), 500
 
-# ========== USAGE EXAMPLES ==========
+        # Check expected structure; adapt if your HeyGen account uses different response fields
+        if gen_resp.status_code not in (200, 201) or "data" not in gen_json:
+            return jsonify({"error": "HeyGen generation failed", "details": gen_json}), 500
 
+        video_id = gen_json["data"].get("video_id") or gen_json["data"].get("id")
+        if not video_id:
+            # return raw for debugging
+            return jsonify({"error": "HeyGen did not return video_id", "details": gen_json}), 500
+
+        # 3) Poll HeyGen status for completion (simple loop with timeout)
+        status_url = "https://api.heygen.com/v2/video/status"
+        final_video_url = None
+        timeout_seconds = 120
+        poll_interval = 3
+        start = time.time()
+
+        while time.time() - start < timeout_seconds:
+            status_resp = requests.get(status_url, params={"video_id": video_id}, headers=headers, timeout=20)
+            try:
+                status_json = status_resp.json()
+            except Exception:
+                time.sleep(poll_interval)
+                continue
+
+            # HeyGen status field might be 'status' or nested; adapt as needed
+            status_field = status_json.get("data", {}).get("status") or status_json.get("status")
+            if status_field in ("completed", "done", "finished"):
+                final_video_url = status_json.get("data", {}).get("result_url") or status_json.get("result_url")
+                break
+            elif status_field in ("failed", "error"):
+                return jsonify({"error": "HeyGen job failed", "details": status_json}), 500
+
+            time.sleep(poll_interval)
+
+        if not final_video_url:
+            # return video_id so frontend can poll longer if needed
+            return jsonify({"message": "processing", "video_id": video_id}), 202
+
+        return jsonify({"success": True, "video_url": final_video_url})
+
+    except Exception as e:
+        app.logger.exception("generate_heygen_video failed")
+        return jsonify({"error": str(e)}), 500
+
+# ==========================
+# Optional: expose video status check for frontend polling
+# GET /video-status?video_id=...
+# ==========================
+@app.route("/video-status", methods=["GET"])
+def video_status():
+    video_id = request.args.get("video_id")
+    if not video_id:
+        return jsonify({"error": "video_id required"}), 400
+    headers = {"X-Api-Key": HEYGEN_API_KEY}
+    status_url = "https://api.heygen.com/v2/video/status"
+    resp = requests.get(status_url, params={"video_id": video_id}, headers=headers, timeout=20)
+    try:
+        return jsonify(resp.json())
+    except Exception:
+        return jsonify({"status_code": resp.status_code, "text": resp.text}), 500
+
+# ==========================
+# Run
+# ==========================
 if __name__ == "__main__":
-    # Initialize
-    ai = ReelMakerAI(hf_token="hf_YOUR_TOKEN_HERE")
-    
-    print("="*70)
-    print("🎥 REEL MAKER AI - COMPLETE DEMO")
-    print("="*70)
-    
-    # Example 1: Generate complete content package
-    print("\n📦 EXAMPLE 1: Complete Post Generation")
-    print("-"*70)
-    
-    content = ai.generate_complete_post(
-        product_name="Wireless Earbuds Pro",
-        product_description="noise cancellation, 24h battery, premium sound quality, water-resistant",
-        platform="Instagram",
-        hashtag_count=15
-    )
-    
-    print("\n📝 SCRIPT:")
-    print(content["script"])
-    print("\n💬 CAPTION:")
-    print(content["caption"])
-    print("\n#️⃣ HASHTAGS:")
-    print(content["hashtags"])
-    
-    # Example 2: Individual features
-    print("\n" + "="*70)
-    print("📝 EXAMPLE 2: Script Generation & Editing")
-    print("-"*70)
-    
-    # Generate script
-    script = ai.generate_script(
-        keywords="protein powder, muscle building, post-workout, natural ingredients",
-        tone="energetic and motivational",
-        duration="30 seconds"
-    )
-    print("\nOriginal Script:")
-    print(script)
-    
-    # Edit script
-    edited = ai.edit_script(
-        original_script=script,
-        instructions="Make it more humorous and add a funny opening hook"
-    )
-    print("\nEdited Script:")
-    print(edited)
-    
-    # Example 3: Caption variations
-    print("\n" + "="*70)
-    print("💬 EXAMPLE 3: Multiple Caption Variations")
-    print("-"*70)
-    
-    captions = ai.generate_multiple_captions(
-        product_info="Smart fitness watch with heart rate monitor and sleep tracking",
-        platform="TikTok",
-        count=3
-    )
-    print(captions)
-    
-    # Example 4: Tone suggestions
-    print("\n" + "="*70)
-    print("🎯 EXAMPLE 4: Tone & Style Suggestions")
-    print("-"*70)
-    
-    suggestion = ai.suggest_tone_style(
-        product_type="eco-friendly yoga mat",
-        target_audience="health-conscious millennials aged 25-35"
-    )
-    print(suggestion)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
