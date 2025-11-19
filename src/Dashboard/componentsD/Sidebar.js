@@ -23,7 +23,7 @@ const Sidebar = () => {
     { path: "/team-collaboration", icon: Users, label: "Team Collaboration" },
     { path: "/subtitles", icon: FileText, label: "Create Subtitles" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
-    { path: "/editor", icon: Edit, label: "Editor" },
+    { path: "/video-editor", icon: Edit, label: "Video Editor" },
   ];
 
   return (

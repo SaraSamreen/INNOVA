@@ -1,16 +1,15 @@
-import React from "react"
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { Bell, Settings, Users } from "lucide-react"
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Bell, Settings, Users } from "lucide-react";
 
-const TeamHeader = ({ activeTeam, onInviteClick, notifications }) => {
-  const [showNotifications, setShowNotifications] = useState(false)
+const TeamHeader = ({ activeTeam, onCreateTeamClick, onInviteClick, notifications }) => {
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const toggleNotifications = () => {
-    setShowNotifications(!showNotifications)
-  }
+    setShowNotifications(!showNotifications);
+  };
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="team-header">
@@ -29,9 +28,13 @@ const TeamHeader = ({ activeTeam, onInviteClick, notifications }) => {
       </div>
 
       <div className="team-header-actions">
-        {activeTeam && (
+        {activeTeam ? (
           <button className="invite-btn" onClick={onInviteClick}>
             + Invite Member
+          </button>
+        ) : (
+          <button className="create-team-btn" onClick={onCreateTeamClick}>
+            + Create Team
           </button>
         )}
 
@@ -51,7 +54,10 @@ const TeamHeader = ({ activeTeam, onInviteClick, notifications }) => {
               <div className="notification-list">
                 {notifications.length > 0 ? (
                   notifications.map((notification) => (
-                    <div key={notification.id} className={`notification-item ${!notification.read ? "unread" : ""}`}>
+                    <div
+                      key={notification.id}
+                      className={`notification-item ${!notification.read ? "unread" : ""}`}
+                    >
                       <p>{notification.message}</p>
                       <span className="notification-time">{notification.time}</span>
                     </div>
@@ -69,7 +75,7 @@ const TeamHeader = ({ activeTeam, onInviteClick, notifications }) => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TeamHeader
+export default TeamHeader;
