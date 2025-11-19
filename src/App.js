@@ -16,6 +16,7 @@ import TemplateEditor from "./TemplateEditor/components/TemplateEditor";
 import ProductShowcase from './Dashboard/componentsD/ProductShowcase';
 import Designproduct from './DesignProduct/DesignProduct';
 import Forgotpass from './AccessHub/Forgotpass';
+import VideoEditorPage from './Dashboard/componentsD/VideoEditorPage';
 
 
 
@@ -39,6 +40,7 @@ function AppWrapper() {
          <Route path="/forgotpass" element={<Forgotpass/>} />
          <Route path="/design-product" element={<Designproduct />} />
          <Route path="/product-showcase" element={<ProductShowcase/>} />
+          <Route path="/video-editor" element={<VideoEditorPage />} />
       </Routes>
     </Router>
   );

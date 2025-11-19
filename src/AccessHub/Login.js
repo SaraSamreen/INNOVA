@@ -38,6 +38,10 @@ const AuthPage = () => {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
+      
+    // ✅ Store token & user info
+    localStorage.setItem('authToken', data.token);       // <--- store JWT
+    localStorage.setItem('user', JSON.stringify(data.user)); // <--- store user info
 
       alert('Login successful');
       window.location.href = loginRole === 'admin' ? '/admin' : '/dashboard';
@@ -106,6 +110,9 @@ const AuthPage = () => {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
+
+       localStorage.setItem('authToken', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
       alert('Google authentication successful!');
       window.location.href = '/dashboard';
     } catch (err) {
