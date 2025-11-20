@@ -1,3 +1,4 @@
+//routes/auth.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -5,7 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { authAdmin } = require('../firebaseAdmin'); // for google-login verification
+const { authAdmin } = require('../firebaseAdmin');
 
 // Helper to generate JWT
 const generateToken = (userId) => {
@@ -33,10 +34,10 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// ---------------------- SIGNUP ----------------------
+// SIGNUP - always create as 'user'
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, age, hobbies } = req.body;
+    const { name, email, password, age, hobbies } = req.body; // Remove role from here
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -53,19 +54,25 @@ router.post('/signup', async (req, res) => {
       email,
       password: hashedPassword,
       age: age || undefined,
-      hobbies: hobbies || []
+      hobbies: hobbies || [],
+      role: 'user' // Always 'user' for new signups
     });
 
     await user.save();
 
     const token = generateToken(user._id);
 
-    console.log('✅ User created:', { id: user._id, email: user.email });
+    console.log('✅ User created:', { id: user._id, email: user.email, role: user.role });
 
     res.status(201).json({
       message: 'Signup successful',
       token,
-      user: { id: user._id, email: user.email, name: user.name }
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name,
+        role: user.role
+      }
     });
   } catch (err) {
     console.error('Signup error:', err);
@@ -74,9 +81,10 @@ router.post('/signup', async (req, res) => {
 });
 
 // ---------------------- LOGIN ----------------------
+// LOGIN - check role from database, not from request
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body; // Remove role from here
 
     if (!email || !password)
       return res.status(400).json({ message: 'Email and password are required' });
@@ -91,32 +99,28 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(user._id);
 
-    console.log('✅ User logged in:', { id: user._id, email: user.email });
+    console.log('✅ User logged in:', { 
+      id: user._id, 
+      email: user.email, 
+      role: user.role // Log the role from database
+    });
 
     res.status(200).json({
       message: 'Login successful',
       token,
-      user: { id: user._id, email: user.email, name: user.name }
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name,
+        role: user.role || 'user', // Send actual role from database
+        permissions: user.permissions
+      }
     });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error during login', error: err.message });
   }
 });
-
-// ---------------------- PROFILE ----------------------
-router.get('/profile', authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.userId).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    res.json(user);
-  } catch (err) {
-    console.error('Profile error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // ---------------------- DRAFTS ----------------------
 router.post('/save-draft', authMiddleware, async (req, res) => {
   try {
@@ -158,21 +162,15 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(404).json({ message: "No account found with that email." });
     }
 
-    // Generate a random reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-
-    // Hash the token before saving to DB for security
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
-    // Set token and expiry (1 hour)
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
-    // Create reset link
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // Configure mail transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -181,7 +179,6 @@ router.post("/forgot-password", async (req, res) => {
       },
     });
 
-    // Email content
     const mailOptions = {
       from: `"INNOVA Support" <${process.env.EMAIL_USER}>`,
       to: user.email,
@@ -211,7 +208,6 @@ router.post("/reset-password/:token", async (req, res) => {
   try {
     const { password } = req.body;
 
-    // Hash the token again for lookup
     const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
 
     const user = await User.findOne({
@@ -223,10 +219,7 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired token." });
     }
 
-    // Hash the new password
     user.password = await bcrypt.hash(password, 10);
-
-    // Clear token fields
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
@@ -248,23 +241,20 @@ router.post("/google-login", async (req, res) => {
       return res.status(400).json({ message: "ID token is required" });
     }
 
-    // Verify the Firebase ID token
     const decodedToken = await authAdmin.verifyIdToken(idToken);
     const { uid, email, name } = decodedToken;
 
-    // Check if user exists in MongoDB
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create new user if doesn't exist
       user = await User.create({
         name: name || email.split('@')[0],
         email,
         firebaseUid: uid,
-        provider: "google"
+        provider: "google",
+        role: 'user' // Default role for Google sign-ups
       });
     } else {
-      // Update existing user with Firebase UID if not set
       if (!user.firebaseUid) {
         user.firebaseUid = uid;
         user.provider = "google";
@@ -272,15 +262,24 @@ router.post("/google-login", async (req, res) => {
       }
     }
 
-    // Generate JWT token
     const token = generateToken(user._id);
 
-    console.log('✅ Google login successful:', { id: user._id, email: user.email });
+    console.log('✅ Google login successful:', { 
+      id: user._id, 
+      email: user.email,
+      role: user.role 
+    });
 
     res.status(200).json({
       message: 'Google login successful',
       token,
-      user: { id: user._id, email: user.email, name: user.name, provider: user.provider }
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name, 
+        provider: user.provider,
+        role: user.role // Include role in response
+      }
     });
   } catch (err) {
     console.error('Google login error:', err);

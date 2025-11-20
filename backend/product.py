@@ -1,308 +1,156 @@
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi.middleware.cors import CORSMiddleware
+import httpx
 import os
-import io
 import base64
-import google.generativeai as genai
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 from dotenv import load_dotenv
-from PIL import Image, ImageDraw
 
 load_dotenv()
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI(title="INNOVA Product Management API")
 
-# Configuration
-FRONTEND_PUBLIC = os.path.join(os.path.dirname(__file__), "..", "public")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Configure Gemini
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# Helper function to convert image to base64
+async def image_to_base64(file: UploadFile) -> str:
+    image_bytes = await file.read()
+    return base64.b64encode(image_bytes).decode('utf-8')
 
-# ---------------------------
-# Helpers
-# ---------------------------
-def decode_base64_to_image(b64_string):
-    img_bytes = base64.b64decode(b64_string)
-    return Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+@app.get("/")
+async def root():
+    return {
+        "message": "INNOVA Product Management API",
+        "endpoints": [
+            "/beautify",
+            "/stage-product",
+            "/generate-background",
+            "/remove-background"
+        ]
+    }
 
-
-def encode_image_to_base64(img):
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
-
-
-def image_to_bytes(img):
-    """Convert PIL Image to bytes"""
-    buf = io.BytesIO()
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    img.save(buf, format='JPEG')
-    buf.seek(0)
-    return buf.getvalue()
-
-
-# ---------------------------
-# Gemini-Powered Product Analysis & Instructions
-# ---------------------------
-def analyze_product_with_gemini(product_img):
+# 1. Product Beautifier - Enhance product images to studio quality
+@app.post("/beautify")
+async def beautify_product(product_image: UploadFile = File(...)):
     """
-    Use Gemini Vision to analyze the product and create a detailed description
+    Transform product images into studio-grade professional shots
+    Uses AI to enhance lighting, remove imperfections, and create professional look
     """
-    if not GEMINI_API_KEY:
-        return "stylish leather handbag"
-    
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # TODO: Integrate with chosen AI service (e.g., Remove.bg, Cloudinary, etc.)
+        # For now, return placeholder
         
-        # Convert image for Gemini
-        product_bytes = image_to_bytes(product_img)
+        image_base64 = await image_to_base64(product_image)
         
-        prompt = """Analyze this product image and provide a detailed but concise description 
-        focusing on: color, material, style, and key features. 
-        Keep it under 20 words. Example: 'beige leather tote bag with gold hardware and structured design'"""
-        
-        response = model.generate_content([prompt, {"mime_type": "image/jpeg", "data": product_bytes}])
-        
-        return response.text.strip()
-    except Exception as e:
-        print(f"Gemini analysis error: {e}")
-        return "stylish handbag"
-
-
-def generate_placement_instructions(model_img, product_img):
-    """
-    Use Gemini to analyze the model image and suggest optimal product placement
-    """
-    if not GEMINI_API_KEY:
-        return None
-    
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        model_bytes = image_to_bytes(model_img)
-        product_desc = analyze_product_with_gemini(product_img)
-        
-        prompt = f"""Analyze this fashion model image. The goal is to place a {product_desc} 
-        in the model's hands naturally. 
-        
-        Provide:
-        1. Where are the model's hands? (percentage from top, percentage from left)
-        2. What's the hand position? (front, side, crossed, etc)
-        3. Recommended product size (as percentage of image width)
-        4. Any rotation needed (degrees)
-        
-        Format your response as:
-        HANDS: X% from left, Y% from top
-        POSITION: [description]
-        SIZE: [percentage]%
-        ROTATION: [degrees]°"""
-        
-        response = model.generate_content([prompt, {"mime_type": "image/jpeg", "data": model_bytes}])
-        
-        return response.text
-    except Exception as e:
-        print(f"Gemini placement error: {e}")
-        return None
-
-
-def parse_gemini_instructions(instructions):
-    """Parse Gemini's placement instructions"""
-    if not instructions:
-        return {"x": 0.5, "y": 0.45, "size": 0.25, "rotation": 0}
-    
-    try:
-        params = {"x": 0.5, "y": 0.45, "size": 0.25, "rotation": 0}
-        
-        for line in instructions.split('\n'):
-            if 'HANDS:' in line:
-                # Extract percentages
-                parts = line.split(',')
-                if len(parts) >= 2:
-                    x_part = parts[0].split('%')[0]
-                    y_part = parts[1].split('%')[0]
-                    params['x'] = float(x_part.split()[-1]) / 100
-                    params['y'] = float(y_part.split()[-1]) / 100
+        # Example API call structure (replace with actual service)
+        async with httpx.AsyncClient() as client:
+            # Placeholder - replace with actual beautification API
+            response = {
+                "image_url": "https://via.placeholder.com/800x1200/4F46E5/FFFFFF?text=Beautified+Product"
+            }
             
-            elif 'SIZE:' in line:
-                size = line.split(':')[1].strip().replace('%', '')
-                params['size'] = float(size) / 100
+        return {"image_url": response["image_url"]}
+        
+    except Exception as e:
+        raise HTTPException(500, f"Beautification error: {str(e)}")
+
+# 2. Product Staging - Place product in realistic scenes
+@app.post("/stage-product")
+async def stage_product(
+    product_image: UploadFile = File(...),
+    scene_prompt: str = Form(...)
+):
+    """
+    Create realistic product scenes using AI
+    Places your product in various environments/contexts
+    """
+    try:
+        image_base64 = await image_to_base64(product_image)
+        
+        # TODO: Integrate with AI staging service
+        # Services: Photoroom, Pebblely, etc.
+        
+        async with httpx.AsyncClient() as client:
+            # Placeholder - replace with actual staging API
+            response = {
+                "image_url": "https://via.placeholder.com/1200x800/10B981/FFFFFF?text=Staged+Product"
+            }
             
-            elif 'ROTATION:' in line:
-                rotation = line.split(':')[1].strip().replace('°', '')
-                params['rotation'] = float(rotation)
-        
-        return params
-    except:
-        return {"x": 0.5, "y": 0.45, "size": 0.25, "rotation": 0}
-
-
-# ---------------------------
-# AI-Enhanced Product Placement
-# ---------------------------
-def smart_product_placement(model_img, product_img):
-    """
-    Use Gemini to intelligently place the product on the model
-    """
-    try:
-        # Remove background from product
-        from rembg import remove as remove_bg
-        buffer = io.BytesIO()
-        product_img.save(buffer, format="PNG")
-        result = remove_bg(buffer.getvalue())
-        product_img = Image.open(io.BytesIO(result)).convert("RGBA")
-    except:
-        print("rembg not available, using original product image")
-    
-    # Get AI-powered placement instructions
-    print("Getting Gemini placement analysis...")
-    instructions = generate_placement_instructions(model_img, product_img)
-    params = parse_gemini_instructions(instructions)
-    
-    print(f"Placement params: {params}")
-    
-    # Resize product based on AI recommendation
-    target_width = int(model_img.width * params['size'])
-    pw, ph = product_img.size
-    scale = target_width / pw
-    new_size = (target_width, int(ph * scale))
-    product_img = product_img.resize(new_size, Image.LANCZOS)
-    
-    # Rotate if needed
-    if params['rotation'] != 0:
-        product_img = product_img.rotate(params['rotation'], expand=True)
-    
-    # Calculate position based on AI analysis
-    x = int(model_img.width * params['x']) - (product_img.width // 2)
-    y = int(model_img.height * params['y']) - (product_img.height // 2)
-    
-    # Ensure product stays inside frame
-    x = max(0, min(x, model_img.width - product_img.width))
-    y = max(0, min(y, model_img.height - product_img.height))
-    
-    # Create composite
-    composite = model_img.copy()
-    composite.paste(product_img, (x, y), product_img)
-    
-    return composite
-
-
-# ---------------------------
-# Fallback: Simple Overlay
-# ---------------------------
-def simple_overlay(model_img, product_img):
-    """Simple overlay for when Gemini is not available"""
-    try:
-        from rembg import remove as remove_bg
-        buffer = io.BytesIO()
-        product_img.save(buffer, format="PNG")
-        result = remove_bg(buffer.getvalue())
-        product_img = Image.open(io.BytesIO(result)).convert("RGBA")
-    except:
-        pass
-
-    target_width = int(model_img.width * 0.25)
-    pw, ph = product_img.size
-    scale = target_width / pw
-    new_size = (target_width, int(ph * scale))
-    product_img = product_img.resize(new_size, Image.LANCZOS)
-
-    x = (model_img.width - product_img.width) // 2
-    y = int(model_img.height * 0.45)
-
-    composite = model_img.copy()
-    composite.paste(product_img, (x, y), product_img)
-    
-    return composite
-
-
-# ---------------------------
-# ROUTE: Generate Final Image
-# ---------------------------
-@app.route("/generate-final", methods=["POST"])
-def generate_final():
-    try:
-        data = request.get_json()
-        model_path = data.get("model_image_path")
-        product_b64 = data.get("product_image")
-        use_ai = data.get("use_ai", True)  # Default to using AI if available
-
-        if not model_path or not product_b64:
-            return jsonify({"error": "model_image_path and product_image required"}), 400
-
-        # Load model image
-        clean_path = model_path.lstrip("/")
-        full_model_path = os.path.join(FRONTEND_PUBLIC, clean_path)
-        
-        if not os.path.exists(full_model_path):
-            return jsonify({"error": f"Model image not found at {full_model_path}"}), 404
-
-        model_img = Image.open(full_model_path).convert("RGBA")
-        product_img = decode_base64_to_image(product_b64)
-
-        # Choose generation method
-        if use_ai and GEMINI_API_KEY:
-            print("Using Gemini AI-Enhanced Placement")
-            final = smart_product_placement(model_img, product_img)
-            method = "gemini"
-        else:
-            print("Using Simple Overlay")
-            final = simple_overlay(model_img, product_img)
-            method = "simple"
-
-        # Convert to base64
-        final_b64 = encode_image_to_base64(final)
-
-        return jsonify({
-            "success": True,
-            "final": final_b64,
-            "method_used": method
-        }), 200
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
-
-# ---------------------------
-# ROUTE: Analyze Product (Optional endpoint for testing)
-# ---------------------------
-@app.route("/analyze-product", methods=["POST"])
-def analyze_product():
-    try:
-        data = request.get_json()
-        product_b64 = data.get("product_image")
-        
-        if not product_b64:
-            return jsonify({"error": "product_image required"}), 400
-        
-        product_img = decode_base64_to_image(product_b64)
-        description = analyze_product_with_gemini(product_img)
-        
-        return jsonify({
-            "success": True,
-            "description": description
-        }), 200
+        return {"image_url": response["image_url"]}
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        raise HTTPException(500, f"Staging error: {str(e)}")
 
+# 3. AI Background Generator - Generate custom backgrounds
+@app.post("/generate-background")
+async def generate_background(
+    product_image: UploadFile = File(...),
+    background_prompt: str = Form(...)
+):
+    """
+    Generate AI backgrounds and composite with product
+    Creates custom backgrounds based on text descriptions
+    """
+    try:
+        image_base64 = await image_to_base64(product_image)
+        
+        # TODO: Integrate with background generation service
+        # Services: Stable Diffusion, DALL-E, Photoroom, etc.
+        
+        async with httpx.AsyncClient() as client:
+            # Placeholder - replace with actual background generation API
+            response = {
+                "image_url": "https://via.placeholder.com/1200x800/F59E0B/FFFFFF?text=AI+Background"
+            }
+            
+        return {"image_url": response["image_url"]}
+        
+    except Exception as e:
+        raise HTTPException(500, f"Background generation error: {str(e)}")
 
-# ---------------------------
-# Run Server
-# ---------------------------
-if __name__ == "__main__":
-    print(f"Starting server...")
-    print(f"FRONTEND_PUBLIC: {FRONTEND_PUBLIC}")
-    
-    if GEMINI_API_KEY:
-        print("✓ Gemini API configured - AI placement available")
-    else:
-        print("⚠ Gemini API not configured - using simple overlay")
-        print("Add GEMINI_API_KEY to .env file to enable AI features")
-    
-    app.run(host="0.0.0.0", port=5002, debug=True)
+# 4. Background Remover - Remove backgrounds automatically
+@app.post("/remove-background")
+async def remove_background(image: UploadFile = File(...)):
+    """
+    Remove background from images automatically
+    Returns PNG with transparent background
+    """
+    try:
+        image_base64 = await image_to_base64(image)
+        
+        # TODO: Integrate with Remove.bg or similar service
+        # Example: Remove.bg API
+        # API_KEY = os.getenv("REMOVEBG_API_KEY")
+        
+        async with httpx.AsyncClient() as client:
+            # Example Remove.bg integration:
+            # response = await client.post(
+            #     "https://api.remove.bg/v1.0/removebg",
+            #     headers={"X-Api-Key": API_KEY},
+            #     data={"image_file_b64": image_base64, "size": "auto"}
+            # )
+            
+            # Placeholder - replace with actual API
+            response = {
+                "image_url": "https://via.placeholder.com/800x800/9333EA/FFFFFF?text=Background+Removed"
+            }
+            
+        return {"image_url": response["image_url"]}
+        
+    except Exception as e:
+        raise HTTPException(500, f"Background removal error: {str(e)}")
+
+# Additional utility endpoint for testing
+@app.post("/test-upload")
+async def test_upload(file: UploadFile = File(...)):
+    """Test endpoint to verify file uploads are working"""
+    return {
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "size": len(await file.read())
+    }
