@@ -18,6 +18,7 @@ import ProductBeautifier from './Dashboard/componentsD/ProductBeautifier';
 import Forgotpass from './AccessHub/Forgotpass';
 import VideoEditorPage from './Dashboard/componentsD/VideoEditorPage';
 import Drafts from './Drafts';
+import SimpleChat from './SimpleChat/SimpleChat';
 
 
 
@@ -42,6 +43,8 @@ function AppWrapper() {
          <Route path="/product-beautifier" element={<ProductBeautifier />} />
          <Route path="/design-product" element={<Designproduct />} />
           <Route path="/drafts" element={<Drafts/>} />
+          <Route path="/simple-chat" element={<SimpleChat/>} />
+
           <Route path="/video-editor" element={<VideoEditorPage />} />
       </Routes>
     </Router>
