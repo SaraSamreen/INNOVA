@@ -42,7 +42,6 @@ function AppWrapper() {
          <Route path="/product-beautifier" element={<ProductBeautifier />} />
          <Route path="/design-product" element={<Designproduct />} />
           <Route path="/drafts" element={<Drafts/>} />
-         <Route path="/product-showcase" element={<ProductShowcase/>} />
           <Route path="/video-editor" element={<VideoEditorPage />} />
       </Routes>
     </Router>
