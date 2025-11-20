@@ -9,12 +9,19 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
     "axios": "^1.13.2",
     "dotenv": "^16.5.0",
     "lucide-react": "^0.477.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.46.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.1",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
@@ -22,14 +29,16 @@
     "react-router-dom": "^6.30.1",
     "react-scripts": "^5.0.1",
     "socket.io-client": "^4.8.1",
+    "vite": "^5.4.8",
     "wavesurfer.js": "^7.10.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
-    "test": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "backend": "cd backend && uvicorn product:app --reload --port 8000"
   },
   "eslintConfig": {
     "extends": [

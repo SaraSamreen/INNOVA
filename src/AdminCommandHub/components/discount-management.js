@@ -1,6 +1,4 @@
-import React from "react"
-import { useState } from "react"
-import "../../Styles/AdminCommandHub.css"
+import React, { useState } from "react"
 
 const DiscountManagement = () => {
   const [discounts, setDiscounts] = useState([
@@ -25,6 +23,7 @@ const DiscountManagement = () => {
       value: Number.parseFloat(newDiscount.value),
       usageCount: 0,
     }
+
     setDiscounts([...discounts, discount])
     setNewDiscount({ code: "", type: "percentage", value: "", expiryDate: "", active: true })
     setShowAddForm(false)
@@ -32,7 +31,9 @@ const DiscountManagement = () => {
 
   const handleToggleDiscount = (id) => {
     setDiscounts((prev) =>
-      prev.map((discount) => (discount.id === id ? { ...discount, active: !discount.active } : discount)),
+      prev.map((discount) =>
+        discount.id === id ? { ...discount, active: !discount.active } : discount
+      )
     )
   }
 
@@ -41,49 +42,79 @@ const DiscountManagement = () => {
   }
 
   return (
-    <div className="discount-management">
-      <div className="discount-header">
-        <h2>Discount Codes & Promotional Offers</h2>
-        <button className="add-discount-btn" onClick={() => setShowAddForm(true)}>
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Discount Codes & Promotional Offers</h2>
+
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+        >
           Create New Discount
         </button>
       </div>
 
-      <div className="discounts-table">
-        <table>
-          <thead>
+      {/* Table */}
+      <div className="bg-white shadow rounded-lg overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-100">
             <tr>
-              <th>Code</th>
-              <th>Type</th>
-              <th>Value</th>
-              <th>Status</th>
-              <th>Expiry Date</th>
-              <th>Usage Count</th>
-              <th>Actions</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Code</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Type</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Value</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Status</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Expiry Date</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Usage Count</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {discounts.map((discount) => (
-              <tr key={discount.id}>
-                <td className="discount-code">{discount.code}</td>
-                <td>{discount.type}</td>
-                <td>{discount.type === "percentage" ? `${discount.value}%` : `$${discount.value}`}</td>
-                <td>
-                  <span className={`status-badge ${discount.active ? "active" : "inactive"}`}>
+              <tr key={discount.id} className="border-b">
+                <td className="px-4 py-3 font-medium">{discount.code}</td>
+                <td className="px-4 py-3 capitalize">{discount.type}</td>
+                <td className="px-4 py-3">
+                  {discount.type === "percentage"
+                    ? `${discount.value}%`
+                    : `$${discount.value}`}
+                </td>
+
+                <td className="px-4 py-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium
+                      ${
+                        discount.active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                  >
                     {discount.active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td>{discount.expiryDate}</td>
-                <td>{discount.usageCount}</td>
-                <td>
-                  <div className="action-buttons">
+
+                <td className="px-4 py-3">{discount.expiryDate}</td>
+                <td className="px-4 py-3">{discount.usageCount}</td>
+
+                <td className="px-4 py-3">
+                  <div className="flex gap-2">
                     <button
-                      className={`toggle-btn ${discount.active ? "deactivate" : "activate"}`}
                       onClick={() => handleToggleDiscount(discount.id)}
+                      className={`px-3 py-1 rounded-md text-xs text-white
+                        ${
+                          discount.active
+                            ? "bg-yellow-600 hover:bg-yellow-700"
+                            : "bg-green-600 hover:bg-green-700"
+                        }`}
                     >
                       {discount.active ? "Deactivate" : "Activate"}
                     </button>
-                    <button className="delete-btn" onClick={() => handleDeleteDiscount(discount.id)}>
+
+                    <button
+                      onClick={() => handleDeleteDiscount(discount.id)}
+                      className="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                    >
                       Delete
                     </button>
                   </div>
@@ -91,60 +122,92 @@ const DiscountManagement = () => {
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
 
+      {/* Modal */}
       {showAddForm && (
-        <div className="add-discount-modal">
-          <div className="modal-content">
-            <h3>Create New Discount Code</h3>
-            <div className="form-group">
-              <label>Discount Code:</label>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4">Create New Discount Code</h3>
+
+            {/* Code */}
+            <div className="mb-4">
+              <label className="block text-sm mb-1">Discount Code:</label>
               <input
                 type="text"
                 value={newDiscount.code}
-                onChange={(e) => setNewDiscount({ ...newDiscount, code: e.target.value.toUpperCase() })}
+                onChange={(e) =>
+                  setNewDiscount({ ...newDiscount, code: e.target.value.toUpperCase() })
+                }
                 placeholder="Enter discount code"
+                className="w-full border px-3 py-2 rounded-md"
               />
             </div>
-            <div className="form-group">
-              <label>Type:</label>
+
+            {/* Type */}
+            <div className="mb-4">
+              <label className="block text-sm mb-1">Type:</label>
               <select
                 value={newDiscount.type}
                 onChange={(e) => setNewDiscount({ ...newDiscount, type: e.target.value })}
+                className="w-full border px-3 py-2 rounded-md"
               >
                 <option value="percentage">Percentage</option>
                 <option value="fixed">Fixed Amount</option>
               </select>
             </div>
-            <div className="form-group">
-              <label>Value:</label>
+
+            {/* Value */}
+            <div className="mb-4">
+              <label className="block text-sm mb-1">Value:</label>
               <input
                 type="number"
                 value={newDiscount.value}
-                onChange={(e) => setNewDiscount({ ...newDiscount, value: e.target.value })}
-                placeholder={newDiscount.type === "percentage" ? "Enter percentage" : "Enter amount"}
+                onChange={(e) =>
+                  setNewDiscount({ ...newDiscount, value: e.target.value })
+                }
+                placeholder={
+                  newDiscount.type === "percentage" ? "Enter percentage" : "Enter amount"
+                }
+                className="w-full border px-3 py-2 rounded-md"
               />
             </div>
-            <div className="form-group">
-              <label>Expiry Date:</label>
+
+            {/* Expiry Date */}
+            <div className="mb-4">
+              <label className="block text-sm mb-1">Expiry Date:</label>
               <input
                 type="date"
                 value={newDiscount.expiryDate}
-                onChange={(e) => setNewDiscount({ ...newDiscount, expiryDate: e.target.value })}
+                onChange={(e) =>
+                  setNewDiscount({ ...newDiscount, expiryDate: e.target.value })
+                }
+                className="w-full border px-3 py-2 rounded-md"
               />
             </div>
-            <div className="modal-actions">
-              <button onClick={handleAddDiscount} className="save-btn">
-                Create Discount
-              </button>
-              <button onClick={() => setShowAddForm(false)} className="cancel-btn">
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="px-4 py-2 bg-gray-300 text-sm rounded-md hover:bg-gray-400"
+              >
                 Cancel
+              </button>
+
+              <button
+                onClick={handleAddDiscount}
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+              >
+                Create Discount
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   )
 }

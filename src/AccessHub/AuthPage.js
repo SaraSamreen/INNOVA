@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { User, Briefcase, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { User, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
-  const [loginRole, setLoginRole] = useState('innovator');
-  const [signupRole, setSignupRole] = useState('innovator');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,18 +31,20 @@ const AuthPage = () => {
       const res = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword, role: loginRole })
+        body: JSON.stringify({ email: loginEmail, password: loginPassword })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      
-    // ✅ Store token & user info
-    localStorage.setItem('authToken', data.token);       // <--- store JWT
-    localStorage.setItem('user', JSON.stringify(data.user)); // <--- store user info
+
+      // Store user data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       alert('Login successful');
-      window.location.href = loginRole === 'admin' ? '/admin' : '/dashboard';
+      
+      // Redirect based on ACTUAL role from database
+      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -79,11 +79,15 @@ const AuthPage = () => {
       const res = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email: signupEmail, password: signupPassword, role: signupRole })
+        body: JSON.stringify({ name, email: signupEmail, password: signupPassword })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
+
+      // Store user data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       alert('Signup successful');
       window.location.href = '/dashboard';
@@ -110,11 +114,13 @@ const AuthPage = () => {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
-       localStorage.setItem('authToken', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Store user data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
       alert('Google authentication successful!');
-      window.location.href = '/dashboard';
+      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
     } catch (err) {
       setError(err.message);
     }
@@ -129,24 +135,23 @@ const AuthPage = () => {
             isLogin ? 'order-1' : 'order-2'
           }`}>
             <div className="absolute inset-0">
-  <img
-    src="/luxury.jpg"
-    alt="Luxury fashion"
-    className="w-full h-full object-cover"
-  />
-</div>
+              <img
+                src="/luxury.jpg"
+                alt="Luxury fashion"
+                className="w-full h-full object-cover"
+              />
+            </div>
             
             <div className="relative z-10 h-full flex flex-col items-center justify-center -mt-16 p-8 text-white">
-  <div className="max-w-lg text-center">
-    <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-      INNOVA
-    </h1>
-    <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
-      Empowering innovation through elegant design and cutting-edge technology
-    </p>
-  </div>
-</div>
-
+              <div className="max-w-lg text-center">
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                  INNOVA
+                </h1>
+                <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
+                  Empowering innovation through elegant design and cutting-edge technology
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Forms Side */}
@@ -171,37 +176,6 @@ const AuthPage = () => {
                       )}
 
                       <div className="space-y-6">
-                        {/* Role Selection */}
-                        <div className="space-y-2">
-                          <label className="block text-sm font-semibold text-[#111827]">Login As</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setLoginRole('innovator')}
-                              className={`flex items-center justify-center space-x-2 p-3 border-2 rounded-[14px] transition-all ${
-                                loginRole === 'innovator'
-                                  ? 'border-[#3E8EDE] bg-blue-50 text-[#3E8EDE]'
-                                  : 'border-[#d1d5db] text-[#374151] hover:border-[#3E8EDE]'
-                              }`}
-                            >
-                              <User className="h-5 w-5" />
-                              <span className="font-medium">Innovator</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setLoginRole('admin')}
-                              className={`flex items-center justify-center space-x-2 p-3 border-2 rounded-[14px] transition-all ${
-                                loginRole === 'admin'
-                                  ? 'border-[#3E8EDE] bg-blue-50 text-[#3E8EDE]'
-                                  : 'border-[#d1d5db] text-[#374151] hover:border-[#3E8EDE]'
-                              }`}
-                            >
-                              <Briefcase className="h-5 w-5" />
-                              <span className="font-medium">Admin</span>
-                            </button>
-                          </div>
-                        </div>
-
                         {/* Google Button */}
                         <button
                           onClick={handleGoogleAuth}
@@ -290,7 +264,7 @@ const AuthPage = () => {
                               <span>Logging in...</span>
                             </>
                           ) : (
-                            <span>Login as {loginRole.charAt(0).toUpperCase() + loginRole.slice(1)}</span>
+                            <span>Login</span>
                           )}
                         </button>
 
@@ -329,37 +303,6 @@ const AuthPage = () => {
                       )}
 
                       <div className="space-y-4">
-                        {/* Role Selection */}
-                        <div className="space-y-2">
-                          <label className="block text-sm font-semibold text-[#111827]">Register As</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setSignupRole('innovator')}
-                              className={`flex items-center justify-center space-x-2 p-3 border-2 rounded-[14px] transition-all ${
-                                signupRole === 'innovator'
-                                  ? 'border-[#3E8EDE] bg-blue-50 text-[#3E8EDE]'
-                                  : 'border-[#d1d5db] text-[#374151] hover:border-[#3E8EDE]'
-                              }`}
-                            >
-                              <User className="h-5 w-5" />
-                              <span className="font-medium">Innovator</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSignupRole('admin')}
-                              className={`flex items-center justify-center space-x-2 p-3 border-2 rounded-[14px] transition-all ${
-                                signupRole === 'admin'
-                                  ? 'border-[#3E8EDE] bg-blue-50 text-[#3E8EDE]'
-                                  : 'border-[#d1d5db] text-[#374151] hover:border-[#3E8EDE]'
-                              }`}
-                            >
-                              <Briefcase className="h-5 w-5" />
-                              <span className="font-medium">Admin</span>
-                            </button>
-                          </div>
-                        </div>
-
                         {/* Google Button */}
                         <button
                           onClick={handleGoogleAuth}
