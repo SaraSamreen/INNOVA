@@ -10,6 +10,7 @@ import {
   Sparkles,
   Image,
   Plus,
+  MessageCircle,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -20,6 +21,7 @@ const Sidebar = () => {
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
     { path: "/team-collaboration", icon: Users, label: "Team Collaboration" },
+    { path: "/simple-chat", icon: MessageCircle, label: "Chat" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
     { path: "/video-editor", icon: Edit, label: "Video Editor" },
   ];

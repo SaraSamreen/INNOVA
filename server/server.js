@@ -15,6 +15,9 @@ dotenv.config({ path: './config.env' });
 const app = express();
 const server = http.createServer(app);
 
+// ===============================
+// CREATE SOCKET.IO INSTANCE
+// ===============================
 const io = socketIo(server, {
   cors: {
     origin: process.env.CLIENT_URL || "http://localhost:3000",
@@ -23,7 +26,7 @@ const io = socketIo(server, {
   }
 });
 
-// Store io instance in app for use in routes
+// Make io accessible in routes
 app.set('io', io);
 
 // CORS
@@ -84,11 +87,8 @@ app.use('/processed', express.static('processed'));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/teams', require('./routes/teamRoutes'));
-app.use('/api/chat', require('./routes/chatRoutes'));
-app.use('/api/files', require('./routes/fileRoutes'));
+app.use('/api/chat', require('./routes/chat'));
 
-// If you have other routes
 if (fs.existsSync('./routes/media.js')) {
   app.use('/api/media', require('./routes/media'));
 }
@@ -105,117 +105,126 @@ app.get('/api/test', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'TeamCollab API running',
     timestamp: new Date().toISOString()
   });
 });
 
-// Socket.IO Authentication
+// ===============================
+// NEW SOCKET.IO AUTH + HANDLERS
+// ===============================
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
+
+// Authentication Middleware
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
-    
-    if (!token) {
-      return next(new Error('Authentication error'));
+
+    console.log('🔐 Socket auth - Token received:', token ? 'Yes' : 'No');
+
+    if (!token || token === 'null' || token === 'undefined') {
+      console.warn('⚠️ No valid token provided');
+      socket.userId = 'anonymous';
+      return next();
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-this');
-    socket.userId = decoded.id;
-    socket.userEmail = decoded.email;
-    
-    next();
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      socket.userId = decoded.userId || decoded.id || decoded._id;
+      socket.userEmail = decoded.email;
+
+      console.log('✅ Socket authenticated - User ID:', socket.userId);
+      next();
+    } catch (tokenErr) {
+      if (tokenErr.name === 'TokenExpiredError') {
+        console.warn('⚠️ Token expired');
+        const decoded = jwt.decode(token);
+
+        if (decoded && (decoded.userId || decoded.id || decoded._id)) {
+          socket.userId = decoded.userId || decoded.id || decoded._id;
+          console.log('⚠️ Using expired token - User ID:', socket.userId);
+          return next();
+        }
+      }
+      throw tokenErr;
+    }
   } catch (err) {
-    console.error('Socket auth error:', err);
+    console.error('❌ Socket auth error:', err.message);
     next(new Error('Authentication error'));
   }
 });
 
-// Socket.IO Connection Handler
+// Socket.IO Event Handlers
 io.on('connection', (socket) => {
-  console.log("🔌 New client connected:", socket.id, "User:", socket.userId);
+  console.log("🔌 Client connected:", socket.id, "User:", socket.userId);
 
-  // Join team room
-  socket.on('join-team', (teamId) => {
-    socket.join(teamId);
-    console.log(`👥 User ${socket.userId} joined team room: ${teamId}`);
-    
-    // Notify others in the team
-    socket.to(teamId).emit('user-joined', {
+  socket.on('join', (userId) => {
+    socket.join(userId.toString());
+    console.log(`👤 User ${userId} joined personal room`);
+  });
+
+  socket.on('join-conversation', (conversationId) => {
+    socket.join(conversationId);
+    console.log(`💬 User ${socket.userId} joined conversation: ${conversationId}`);
+  });
+
+  socket.on('leave-conversation', (conversationId) => {
+    socket.leave(conversationId);
+    console.log(`👋 User ${socket.userId} left conversation: ${conversationId}`);
+  });
+
+  socket.on('typing', ({ conversationId, userName }) => {
+    socket.to(conversationId).emit('user-typing', {
       userId: socket.userId,
+      userName,
+      conversationId
+    });
+  });
+
+  socket.on('stop-typing', ({ conversationId }) => {
+    socket.to(conversationId).emit('user-stopped-typing', {
+      userId: socket.userId,
+      conversationId
+    });
+  });
+
+  socket.on('send-message', (data) => {
+    const { conversationId, content } = data;
+    io.to(conversationId).emit('receive-message', {
+      conversationId,
+      content,
+      sender: socket.userId,
       timestamp: new Date()
     });
   });
 
-  // Leave team room
-  socket.on('leave-team', (teamId) => {
-    socket.leave(teamId);
-    console.log(`👋 User ${socket.userId} left team room: ${teamId}`);
-  });
-
-  // Typing indicators
-  socket.on('typing-start', ({ teamId, userName }) => {
-    socket.to(teamId).emit('user-typing', { 
-      userId: socket.userId,
-      userName,
-      teamId 
-    });
-  });
-
-  socket.on('typing-stop', ({ teamId }) => {
-    socket.to(teamId).emit('user-stopped-typing', { 
-      userId: socket.userId,
-      teamId 
-    });
-  });
-
-  // Handle direct message sending (optional - if not using REST API)
-  socket.on('send-message', async (data) => {
-    try {
-      const { teamId, content, type = 'text' } = data;
-      
-      // Broadcast to team room
-      io.to(teamId).emit('receive-message', {
-        teamId,
-        content,
-        type,
-        sender: socket.userId,
-        timestamp: new Date()
-      });
-    } catch (err) {
-      console.error('Socket message error:', err);
-      socket.emit('error', { message: 'Failed to send message' });
-    }
-  });
-
-  // Disconnect handler
   socket.on('disconnect', () => {
     console.log("❌ Client disconnected:", socket.id);
   });
 
-  // Error handler
   socket.on('error', (error) => {
-    console.error('Socket error:', error);
+    console.error('❌ Socket error:', error);
   });
 });
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ 
-    message: "Server error", 
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
-  });
-});
+// Admin + AI Routes
 const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 
-
-// ---------------------- SERVER ---------------------- //
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({
+    message: "Server error",
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
+});
 
 // 404 Handler
 app.use((req, res) => {
