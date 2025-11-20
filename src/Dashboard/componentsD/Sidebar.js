@@ -20,10 +20,10 @@ const Sidebar = () => {
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
-    { path: "/team-collaboration", icon: Users, label: "Team Collaboration" },
     { path: "/simple-chat", icon: MessageCircle, label: "Chat" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
-    { path: "/video-editor", icon: Edit, label: "Video Editor" },
+    { path: "/video-editor", icon: Video, label: "Video Editor" },
+
   ];
 
   return (

@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@stripe/react-stripe-js": "^5.4.0",
+    "@stripe/stripe-js": "^8.5.2",
     "@supabase/supabase-js": "^2.74.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
