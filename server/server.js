@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -14,6 +15,7 @@ dotenv.config({ path: './config.env' });
 // Create Express + Socket Server
 const app = express();
 const server = http.createServer(app);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // ===============================
 // CREATE SOCKET.IO INSTANCE
@@ -88,6 +90,8 @@ app.use('/processed', express.static('processed'));
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/payment', require('./routes/payment'));
+
 
 if (fs.existsSync('./routes/media.js')) {
   app.use('/api/media', require('./routes/media'));

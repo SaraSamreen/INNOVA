@@ -6,7 +6,6 @@ import ResetPassword from "./AccessHub/ResetPassword";
 import Dashboard from "./Dashboard/Dashboard";
 import VoiceGenerator from './Dashboard/componentsD/Createvidpg2';
 import VideoGenerator from './Dashboard/componentsD/Createvidpg3';
-import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
@@ -16,9 +15,9 @@ import TemplateEditor from "./TemplateEditor/components/TemplateEditor";
 import Designproduct from './DesignProduct/DesignProduct';
 import ProductBeautifier from './Dashboard/componentsD/ProductBeautifier';
 import Forgotpass from './AccessHub/Forgotpass';
-import VideoEditorPage from './Dashboard/componentsD/VideoEditorPage';
 import Drafts from './Drafts';
 import SimpleChat from './SimpleChat/SimpleChat';
+import VideoEditor from './video-editor/video';
 
 
 
@@ -30,7 +29,6 @@ function AppWrapper() {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />
         <Route path="/logo-generator" element={<LogoGenerator />} />
@@ -44,8 +42,7 @@ function AppWrapper() {
          <Route path="/design-product" element={<Designproduct />} />
           <Route path="/drafts" element={<Drafts/>} />
           <Route path="/simple-chat" element={<SimpleChat/>} />
-
-          <Route path="/video-editor" element={<VideoEditorPage />} />
+          <Route path="/video-editor" element={<VideoEditor />} />
       </Routes>
     </Router>
   );

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import "../../Styles/TemplateEditor.css"
 
 export default function TemplateEditor() {
   const navigate = useNavigate()
@@ -21,10 +20,9 @@ export default function TemplateEditor() {
   const [selectedSceneForImage, setSelectedSceneForImage] = useState(null)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   
-  // Store per-scene data
-  const [sceneAvatars, setSceneAvatars] = useState({}) // {sceneId: imageUrl}
-  const [sceneImages, setSceneImages] = useState({}) // {sceneId: {elementId: imageUrl}}
-  const [sceneAudioBlobs, setSceneAudioBlobs] = useState({}) // {sceneId: audioBlob}
+  const [sceneAvatars, setSceneAvatars] = useState({})
+  const [sceneImages, setSceneImages] = useState({})
+  const [sceneAudioBlobs, setSceneAudioBlobs] = useState({})
   
   const [scenes, setScenes] = useState([
     {
@@ -138,11 +136,6 @@ export default function TemplateEditor() {
       if (location.state.template.scenes) {
         setScenes(location.state.template.scenes)
         setTotalDuration(location.state.template.duration || 17)
-        
-        // Debug: Log scene timings
-        console.log('Loaded scenes:', location.state.template.scenes.map(s => 
-          `Scene ${s.id}: ${s.startTime}s - ${s.endTime}s`
-        ))
       }
     } else {
       setSelectedTemplate({
@@ -151,15 +144,10 @@ export default function TemplateEditor() {
         category: "Advertisement",
         thumbnail: "/heygen-app-presentation-video-frame-with-avatar.jpg"
       })
-      
-      // Debug: Log default scene timings
-      console.log('Default scenes:', scenes.map(s => 
-        `Scene ${s.id}: ${s.startTime}s - ${s.endTime}s`
-      ))
     }
   }, [location.state])
 
-  // Playback with automatic audio for each scene
+  // Playback with automatic audio
   useEffect(() => {
     let interval
     if (isPlaying) {
@@ -167,27 +155,20 @@ export default function TemplateEditor() {
         setCurrentTime(prev => {
           const newTime = prev + 0.1
           
-          // Check if we've reached the end
           if (newTime >= totalDuration) {
             setIsPlaying(false)
             window.speechSynthesis.cancel()
             return 0
           }
           
-          // Find which scene we should be in based on time
           const newSceneIndex = scenes.findIndex(scene => 
             newTime >= scene.startTime && newTime < scene.endTime
           )
           
-          // If we found a valid scene and it's different from current
           if (newSceneIndex !== -1 && newSceneIndex !== currentScene) {
-            console.log(`Switching to scene ${newSceneIndex + 1} at time ${newTime.toFixed(1)}s`)
-            
-            // Cancel previous audio before starting new scene
             window.speechSynthesis.cancel()
             setCurrentScene(newSceneIndex)
             
-            // Play audio for the new scene after a small delay
             setTimeout(() => {
               playSceneAudio(scenes[newSceneIndex].id)
             }, 100)
@@ -197,7 +178,6 @@ export default function TemplateEditor() {
         })
       }, 100)
     } else {
-      // Stop audio when paused
       window.speechSynthesis.cancel()
     }
     
@@ -207,20 +187,16 @@ export default function TemplateEditor() {
     }
   }, [isPlaying, scenes, currentScene, totalDuration])
 
-  // Play audio for a specific scene
   const playSceneAudio = (sceneId) => {
     const scene = scenes.find(s => s.id === sceneId)
     if (!scene || !scene.script) return
 
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel()
     
     if ('speechSynthesis' in window) {
-      // Ensure voices are loaded
       const voices = window.speechSynthesis.getVoices()
       
       if (voices.length === 0) {
-        // Wait for voices to load
         window.speechSynthesis.onvoiceschanged = () => {
           const loadedVoices = window.speechSynthesis.getVoices()
           speakText(scene.script, loadedVoices)
@@ -231,7 +207,6 @@ export default function TemplateEditor() {
     }
   }
 
-  // Helper function to speak text
   const speakText = (text, voices) => {
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 0.9
@@ -247,17 +222,14 @@ export default function TemplateEditor() {
 
     utterance.onstart = () => {
       setIsAudioPlaying(true)
-      console.log('Audio started:', text.substring(0, 50) + '...')
     }
 
     utterance.onend = () => {
       setIsAudioPlaying(false)
-      console.log('Audio ended')
     }
 
     utterance.onerror = (e) => {
       setIsAudioPlaying(false)
-      console.error('Audio error:', e)
     }
 
     currentSceneAudioRef.current = utterance
@@ -266,10 +238,8 @@ export default function TemplateEditor() {
 
   const handlePlayPause = () => {
     if (!isPlaying) {
-      // Starting playback - play audio for current scene
       playSceneAudio(scenes[currentScene].id)
     } else {
-      // Pausing - stop audio
       window.speechSynthesis.cancel()
     }
     setIsPlaying(!isPlaying)
@@ -316,7 +286,6 @@ export default function TemplateEditor() {
     )
   }
 
-  // Handle custom avatar upload for specific scene
   const handleCustomAvatarUpload = (event) => {
     const file = event.target.files[0]
     if (file && currentScene !== null) {
@@ -332,7 +301,6 @@ export default function TemplateEditor() {
     }
   }
 
-  // Handle image upload for scene elements
   const handleImageUpload = (event, sceneId, elementId) => {
     const file = event.target.files[0]
     if (file) {
@@ -350,7 +318,6 @@ export default function TemplateEditor() {
     }
   }
 
-  // Generate and store audio for a scene
   const generateAudioForScene = async (sceneId) => {
     setIsGeneratingAudio(true)
     const scene = scenes.find(s => s.id === sceneId)
@@ -383,12 +350,10 @@ export default function TemplateEditor() {
     }
   }
 
-  // Get current scene object
   const getCurrentScene = () => {
     return scenes[currentScene] || scenes[0]
   }
 
-  // Get avatar for current scene
   const getCurrentAvatar = () => {
     const scene = getCurrentScene()
     const customAvatar = sceneAvatars[scene.id]
@@ -404,18 +369,14 @@ export default function TemplateEditor() {
   }
 
   const handlePreview = () => {
-    // Stop any existing audio
     window.speechSynthesis.cancel()
     
-    // Reset to beginning - IMPORTANT: Set these in correct order
-    setIsPlaying(false) // Stop first
+    setIsPlaying(false)
     setCurrentTime(0)
     setCurrentScene(0)
     
-    // Small delay to ensure state is updated
     setTimeout(() => {
       setIsPlaying(true)
-      // Start playing audio for first scene
       setTimeout(() => {
         playSceneAudio(scenes[0].id)
       }, 100)
@@ -427,7 +388,6 @@ export default function TemplateEditor() {
     alert("Generating your professional video with custom script and avatar...")
   }
 
-  // Add new element to current scene
   const handleAddElement = (type) => {
     const scene = getCurrentScene()
     const newElement = {
@@ -446,81 +406,91 @@ export default function TemplateEditor() {
   }
 
   if (!selectedTemplate) {
-    return <div className="loading">Loading template...</div>
+    return <div className="flex items-center justify-center w-screen h-screen text-lg text-gray-500 bg-gray-50">Loading template...</div>
   }
 
   return (
-    <div className="template-editor-container">
+    <div className="flex flex-col w-screen h-screen bg-gray-100 font-sans">
       {/* Top Navigation Bar */}
-      <div className="editor-navbar">
-        <div className="navbar-left">
-          <button className="back-btn" onClick={handleBackToBrowser}>
+      <div className="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-5 z-50">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleBackToBrowser}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 text-sm"
+          >
             ← Back
           </button>
-          <div className="navbar-divider"></div>
-          <span className="template-aspect">16:9</span>
-          <div className="navbar-divider"></div>
-          <div className="brand-selector">
+          <div className="w-px h-6 bg-gray-200"></div>
+          <span className="text-sm text-gray-700 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">16:9</span>
+          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="flex items-center gap-2 text-sm text-gray-700 bg-yellow-50 px-3 py-1.5 rounded-lg cursor-pointer">
             👑 Brand
           </div>
         </div>
 
-        <div className="navbar-center">
-          <button className="feedback-btn">Feedback</button>
+        <div className="flex items-center">
+          <button className="text-sm text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50">Feedback</button>
         </div>
 
-        <div className="navbar-right">
-          <div className="user-avatar">👤</div>
-          <button className="preview-btn" onClick={handlePreview}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-base">👤</div>
+          <button 
+            onClick={handlePreview}
+            className="flex items-center gap-2 text-sm text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
+          >
             ▶ Preview
           </button>
-          <button className="generate-btn" onClick={handleGenerate}>
+          <button 
+            onClick={handleGenerate}
+            className="flex items-center gap-2 text-sm font-medium text-white bg-black px-4 py-2 rounded-lg hover:bg-gray-800 transition-all"
+          >
             ✓ Generate
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="editor-main">
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
         {/* Left Sidebar - Scene Scripts */}
-        <div className="left-sidebar">
-          <div className="template-title">
-            <h2>{selectedTemplate.title}</h2>
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
+          <div className="px-5 py-5 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 m-0">{selectedTemplate.title}</h2>
           </div>
 
-          <div className="scenes-list">
+          <div className="flex-1 overflow-y-auto">
             {scenes.map((scene, index) => (
               <div 
                 key={scene.id} 
-                className={`scene-item ${currentScene === index ? 'active' : ''}`}
+                className={`border-b border-gray-100 p-4 transition-all cursor-pointer ${currentScene === index ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
                 onClick={() => setCurrentScene(index)}
               >
-                <div className="scene-header">
-                  <div className="scene-number">
-                    <span>{scene.id}</span>
+                <div className="flex gap-3 mb-3">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold flex-shrink-0">
+                    {scene.id}
                   </div>
                   
-                  <div className="scene-avatar">
+                  <div>
                     <img 
                       src={sceneAvatars[scene.id] || avatars.find(a => a.id === scene.avatar)?.thumbnail || "/professional-woman-avatar.png"} 
-                      alt="Avatar" 
+                      alt="Avatar"
+                      className="w-10 h-10 rounded-full object-cover mb-2"
                     />
-                    <div className="avatar-controls">
-                      <select
-                        value={voiceSettings.voice}
-                        onChange={(e) => setVoiceSettings(prev => ({ ...prev, voice: e.target.value }))}
-                      >
-                        {voices.map(voice => (
-                          <option key={voice} value={voice}>{voice}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <select
+                      value={voiceSettings.voice}
+                      onChange={(e) => setVoiceSettings(prev => ({ ...prev, voice: e.target.value }))}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 w-28"
+                    >
+                      {voices.map(voice => (
+                        <option key={voice} value={voice}>{voice}</option>
+                      ))}
+                    </select>
                   </div>
 
-                  <div className="scene-controls">
+                  <div className="flex flex-col gap-1">
                     <select
                       value={voiceSettings.emotion}
                       onChange={(e) => setVoiceSettings(prev => ({ ...prev, emotion: e.target.value }))}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 w-24"
                     >
                       {emotions.map(emotion => (
                         <option key={emotion} value={emotion}>{emotion}</option>
@@ -528,7 +498,7 @@ export default function TemplateEditor() {
                     </select>
                     
                     <button 
-                      className="play-scene-btn"
+                      className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-all"
                       onClick={(e) => {
                         e.stopPropagation()
                         generateAudioForScene(scene.id)
@@ -543,16 +513,16 @@ export default function TemplateEditor() {
                 <textarea
                   value={scene.script}
                   onChange={(e) => handleScriptChange(scene.id, e.target.value)}
-                  className="scene-script-input"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm leading-5 resize-vertical min-h-16 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your script for this scene..."
                   rows="3"
                 />
 
-                <div className="scene-footer">
-                  <button className="add-scene-btn">+ Scene</button>
-                  <button className="audio-btn">🔊 Audio</button>
-                  <button className="pause-btn">⏸️ Pause</button>
-                  <span className="voice-director">🎤 Voice Director</span>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">+ Scene</button>
+                  <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">🔊 Audio</button>
+                  <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">⏸️ Pause</button>
+                  <span className="text-xs text-gray-600 flex items-center gap-1">🎤 Voice Director</span>
                 </div>
               </div>
             ))}
@@ -560,116 +530,84 @@ export default function TemplateEditor() {
         </div>
 
         {/* Center - Video Canvas */}
-        <div className="video-canvas-area">
+        <div className="flex-1 flex flex-col bg-gray-50">
           {/* Top Tools */}
-          <div className="canvas-tools">
-            <button className="tool-btn active" onClick={() => fileInputRef.current?.click()}>
-              👤 <span>Avatars</span>
+          <div className="h-16 bg-white border-b border-gray-200 flex items-center px-5 gap-1">
+            <button 
+              className="flex flex-col items-center gap-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <span className="text-sm">👤</span>
+              <span className="text-xs">Avatars</span>
             </button>
-            <button className="tool-btn" onClick={() => handleAddElement('text')}>
-              📝 <span>Text</span>
+            <button 
+              className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+              onClick={() => handleAddElement('text')}
+            >
+              <span className="text-sm">📝</span>
+              <span className="text-xs">Text</span>
             </button>
-            <button className="tool-btn" onClick={() => imageInputRef.current?.click()}>
-              🎵 <span>Media</span>
+            <button 
+              className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <span className="text-sm">🎵</span>
+              <span className="text-xs">Media</span>
             </button>
-            <button className="tool-btn">
-              🎨 <span>Elements</span>
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+              <span className="text-sm">🎨</span>
+              <span className="text-xs">Elements</span>
             </button>
-            <button className="tool-btn">
-              💬 <span>Captions</span>
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+              <span className="text-sm">💬</span>
+              <span className="text-xs">Captions</span>
             </button>
-            <button className="tool-btn">
-              🤖 <span>AI</span>
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+              <span className="text-sm">🤖</span>
+              <span className="text-xs">AI</span>
             </button>
-            <button className="tool-btn">
-              🖼️ <span>Background</span>
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+              <span className="text-sm">🖼️</span>
+              <span className="text-xs">Background</span>
             </button>
-            <button className="tool-btn">
-              📚 <span>Layers</span>
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+              <span className="text-sm">📚</span>
+              <span className="text-xs">Layers</span>
             </button>
           </div>
 
           {/* Video Canvas */}
-          <div className="video-canvas">
-            <div className="canvas-container">
-              {/* Background - NO CIRCLES */}
-              <div className="video-background">
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%)',
-                  position: 'relative'
-                }}>
-                  {/* Circles removed as requested */}
+          <div className="flex-1 flex flex-col p-5 items-center justify-center">
+            <div className="w-full max-w-3xl rounded-xl overflow-hidden shadow-xl relative bg-black"
+              style={{ aspectRatio: '16/9' }}>
+              {/* Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-purple-900"></div>
+
+              {/* Flower Image */}
+              <div 
+                className="absolute right-16 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105 transition-transform z-20"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <img
+                  src={getCurrentAvatar()}
+                  alt="Flower"
+                  className="w-64 h-80 object-cover rounded-2xl shadow-2xl border-4 border-white/30 hover:border-white/50 transition-all"
+                />
+                <div className="absolute inset-0 bg-black/70 rounded-2xl flex flex-col items-center justify-center gap-2.5 opacity-0 hover:opacity-100 transition-opacity">
+                  <span className="text-2xl">🌸</span>
+                  <span className="text-sm text-white">Click to change flower</span>
                 </div>
               </div>
 
-              {/* Flower Image - ONLY for current scene - Replaces Avatar */}
-              
-             {/* Flower Image - ONLY for current scene - Replaces Avatar */}
-<div 
-  className="flower-image-container"
-  onClick={() => fileInputRef.current?.click()}
-  style={{
-    position: 'absolute',
-    right: '60px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    cursor: 'pointer',
-    zIndex: 2
-  }}
->
-  <img
-    src={getCurrentAvatar()}
-    alt="Flower"
-    style={{
-      width: '250px',
-      height: '300px',
-      objectFit: 'cover',
-      borderRadius: '15px',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-      border: '3px solid rgba(255,255,255,0.3)'
-    }}
-  />
-  <div className="flower-edit-overlay" style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '14px',
-    opacity: 0,
-    transition: 'opacity 0.3s',
-    borderRadius: '15px',
-    flexDirection: 'column',
-    gap: '10px'
-  }}>
-    <span style={{ fontSize: '32px' }}>🌸</span>
-    <span>Click to change flower</span>
-  </div>
-</div>
-
-
-              {/* Dynamic Text Elements - ONLY for current scene */}
+              {/* Text Elements */}
               {getCurrentScene()?.elements.map(element => (
                 <div
                   key={element.id}
-                  className={`text-element ${selectedElement === element.id ? 'selected' : ''}`}
+                  className={`absolute cursor-pointer p-2.5 rounded whitespace-pre-line z-30 transition-all hover:scale-105 ${selectedElement === element.id ? 'ring-2 ring-blue-500' : ''}`}
                   style={{
-                    position: 'absolute',
                     left: element.position.x,
                     top: element.position.y,
-                    ...element.style,
-                    cursor: 'pointer',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    whiteSpace: 'pre-line',
-                    zIndex: 3
+                    ...element.style
                   }}
                   onClick={() => setSelectedElement(element.id)}
                   onDoubleClick={() => {
@@ -683,50 +621,39 @@ export default function TemplateEditor() {
                     <img 
                       src={sceneImages[getCurrentScene().id][element.id]} 
                       alt="Scene element"
-                      style={{ maxWidth: '200px', maxHeight: '200px' }}
+                      className="max-w-48 max-h-48"
                     />
                   ) : (
                     element.content
                   )}
-                  {selectedElement === element.id && (
-                    <div className="element-handles">
-                      <div className="handle top-left"></div>
-                      <div className="handle top-right"></div>
-                      <div className="handle bottom-left"></div>
-                      <div className="handle bottom-right"></div>
-                    </div>
-                  )}
                 </div>
               ))}
 
-              {/* Scene Progress Indicator */}
-              <div className="scene-progress">
+              {/* Scene Progress */}
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-2 z-40">
                 {Array.from({ length: scenes.length }, (_, i) => (
                   <div
                     key={i}
-                    className={`progress-dot ${i <= currentScene ? 'active' : ''}`}
+                    className={`w-2 h-2 rounded-full transition-all ${i <= currentScene ? 'bg-white' : 'bg-white/30'}`}
                   />
                 ))}
               </div>
             </div>
 
             {/* Playback Controls */}
-            <div className="playback-controls">
-              <button className="play-btn" onClick={handlePlayPause}>
+            <div className="flex items-center justify-center gap-4 mt-5 px-5 py-3 bg-black/80 rounded-full text-white">
+              <button 
+                className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-base transition-all"
+                onClick={handlePlayPause}
+              >
                 {isPlaying ? "⏸️" : "▶️"}
               </button>
-              <div className="time-display">
+              <div className="text-sm font-mono min-w-20 text-center">
                 {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')} / 
                 {Math.floor(totalDuration / 60)}:{(Math.floor(totalDuration) % 60).toString().padStart(2, '0')}
               </div>
               {isAudioPlaying && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  color: '#10b981',
-                  fontSize: '12px'
-                }}>
+                <div className="flex items-center gap-1.5 text-emerald-400 text-xs">
                   <span>🔊</span>
                   <span>Audio Playing...</span>
                 </div>
@@ -735,38 +662,44 @@ export default function TemplateEditor() {
           </div>
 
           {/* Timeline */}
-          <div className="timeline-section">
-            <div className="timeline-controls">▶</div>
-            <div className="timeline-track">
+          <div className="h-24 bg-white border-t border-gray-200 flex items-center px-5 gap-4">
+            <div className="text-base">▶</div>
+            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-1 flex gap-0.5 items-center overflow-x-auto">
               {scenes.map((scene, index) => (
                 <div
                   key={scene.id}
-                  className={`timeline-scene ${currentScene === index ? 'active' : ''}`}
+                  className={`flex-shrink-0 bg-white border border-gray-300 rounded-lg cursor-pointer transition-all hover:shadow-md ${currentScene === index ? 'ring-2 ring-blue-500 ring-offset-0' : ''}`}
                   style={{
-                    width: `${((scene.endTime - scene.startTime) / totalDuration) * 100}%`
+                    width: `${((scene.endTime - scene.startTime) / totalDuration) * 100}%`,
+                    minWidth: '60px'
                   }}
                   onClick={() => handleSeekToScene(index)}
                 >
-                  <div className="scene-thumbnail">
-                    <div className="scene-number">{scene.id}</div>
+                  <div className="relative w-full h-full rounded-lg overflow-hidden">
                     <img
                       src="/heygen-app-presentation-video-frame-with-avatar.jpg"
                       alt={`Scene ${scene.id}`}
+                      className="w-full h-full object-cover"
                     />
+                    <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-semibold">
+                      {scene.id}
+                    </div>
                   </div>
                 </div>
               ))}
-              <button className="add-scene-timeline-btn">+</button>
+              <button className="flex-shrink-0 w-12 h-12 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center text-xl text-gray-500">+</button>
             </div>
           </div>
         </div>
 
         {/* Right Sidebar - Layers Panel */}
-        <div className="right-sidebar">
-          <div className="layers-panel">
-            <h3>📚 Layers</h3>
-            <button className="add-layer-btn">+</button>
-            <button className="expand-btn">⬆</button>
+        <div className="w-64 bg-white border-l border-gray-200 flex flex-col">
+          <div className="p-5 flex items-center justify-between border-b border-gray-200">
+            <h3 className="text-base font-semibold text-gray-900 m-0 flex items-center gap-2">📚 Layers</h3>
+            <div className="flex gap-1">
+              <button className="w-8 h-8 bg-transparent border border-gray-300 rounded-lg px-1.5 py-1 text-gray-600 hover:bg-gray-50 flex items-center justify-center">+</button>
+              <button className="w-8 h-8 bg-transparent border border-gray-300 rounded-lg px-1.5 py-1 text-gray-600 hover:bg-gray-50 flex items-center justify-center">⬆</button>
+            </div>
           </div>
         </div>
       </div>
@@ -777,7 +710,7 @@ export default function TemplateEditor() {
         ref={fileInputRef}
         onChange={handleCustomAvatarUpload}
         accept="image/*"
-        style={{ display: 'none' }}
+        className="hidden"
       />
       <input
         type="file"
@@ -788,7 +721,7 @@ export default function TemplateEditor() {
           }
         }}
         accept="image/*"
-        style={{ display: 'none' }}
+        className="hidden"
       />
     </div>
   )
