@@ -4,22 +4,27 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   name: { type: String },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String }, // Make optional for Google users
   
-  // Add role field
+  // Firebase fields
+  firebaseUid: { type: String, sparse: true, unique: true },
+  provider: { type: String, default: 'email' }, // 'email' or 'google'
+  
+  // Role field
   role: { 
     type: String, 
-    enum: ['user', 'admin'], // Define allowed roles
+    enum: ['user', 'admin'],
     default: 'user' 
   },
   
-  // Optional: Admin-specific permissions (if admin role)
+  // Admin permissions
   permissions: {
     manageUsers: { type: Boolean, default: false },
     manageContent: { type: Boolean, default: false },
     accessDashboard: { type: Boolean, default: false },
   },
   
+  // Password reset
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   
