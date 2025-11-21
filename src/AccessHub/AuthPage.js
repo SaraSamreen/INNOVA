@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { signInWithGoogle } from '../firebase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -100,16 +101,17 @@ const AuthPage = () => {
 
   const handleGoogleAuth = async () => {
     try {
-      const mockGoogleData = {
-        email: 'user@example.com',
-        name: 'Google User',
-        googleId: '12345google'
-      };
-
-      const res = await fetch('http://localhost:5000/api/auth/google', {
+      setLoading(true);
+      setError('');
+      
+      // Get Firebase ID token
+      const { idToken } = await signInWithGoogle();
+      
+      // Send to your backend
+      const res = await fetch('http://localhost:5000/api/auth/google-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockGoogleData)
+        body: JSON.stringify({ idToken })
       });
 
       const data = await res.json();
@@ -122,7 +124,10 @@ const AuthPage = () => {
       alert('Google authentication successful!');
       window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
     } catch (err) {
-      setError(err.message);
+      console.error('Google Sign-In Error:', err);
+      setError(err.message || 'Google Sign-In failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -180,7 +185,8 @@ const AuthPage = () => {
                         <button
                           onClick={handleGoogleAuth}
                           type="button"
-                          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#d1d5db] rounded-[14px] py-3 px-4 hover:bg-[#f1f3f5] transition-colors shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+                          disabled={loading}
+                          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#d1d5db] rounded-[14px] py-3 px-4 hover:bg-[#f1f3f5] transition-colors shadow-[0_4px_20px_rgba(0,0,0,0.05)] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <img
                             src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
@@ -307,7 +313,8 @@ const AuthPage = () => {
                         <button
                           onClick={handleGoogleAuth}
                           type="button"
-                          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#d1d5db] rounded-[14px] py-3 px-4 hover:bg-[#f1f3f5] transition-colors shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+                          disabled={loading}
+                          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#d1d5db] rounded-[14px] py-3 px-4 hover:bg-[#f1f3f5] transition-colors shadow-[0_4px_20px_rgba(0,0,0,0.05)] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <img
                             src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
