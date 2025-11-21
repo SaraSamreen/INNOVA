@@ -18,6 +18,7 @@ import Forgotpass from './AccessHub/Forgotpass';
 import Drafts from './Drafts';
 import SimpleChat from './SimpleChat/SimpleChat';
 import VideoEditor from './video-editor/video';
+import AvatarVideoGenerator from './Dashboard/componentsD/AvatarVideoGenerator';
 
 
 
@@ -43,6 +44,7 @@ function AppWrapper() {
           <Route path="/drafts" element={<Drafts/>} />
           <Route path="/simple-chat" element={<SimpleChat/>} />
           <Route path="/video-editor" element={<VideoEditor />} />
+          <Route path="/avatar-generator" element={<AvatarVideoGenerator />} />
       </Routes>
     </Router>
   );

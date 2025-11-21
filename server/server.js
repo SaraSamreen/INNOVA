@@ -91,6 +91,8 @@ app.use('/processed', express.static('processed'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/payment', require('./routes/payment'));
+const avatarVideoRoutes = require('./routes/avatarVideoRoutes');
+app.use('/api/ai', avatarVideoRoutes);
 
 
 if (fs.existsSync('./routes/media.js')) {
