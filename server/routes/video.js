@@ -342,4 +342,4 @@ router.delete('/file/:type/:filename', (req, res) => {
   }
 });
 
-module.exports = router;cd
+module.exports = router;

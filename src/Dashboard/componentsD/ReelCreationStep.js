@@ -15,7 +15,7 @@ export default function ReelCreationStep() {
   const handleContinue = () => {
     switch (selectedMethod) {
       case "ai-assistant":
-        navigate("/create/step2");
+        navigate("/avatar-generator");
         break;
       case "template":
         navigate("/template-browser");
