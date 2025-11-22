@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"; 
 import { Send, Loader2 } from "lucide-react";
 
-export default function EduRAGChat() {
+export default function DesignProduct() {
   const [messages, setMessages] = useState([
     {
       id: 1,

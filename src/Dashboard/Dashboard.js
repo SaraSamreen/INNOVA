@@ -53,15 +53,15 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
 const productTools = [
   {
     id: "img1",
-    title: "AI Product Beautifier",
-    description: "Convert any product image into a studio-grade professional product shot in seconds with AI.",
+    title: " Product Beautifier",
+    description: "Convert any product image into a studio-grade professional product shot in seconds.",
     image: "/products/img1.jpg",
     route: "/product-beautifier"
   },
   {
     id: "img2",
-    title: "AI Product Staging",
-    description: "Create realistic product scenes to put your product in action with AI.",
+    title: " Product Staging",
+    description: "Create realistic product scenes to put your product in action.",
     image: "/products/img2.jpg",
     route: "/product-staging"
   },
@@ -70,7 +70,7 @@ const productTools = [
     title: "AI Backgrounds",
     description: "Generate realistic AI backgrounds in less than a second.",
     image: "/products/img3.jpg",
-    route: "/ai-backgrounds"
+    route: "/prompt-background"
   },
   {
     id: "img4",

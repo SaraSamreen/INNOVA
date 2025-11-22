@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
     "@supabase/supabase-js": "^2.74.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -13,6 +14,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "firebase": "^12.6.0",
     "lucide-react": "^0.477.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.46.0",
     "mongodb": "^6.16.0",
