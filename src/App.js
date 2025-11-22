@@ -4,7 +4,6 @@ import Home from "./Homepage/Home";
 import Login from "./AccessHub/AuthPage";
 import ResetPassword from "./AccessHub/ResetPassword";
 import Dashboard from "./Dashboard/Dashboard";
-import TeamCollab from "./TeamCollab/TeamCollab";
 import AdminCommandHub from "./AdminCommandHub/AdminCommandHub";
 import ReelCreationStep from './Dashboard/componentsD/ReelCreationStep';
 import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
@@ -20,6 +19,10 @@ import ReelTemplateCreator from './Dashboard/componentsD/ReelTemplateCreator';
 import Forgotpass from './AccessHub/Forgotpass';
 import Settings from './Dashboard/componentsD/Settings';
 import Drafts from './Drafts';
+import SimpleChat from './Chat/Chat';
+import VideoEditor from './video-editor/video';
+import AvatarVideoGenerator from './Dashboard/componentsD/AvatarVideoGenerator';
+
 
 
 
@@ -31,7 +34,6 @@ function AppWrapper() {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/team-collaboration" element={<TeamCollab />} />
         <Route path="/admin" element={<AdminCommandHub />} /> 
         <Route path="/reel-creation" element={<ReelCreationStep />} />
         <Route path="/logo-generator" element={<LogoGenerator />} />
@@ -47,6 +49,10 @@ function AppWrapper() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/quick-reel" element={<ReelTemplateCreator />} />
           <Route path="/drafts" element={<Drafts/>} />
+          <Route path="/simple-chat" element={<SimpleChat/>} />
+          <Route path="/video-editor" element={<VideoEditor />} />
+          <Route path="/avatar-generator" element={<AvatarVideoGenerator />} />
+        
       </Routes>
     </Router>
   );

@@ -1,4 +1,3 @@
-//routes/auth.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -8,44 +7,61 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { authAdmin } = require('../firebaseAdmin');
 
-// Helper to generate JWT
+// ✅ CONSISTENT JWT SECRET
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
+
+// ✅ CONSISTENT TOKEN GENERATION - Always use userId field
 const generateToken = (userId) => {
   return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production',
-    { expiresIn: '1h' }
+    { userId: userId.toString() }, // Convert to string and use userId field
+    JWT_SECRET,
+    { expiresIn: '7d' } // Increased to 7 days
   );
 };
 
 // ---------------------- AUTH MIDDLEWARE ----------------------
 const authMiddleware = (req, res, next) => {
-  const token = req.header('x-auth-token');
-  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
-
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production'
-    );
+    const authHeader = req.header('Authorization') || req.header('x-auth-token');
+    
+    if (!authHeader) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+
+    // Handle both "Bearer token" and plain token
+    const token = authHeader.replace('Bearer ', '');
+    
+    if (!token || token === 'null' || token === 'undefined') {
+      return res.status(401).json({ message: 'Invalid token format' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Set userId consistently
     req.userId = decoded.userId;
+    
+    console.log('✅ Auth middleware passed - userId:', req.userId);
+    
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' });
+    console.error('❌ Auth middleware error:', err.message);
+    return res.status(401).json({ message: 'Invalid token', details: err.message });
   }
 };
 
-// SIGNUP - always create as 'user'
+// ---------------------- SIGNUP ----------------------
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, age, hobbies } = req.body; // Remove role from here
+    const { name, email, password, age, hobbies } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
     const existingUser = await User.findOne({ email });
-    if (existingUser)
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -55,87 +71,100 @@ router.post('/signup', async (req, res) => {
       password: hashedPassword,
       age: age || undefined,
       hobbies: hobbies || [],
-      role: 'user' // Always 'user' for new signups
+      role: 'user'
     });
 
     await user.save();
 
     const token = generateToken(user._id);
 
-    console.log('✅ User created:', { id: user._id, email: user.email, role: user.role });
+    console.log('✅ User created:', { 
+      id: user._id.toString(), 
+      email: user.email, 
+      role: user.role 
+    });
 
     res.status(201).json({
       message: 'Signup successful',
       token,
       user: { 
-        id: user._id, 
+        id: user._id.toString(), // Convert to string
+        userId: user._id.toString(), // Also include userId for consistency
         email: user.email, 
         name: user.name,
         role: user.role
       }
     });
   } catch (err) {
-    console.error('Signup error:', err);
+    console.error('❌ Signup error:', err);
     res.status(500).json({ message: 'Server error during signup', error: err.message });
   }
 });
 
 // ---------------------- LOGIN ----------------------
-// LOGIN - check role from database, not from request
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body; // Remove role from here
+    const { email, password } = req.body;
 
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
+    }
 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(401).json({ message: 'Invalid email' });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: 'Invalid password' });
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
     const token = generateToken(user._id);
 
     console.log('✅ User logged in:', { 
-      id: user._id, 
+      id: user._id.toString(), 
       email: user.email, 
-      role: user.role // Log the role from database
+      role: user.role 
     });
 
     res.status(200).json({
       message: 'Login successful',
       token,
       user: { 
-        id: user._id, 
+        id: user._id.toString(),
+        userId: user._id.toString(), // Include both for compatibility
         email: user.email, 
         name: user.name,
-        role: user.role || 'user', // Send actual role from database
+        role: user.role || 'user',
         permissions: user.permissions
       }
     });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('❌ Login error:', err);
     res.status(500).json({ message: 'Server error during login', error: err.message });
   }
 });
+
 // ---------------------- DRAFTS ----------------------
 router.post('/save-draft', authMiddleware, async (req, res) => {
   try {
     const { type, title, url } = req.body;
-    if (!type || !url) return res.status(400).json({ message: 'type and url are required' });
+    if (!type || !url) {
+      return res.status(400).json({ message: 'type and url are required' });
+    }
 
     const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     user.drafts.push({ type, title, url });
     await user.save();
 
     res.status(201).json({ message: 'Draft saved successfully', drafts: user.drafts });
   } catch (err) {
-    console.error('Save draft error:', err);
+    console.error('❌ Save draft error:', err);
     res.status(500).json({ message: 'Server error while saving draft' });
   }
 });
@@ -143,11 +172,13 @@ router.post('/save-draft', authMiddleware, async (req, res) => {
 router.get('/get-drafts', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('drafts');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     res.json({ drafts: user.drafts });
   } catch (err) {
-    console.error('Get drafts error:', err);
+    console.error('❌ Get drafts error:', err);
     res.status(500).json({ message: 'Server error while fetching drafts' });
   }
 });
@@ -198,7 +229,7 @@ router.post("/forgot-password", async (req, res) => {
 
     res.json({ message: "Password reset link sent to your email." });
   } catch (err) {
-    console.error("Forgot password error:", err);
+    console.error("❌ Forgot password error:", err);
     res.status(500).json({ message: "Server error while sending reset email." });
   }
 });
@@ -227,7 +258,7 @@ router.post("/reset-password/:token", async (req, res) => {
 
     res.json({ message: "Password reset successful. You can now log in with your new password." });
   } catch (err) {
-    console.error("Reset password error:", err);
+    console.error("❌ Reset password error:", err);
     res.status(500).json({ message: "Server error while resetting password." });
   }
 });
@@ -323,7 +354,7 @@ router.post("/google-login", async (req, res) => {
         email,
         firebaseUid: uid,
         provider: "google",
-        role: 'user' // Default role for Google sign-ups
+        role: 'user'
       });
     } else {
       if (!user.firebaseUid) {
@@ -336,7 +367,7 @@ router.post("/google-login", async (req, res) => {
     const token = generateToken(user._id);
 
     console.log('✅ Google login successful:', { 
-      id: user._id, 
+      id: user._id.toString(), 
       email: user.email,
       role: user.role 
     });
@@ -345,15 +376,16 @@ router.post("/google-login", async (req, res) => {
       message: 'Google login successful',
       token,
       user: { 
-        id: user._id, 
+        id: user._id.toString(),
+        userId: user._id.toString(),
         email: user.email, 
         name: user.name, 
         provider: user.provider,
-        role: user.role // Include role in response
+        role: user.role
       }
     });
   } catch (err) {
-    console.error('Google login error:', err);
+    console.error('❌ Google login error:', err);
     res.status(500).json({ message: 'Server error during Google login', error: err.message });
   }
 });

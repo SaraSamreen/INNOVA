@@ -10,6 +10,7 @@ import {
   Sparkles,
   Image,
   Plus,
+  MessageCircle,
   Settings,
 } from "lucide-react";
 
@@ -20,9 +21,10 @@ const Sidebar = () => {
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
-    { path: "/team-collaboration", icon: Users, label: "Team Collaboration" },
+    { path: "/simple-chat", icon: MessageCircle, label: "Chat" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
-    { path: "/editor", icon: Edit, label: "Editor" },
+    { path: "/video-editor", icon: Video, label: "Video Editor" },
+
   ];
 
   return (
