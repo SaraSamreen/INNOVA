@@ -1,4 +1,3 @@
-// AvatarVideoGenerator.js - FIXED with proper polling
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -34,6 +33,10 @@ export default function AvatarVideoGenerator() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [error, setError] = useState(null);
   const [videoId, setVideoId] = useState(null);
+  
+  // Social media states
+  const [uploadingTo, setUploadingTo] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,7 +66,6 @@ export default function AvatarVideoGenerator() {
     fetchData();
   }, []);
 
-  // Poll video status
   useEffect(() => {
     if (!videoId || !isGenerating) return;
 
@@ -71,8 +73,6 @@ export default function AvatarVideoGenerator() {
       try {
         const res = await axios.get(`${API_BASE}/video-status/${videoId}`);
         const data = res.data;
-
-        console.log('📊 Poll result:', data);
 
         if (data.status === 'completed' && data.videoUrl) {
           setVideoUrl(data.videoUrl);
@@ -85,35 +85,28 @@ export default function AvatarVideoGenerator() {
           setIsGenerating(false);
           clearInterval(pollInterval);
         } else {
-          // Still processing
           setProgressMsg(data.message || 'Generating video...');
-          
-          // Gradually increase progress
           setProgress(prev => {
             if (prev < 90) return prev + 2;
             return prev;
           });
         }
       } catch (err) {
-        console.error('Poll error:', err);
-        
-        // Don't stop on network errors, keep trying
         if (err.response?.status === 404) {
           setError('Video not found. Please try again.');
           setIsGenerating(false);
           clearInterval(pollInterval);
         }
       }
-    }, 3000); // Poll every 3 seconds
+    }, 3000);
 
-    // Timeout after 10 minutes
     const timeout = setTimeout(() => {
       clearInterval(pollInterval);
       if (isGenerating) {
         setError('Video generation is taking longer than expected. Please check back later or try again.');
         setIsGenerating(false);
       }
-    }, 600000); // 10 minutes
+    }, 600000);
 
     return () => {
       clearInterval(pollInterval);
@@ -131,7 +124,6 @@ export default function AvatarVideoGenerator() {
     setError(null);
 
     try {
-      // Send trimmed values to avoid issues with extra spaces
       const res = await axios.post(API_BASE + "/generate-marketing-script", {
         productName: trimmedName,
         features: productInfo.features.trim(),
@@ -180,7 +172,6 @@ export default function AvatarVideoGenerator() {
         setVideoId(res.data.videoId);
         setProgress(30);
         setProgressMsg("Video generation started! Waiting for HeyGen...");
-        // Polling will start automatically via useEffect
       } else {
         throw new Error('No video ID returned');
       }
@@ -188,6 +179,44 @@ export default function AvatarVideoGenerator() {
     } catch (err) {
       setError(err.response?.data?.details || err.response?.data?.error || "Failed to generate video");
       setIsGenerating(false);
+    }
+  };
+
+  const uploadToSocialMedia = async (platform) => {
+    if (!videoUrl) return;
+    
+    setUploadingTo(platform);
+    setUploadSuccess(null);
+    setError(null);
+
+    try {
+      const res = await axios.post(`${API_BASE}/upload-to-social`, {
+        videoUrl: videoUrl,
+        platform: platform,
+        caption: script.substring(0, 280) + "\n\n🎬 Created with AI Avatar Generator",
+        productName: productInfo.name || "AI Generated Video"
+      });
+
+      if (res.data.success) {
+        setUploadSuccess(`✅ Successfully shared to ${platform}!`);
+        if (res.data.postUrl) {
+          setTimeout(() => {
+            window.open(res.data.postUrl, '_blank');
+          }, 1000);
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || `Failed to upload to ${platform}. ${err.response?.data?.message || ''}`);
+    } finally {
+      setUploadingTo(null);
+    }
+  };
+
+  const copyLink = () => {
+    if (videoUrl) {
+      navigator.clipboard.writeText(videoUrl);
+      setUploadSuccess("📋 Video link copied!");
+      setTimeout(() => setUploadSuccess(null), 2000);
     }
   };
 
@@ -269,9 +298,6 @@ export default function AvatarVideoGenerator() {
                     onChange={(e) => setProductInfo({ ...productInfo, name: e.target.value })}
                     onBlur={(e) => setProductInfo({ ...productInfo, name: e.target.value.trim() })}
                   />
-                  {productInfo.name && productInfo.name.trim().length === 0 && (
-                    <p className="text-xs text-red-500 mt-1">⚠️ Product name cannot be empty or just spaces</p>
-                  )}
                 </div>
                 <textarea
                   placeholder="Key Features (optional)"
@@ -447,11 +473,6 @@ export default function AvatarVideoGenerator() {
                 <p className="text-center text-xs text-gray-400 mt-1">
                   ⏱️ This usually takes 2-5 minutes... Please be patient!
                 </p>
-                {videoId && (
-                  <p className="text-center text-xs text-purple-600 mt-2">
-                    Video ID: {videoId}
-                  </p>
-                )}
               </div>
             )}
 
@@ -471,24 +492,78 @@ export default function AvatarVideoGenerator() {
             {videoUrl && (
               <div className="mt-6">
                 <h3 className="text-lg font-bold text-green-700 mb-3">✅ Your Video is Ready!</h3>
-                <video src={videoUrl} controls className="w-full rounded-xl shadow-lg" />
-                <div className="flex gap-3 mt-4">
+                <video src={videoUrl} controls className="w-full rounded-xl shadow-lg mb-4" />
+                
+                {uploadSuccess && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-center font-medium">
+                    {uploadSuccess}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 mb-3">
                   <a
                     href={videoUrl}
                     download="avatar-video.mp4"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl text-center hover:bg-blue-700"
+                    className="py-3 bg-blue-600 text-white font-bold rounded-xl text-center hover:bg-blue-700 flex items-center justify-center gap-2"
                   >
-                    ⬇️ Download
+                    <span>⬇️</span> Download
                   </a>
                   <button
-                    onClick={() => { setVideoUrl(null); setError(null); setStep(1); setScript(""); setVideoId(null); }}
-                    className="flex-1 py-3 bg-gray-200 font-bold rounded-xl hover:bg-gray-300"
+                    onClick={copyLink}
+                    className="py-3 bg-gray-600 text-white font-bold rounded-xl hover:bg-gray-700 flex items-center justify-center gap-2"
                   >
-                    ✨ Create New
+                    <span>📋</span> Copy Link
                   </button>
                 </div>
+
+                <div className="border-t pt-4 mb-4">
+                  <h4 className="font-bold text-gray-700 mb-3 text-center">Share to Social Media</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => uploadToSocialMedia('twitter')}
+                      disabled={uploadingTo !== null}
+                      className="py-3 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {uploadingTo === 'twitter' ? (
+                        <>⏳ Posting...</>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                          Twitter/X
+                        </>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={() => uploadToSocialMedia('linkedin')}
+                      disabled={uploadingTo !== null}
+                      className="py-3 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {uploadingTo === 'linkedin' ? (
+                        <>⏳ Posting...</>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          </svg>
+                          LinkedIn
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    📱 One-click sharing to your social media accounts
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => { setVideoUrl(null); setError(null); setStep(1); setScript(""); setVideoId(null); setUploadSuccess(null); }}
+                  className="w-full py-3 bg-gray-200 font-bold rounded-xl hover:bg-gray-300"
+                >
+                  ✨ Create New Video
+                </button>
               </div>
             )}
 
