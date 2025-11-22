@@ -10,6 +10,7 @@ import {
   Sparkles,
   Image,
   Plus,
+  Settings,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -82,6 +83,24 @@ const Sidebar = () => {
           );
         })}
       </nav>
+
+      {/* Settings Button at Bottom */}
+      <div className="border-t border-border/50 pt-4">
+        <Link to="/settings" className="no-underline">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer ${
+              location.pathname === "/settings"
+                ? "bg-gradient-primary text-white shadow-glow"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            {isOpen && (
+              <span className="text-sm font-medium truncate">Settings</span>
+            )}
+          </div>
+        </Link>
+      </div>
     </div>
   );
 };

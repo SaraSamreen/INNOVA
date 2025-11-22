@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from "react"; 
-import { Send, Loader2 } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react"; 
+import { Send, Loader2, TrendingUp, Search } from "lucide-react";
 
-export default function DesignProduct() {
+export default function MarketResearch() {
   const [messages, setMessages] = useState([
     {
       id: 1,
       from: "assistant",
-      text: `Hello! I'm your Lesson Assistant. Ask me any question based on your uploaded course material, and I will provide accurate explanations, examples, or summaries.`,
+      text: `Hello! I'm your Market Research Assistant. Tell me about any product, and I'll analyze its market demand, competition, trends, and opportunities.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -22,29 +22,28 @@ export default function DesignProduct() {
 
     const userMsg = { id: Date.now(), from: "user", text: input };
     setMessages((m) => [...m, userMsg]);
-    const userQuestion = input;
+    const productQuery = input;
     setInput("");
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/rag/query", {
+      const response = await fetch("http://localhost:5002/api/market/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: userQuestion, context_type: "course_material" }),
+        body: JSON.stringify({ product: productQuery }),
       });
 
       const data = await response.json();
-      const assistantText =
-        data.response || data.answer || "I couldn't find relevant information in your course materials. Try rephrasing your question.";
+      const assistantText = data.analysis || "Unable to fetch market data. Please try again.";
 
       const assistantMsg = { id: Date.now() + 1, from: "assistant", text: assistantText };
       setMessages((m) => [...m, assistantMsg]);
     } catch (err) {
-      console.error("RAG API Error:", err);
+      console.error("Market API Error:", err);
       const errorMsg = {
         id: Date.now() + 1,
         from: "assistant",
-        text: "Sorry, I encountered an error connecting to the course material database. Please ensure the RAG backend is running and try again.",
+        text: "Sorry, I couldn't connect to the market research service. Please check your backend.",
       };
       setMessages((m) => [...m, errorMsg]);
     } finally {
@@ -52,33 +51,38 @@ export default function DesignProduct() {
     }
   };
 
-  const sampleQuestions = [
-    "Explain photosynthesis in simple terms",
-    "Summarize Chapter 3 of my biology textbook",
-    "What are Newton's three laws of motion?",
-    "Give examples of chemical reactions for grade 10 students"
+  const sampleProducts = [
+    "Smart water bottle",
+    "Eco-friendly phone case",
+    "Scented candles",
+    "Wireless earbuds"
   ];
 
   function Message({ from, children }) {
     const isUser = from === "user";
     return (
-      <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
-        <div className={`px-4 py-3 rounded-xl max-w-[70%] ${isUser ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}>
-          <div className="text-base sm:text-lg whitespace-pre-wrap">{children}</div>
+      <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
+        <div className={`px-5 py-3 rounded-2xl max-w-[75%] ${isUser ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-800"}`}>
+          <div className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">{children}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-screen h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="flex flex-col w-full h-full max-w-4xl rounded-2xl shadow-md overflow-hidden bg-white">
+    <div className="w-full h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="flex flex-col w-full h-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden bg-white">
+        
         {/* Header */}
-        <div className="p-6 border-b bg-white">
-          <h2 className="text-xl font-semibold text-gray-800">Educational RAG Assistant</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Ask questions based on your uploaded course books, notes, or lecture material.
-          </p>
+        <div className="p-6 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-2xl font-bold">Market Research AI</h2>
+              <p className="mt-1 text-sm text-blue-100">
+                Real-time market analysis for any product idea
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Chat Messages */}
@@ -89,42 +93,46 @@ export default function DesignProduct() {
             </Message>
           ))}
           {loading && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Fetching relevant content...</span>
+            <div className="flex items-center gap-3 text-sm text-gray-500 bg-gray-50 p-4 rounded-xl">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+              <span>Analyzing market data...</span>
             </div>
           )}
         </div>
 
         {/* Input */}
-        <div className="p-6 border-t bg-white">
-          <div className="flex flex-wrap gap-2 mb-3">
-            {sampleQuestions.map((q) => (
+        <div className="p-6 border-t bg-gray-50">
+          {/* Sample Products */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {sampleProducts.map((product) => (
               <button
-                key={q}
-                onClick={() => setInput(q)}
-                className="text-sm px-4 py-2 rounded-full border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700"
+                key={product}
+                onClick={() => setInput(product)}
+                className="text-sm px-4 py-2 rounded-full bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 transition-all"
               >
-                {q}
+                {product}
               </button>
             ))}
           </div>
 
+          {/* Input Field */}
           <div className="flex gap-3">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Ask a question from your course materials..."
-              className="flex-1 p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-700"
-            />
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="Enter product name or idea..."
+                className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 bg-white"
+              />
+            </div>
             <button
               onClick={sendMessage}
               disabled={loading}
-              className="px-5 py-3 rounded-xl bg-blue-500 text-white font-medium flex items-center gap-2 hover:bg-blue-600 disabled:opacity-60"
+              className="px-6 py-4 rounded-xl bg-blue-500 text-white font-medium flex items-center gap-2 hover:bg-blue-600 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl"
             >
               <Send className="w-5 h-5" />
-              Send
             </button>
           </div>
         </div>

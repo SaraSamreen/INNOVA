@@ -9,15 +9,14 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 
-// Your Firebase config
+
 const firebaseConfig = {
-  apiKey: "AIzaSyChCy0Rl1Q8DX-ay7SwrJ7ZydcZx1hrurg",
-  authDomain: "innova-oauth.firebaseapp.com",
-  projectId: "innova-oauth",
-  storageBucket: "innova-oauth.firebasestorage.app",
-  messagingSenderId: "816331686234",
-  appId: "1:816331686234:web:eb195d1af2c31b61303363",
-  measurementId: "G-S5908KVQ2F",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
@@ -34,7 +33,17 @@ const provider = new GoogleAuthProvider();
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
-    return result.user; // send user info back
+    const user = result.user;
+    
+    // Get the ID token - THIS IS THE KEY FIX
+    const idToken = await user.getIdToken();
+    
+    console.log('Firebase sign-in successful, got ID token');
+    
+    return { 
+      user, 
+      idToken 
+    };
   } catch (error) {
     console.error("Google Sign-in Error:", error);
     throw error;

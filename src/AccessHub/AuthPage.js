@@ -99,37 +99,50 @@ const AuthPage = () => {
     }
   };
 
-  const handleGoogleAuth = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Get Firebase ID token
-      const { idToken } = await signInWithGoogle();
-      
-      // Send to your backend
-      const res = await fetch('http://localhost:5000/api/auth/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken })
-      });
+  // Replace your handleGoogleAuth function with this:
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      
-      // Store user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      alert('Google authentication successful!');
-      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
-    } catch (err) {
-      console.error('Google Sign-In Error:', err);
-      setError(err.message || 'Google Sign-In failed. Please try again.');
-    } finally {
-      setLoading(false);
+const handleGoogleAuth = async () => {
+  try {
+    setLoading(true);
+    setError('');
+    
+    // Get Firebase user and ID token
+    const result = await signInWithGoogle();
+    
+    // Check if we got a valid result
+    if (!result || !result.idToken) {
+      throw new Error('Failed to get authentication token from Google');
     }
-  };
+    
+    console.log('Got ID token, sending to backend...');
+    
+    // Send to your backend
+    const res = await fetch('http://localhost:5000/api/auth/google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: result.idToken })
+    });
+
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.message || 'Backend authentication failed');
+    }
+    
+    // Store user data
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    alert('Google authentication successful!');
+    window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
+    
+  } catch (err) {
+    console.error('Google Sign-In Error:', err);
+    setError(err.message || 'Google Sign-In failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-[#c3d5ef] overflow-hidden">
@@ -420,7 +433,7 @@ const AuthPage = () => {
 
                         {/* Signup Button */}
                         <button
-                          onClick={handleSignupSubmit}
+                          onClick={() => setIsLogin(true)}
                           disabled={loading}
                           className="w-full bg-gradient-to-r from-[#3E8EDE] to-[#2E7BC8] text-white py-3.5 rounded-[14px] font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                         >
@@ -434,6 +447,7 @@ const AuthPage = () => {
                             </>
                           ) : (
                             <span>Sign Up</span>
+                            
                           )}
                         </button>
 
