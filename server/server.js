@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -75,7 +74,7 @@ const connectDB = async () => {
 connectDB();
 
 // Directory Setup
-const dirs = ['uploads', 'processed', 'temp'];
+const dirs = ['uploads', 'processed', 'temp',];
 dirs.forEach(dir => {
   const dirPath = path.join(__dirname, dir);
   if (!fs.existsSync(dirPath)) {
@@ -91,10 +90,13 @@ app.use('/processed', express.static('processed'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/payment', require('./routes/payment'));
+
+// AI Routes
 const avatarVideoRoutes = require('./routes/avatarVideoRoutes');
 app.use('/api/ai', avatarVideoRoutes);
 
 
+// Optional routes
 if (fs.existsSync('./routes/media.js')) {
   app.use('/api/media', require('./routes/media'));
 }
@@ -114,12 +116,18 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     message: 'TeamCollab API running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    features: {
+      chat: true,
+      payment: true,
+      avatarVideo: true,
+  
+    }
   });
 });
 
 // ===============================
-// NEW SOCKET.IO AUTH + HANDLERS
+// SOCKET.IO AUTH + HANDLERS
 // ===============================
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
 
@@ -216,10 +224,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Admin + AI Routes
-const aiRoutes = require('./routes/aiRoutes');
-app.use('/api/ai', aiRoutes);
-
+// Admin Routes
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 
@@ -245,6 +250,8 @@ server.listen(PORT, () => {
   console.log("💬 Socket.IO real-time chat ready");
   console.log("📹 TeamCollab API ready");
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log("\n📡 Available AI Services:");
+  console.log("   - Avatar Video (HeyGen)");
 });
 
 // Graceful shutdown

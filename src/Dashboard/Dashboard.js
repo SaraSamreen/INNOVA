@@ -70,7 +70,7 @@ const productTools = [
     title: "AI Backgrounds",
     description: "Generate realistic AI backgrounds in less than a second.",
     image: "/products/img3.jpg",
-    route: "/ai-backgrounds"
+    route: "/ai-model-studio"
   },
   {
     id: "img4",

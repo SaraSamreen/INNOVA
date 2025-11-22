@@ -28,6 +28,11 @@ export default function VideoEditor() {
   const [selectedText, setSelectedText] = useState(null);
   const [audio, setAudio] = useState(null);
   const [audioFileName, setAudioFileName] = useState(null);
+  const [clips, setClips] = useState([]);
+  const [isDraggingText, setIsDraggingText] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [muteInsertedClips, setMuteInsertedClips] = useState(true);
+  const [keepOriginalAudio, setKeepOriginalAudio] = useState(true);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -72,8 +77,23 @@ export default function VideoEditor() {
             ctx.textAlign = 'center';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            ctx.strokeText(text.text, canvas.width / 2, text.position || canvas.height / 2);
-            ctx.fillText(text.text, canvas.width / 2, text.position || canvas.height / 2);
+            ctx.strokeText(text.text, text.x || canvas.width / 2, text.y || canvas.height / 2);
+            ctx.fillText(text.text, text.x || canvas.width / 2, text.y || canvas.height / 2);
+            
+            // Draw selection box if selected
+            if (selectedText === text.id) {
+              const metrics = ctx.measureText(text.text);
+              const textWidth = metrics.width;
+              const textHeight = text.size;
+              ctx.strokeStyle = '#8b5cf6';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(
+                (text.x || canvas.width / 2) - textWidth / 2 - 10,
+                (text.y || canvas.height / 2) - textHeight - 5,
+                textWidth + 20,
+                textHeight + 10
+              );
+            }
           }
         });
       }
@@ -81,7 +101,7 @@ export default function VideoEditor() {
     };
 
     drawFrame();
-  }, [video, filters, textOverlays, currentTime]);
+  }, [video, filters, textOverlays, currentTime, selectedText]);
 
   // Video upload
   const handleVideoUpload = async (e) => {
@@ -169,9 +189,12 @@ export default function VideoEditor() {
           color: text.color,
           startTime: text.startTime,
           duration: text.duration,
-          position: text.position
+          x: text.x,
+          y: text.y
         })),
-        audioFile: audioFileName
+        audioFile: audioFileName,
+        clips: clips,
+        keepOriginalAudio: keepOriginalAudio
       };
 
       const response = await fetch(`${API_URL}/process`, {
@@ -216,10 +239,8 @@ export default function VideoEditor() {
     }
 
     try {
-      // Get existing video drafts
       const existingDrafts = JSON.parse(localStorage.getItem('videoDrafts') || '[]');
       
-      // Create draft object
       const newDraft = {
         type: 'video',
         videoUrl: processedVideoUrl,
@@ -229,13 +250,10 @@ export default function VideoEditor() {
         duration: duration
       };
 
-      // Add to drafts
       const updatedDrafts = [newDraft, ...existingDrafts];
       localStorage.setItem('videoDrafts', JSON.stringify(updatedDrafts));
 
       alert('✅ Video saved to drafts!');
-      
-      // Navigate to drafts
       navigate('/drafts', { state: { newVideoDraft: newDraft } });
     } catch (error) {
       console.error('Error saving to drafts:', error);
@@ -252,7 +270,8 @@ export default function VideoEditor() {
       color: '#FFFFFF',
       startTime: currentTime,
       duration: 5,
-      position: 200
+      x: 400,
+      y: 225
     };
     setTextOverlays([...textOverlays, newText]);
     setSelectedText(newText.id);
@@ -265,6 +284,110 @@ export default function VideoEditor() {
   const deleteText = (id) => {
     setTextOverlays(textOverlays.filter(t => t.id !== id));
     setSelectedText(null);
+  };
+
+  // Handle canvas mouse events for dragging text
+  const handleCanvasMouseDown = (e) => {
+    if (!canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    const ctx = canvas.getContext('2d');
+    for (const text of textOverlays) {
+      if (currentTime >= text.startTime && currentTime < text.startTime + text.duration) {
+        ctx.font = `bold ${text.size}px Arial`;
+        const metrics = ctx.measureText(text.text);
+        const textWidth = metrics.width;
+        const textHeight = text.size;
+        const textX = text.x || canvas.width / 2;
+        const textY = text.y || canvas.height / 2;
+
+        if (x >= textX - textWidth / 2 - 10 && x <= textX + textWidth / 2 + 10 &&
+            y >= textY - textHeight - 5 && y <= textY + 10) {
+          setIsDraggingText(true);
+          setSelectedText(text.id);
+          setDragOffset({ x: x - textX, y: y - textY });
+          break;
+        }
+      }
+    }
+  };
+
+  const handleCanvasMouseMove = (e) => {
+    if (!isDraggingText || !selectedText || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    updateText(selectedText, {
+      x: x - dragOffset.x,
+      y: y - dragOffset.y
+    });
+  };
+
+  const handleCanvasMouseUp = () => {
+    setIsDraggingText(false);
+  };
+
+  // Split video at current time
+  const handleSplitVideo = () => {
+    if (!video || currentTime <= 0 || currentTime >= duration) {
+      alert('⚠️ Cannot split at this position');
+      return;
+    }
+
+    const newClip = {
+      id: Date.now(),
+      filename: uploadedFileName,
+      startTime: currentTime,
+      type: 'split'
+    };
+
+    setClips([...clips, newClip]);
+    alert(`✅ Split created at ${formatTime(currentTime)}`);
+  };
+
+  // Insert media
+  const handleInsertMedia = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const response = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const newClip = {
+          id: Date.now(),
+          filename: data.file.filename,
+          insertAt: currentTime,
+          duration: data.file.duration || 3,
+          type: file.type.startsWith('image/') ? 'image' : 'video',
+          muteInsertedClip: true // Always mute inserted clips to keep original audio
+        };
+        setClips([...clips, newClip]);
+        alert('✅ Media inserted successfully! (Will play muted with original audio)');
+      }
+    } catch (error) {
+      console.error('Insert media error:', error);
+      alert('❌ Failed to insert media');
+    }
   };
 
   // Timeline interactions
@@ -351,7 +474,11 @@ export default function VideoEditor() {
                 ref={canvasRef}
                 width={800}
                 height={450}
-                className="max-w-full max-h-full"
+                className="max-w-full max-h-full cursor-move"
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
               />
             ) : (
               <div className="text-center">
@@ -409,8 +536,16 @@ export default function VideoEditor() {
                 <button
                   onClick={() => setIsMuted(!isMuted)}
                   className="w-10 h-10 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all"
+                  title={isMuted ? "Unmute preview" : "Mute preview"}
                 >
                   {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+                <button
+                  onClick={handleSplitVideo}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2 font-medium"
+                >
+                  <Scissors size={18} />
+                  Split
                 </button>
               </div>
             </div>
@@ -457,6 +592,7 @@ export default function VideoEditor() {
               <Plus size={16} />
               Add Text
             </button>
+            <p className="text-xs text-gray-500 mt-2">💡 Click and drag text on canvas to reposition</p>
 
             <div className="mt-3 space-y-2">
               {textOverlays.map((text) => (
@@ -506,6 +642,32 @@ export default function VideoEditor() {
                         onChange={(e) => updateText(text.id, { color: e.target.value })}
                         className="h-8 flex-1 rounded border border-gray-300 cursor-pointer"
                       />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 w-12">Start:</span>
+                      <input
+                        type="number"
+                        value={text.startTime.toFixed(1)}
+                        onChange={(e) => updateText(text.id, { startTime: parseFloat(e.target.value) })}
+                        className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                        step="0.1"
+                        min="0"
+                      />
+                      <span className="text-xs text-gray-600">s</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 w-12">Length:</span>
+                      <input
+                        type="number"
+                        value={text.duration}
+                        onChange={(e) => updateText(text.id, { duration: parseInt(e.target.value) })}
+                        className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                        step="1"
+                        min="1"
+                      />
+                      <span className="text-xs text-gray-600">s</span>
                     </div>
                   </div>
                 </div>
@@ -588,32 +750,106 @@ export default function VideoEditor() {
           </div>
 
           {/* Audio */}
-          <div className="p-5">
+          <div className="p-5 border-b border-gray-200">
             <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              🎵 Background Audio
+              🎵 Audio Settings
             </h3>
-            {audio ? (
-              <div className="space-y-2">
-                <audio controls className="w-full" src={audio} />
-                <button
-                  onClick={() => { setAudio(null); setAudioFileName(null); }}
-                  className="w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100 transition-all border border-red-200"
-                >
-                  Remove Audio
-                </button>
-              </div>
-            ) : (
-              <label>
+            
+            {/* Keep Original Audio Toggle */}
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <label className="flex items-center gap-3 cursor-pointer">
                 <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleAudioUpload}
-                  className="hidden"
+                  type="checkbox"
+                  checked={keepOriginalAudio}
+                  onChange={(e) => setKeepOriginalAudio(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
-                <div className="px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium text-center cursor-pointer hover:bg-green-100 transition-all border border-green-200">
-                  🎵 Upload Audio
+                <div>
+                  <span className="text-sm font-medium text-gray-900">Keep Original Video Audio</span>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Original audio continues even when clips are inserted
+                  </p>
                 </div>
               </label>
+            </div>
+
+            {/* Background Music */}
+            <div>
+              <p className="text-xs font-medium text-gray-700 mb-2">Background Music:</p>
+              {audio ? (
+                <div className="space-y-2">
+                  <audio controls className="w-full" src={audio} />
+                  <button
+                    onClick={() => { setAudio(null); setAudioFileName(null); }}
+                    className="w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100 transition-all border border-red-200"
+                  >
+                    Remove Audio
+                  </button>
+                </div>
+              ) : (
+                <label>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleAudioUpload}
+                    className="hidden"
+                  />
+                  <div className="px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium text-center cursor-pointer hover:bg-green-100 transition-all border border-green-200">
+                    🎵 Upload Background Music
+                  </div>
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Insert Media & Clips */}
+          <div className="p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Scissors size={16} />
+              Insert & Split
+            </h3>
+            
+            <label className="block mb-3">
+              <input
+                type="file"
+                accept="video/*,image/*"
+                onChange={handleInsertMedia}
+                disabled={!video}
+                className="hidden"
+              />
+              <div className="px-4 py-3 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium text-center cursor-pointer hover:bg-indigo-100 transition-all border border-indigo-200 disabled:opacity-50">
+                📽️ Insert Video/Image
+              </div>
+            </label>
+
+            {clips.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-700">Clips & Splits:</p>
+                {clips.map((clip) => (
+                  <div key={clip.id} className="p-2 bg-gray-50 rounded border border-gray-200 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-700">
+                        {clip.type === 'split' ? '✂️ Split' : clip.type === 'image' ? '🖼️ Image' : '📽️ Video'}
+                      </span>
+                      <button
+                        onClick={() => setClips(clips.filter(c => c.id !== clip.id))}
+                        className="text-red-600 hover:bg-red-50 p-1 rounded"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                    <p className="text-gray-600 mt-1">
+                      {clip.type === 'split' 
+                        ? `At ${formatTime(clip.startTime)}`
+                        : `Insert at ${formatTime(clip.insertAt)}`
+                      }
+                    </p>
+                    {clip.muteInsertedClip && (
+                      <p className="text-green-600 text-xs mt-1">🔇 Muted (original audio continues)</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
