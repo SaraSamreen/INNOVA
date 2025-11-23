@@ -272,7 +272,7 @@ const UserManagement = () => {
                           : "bg-green-100 text-green-700"
                       }`}
                     >
-                      {user.suspended ? "Suspended" : "Active"}
+                      {user.suspended ? "Deleted" : "Active"}
                     </span>
                   </td>
                   <td>
@@ -290,22 +290,14 @@ const UserManagement = () => {
                         Activate
                       </button>
                     ) : (
-                      <button
-                        onClick={() => handleSuspendUser(user._id)}
-                        className="px-3 py-1 rounded bg-yellow-500 text-white text-xs hover:bg-yellow-600 inline-flex items-center gap-1"
-                      >
-                        <UserX className="w-3 h-3" />
-                        Suspend
-                      </button>
-                    )}
-
-                    <button
+                       <button
                       onClick={() => openDeleteModal(user)}
                       className="px-3 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600 inline-flex items-center gap-1"
                     >
                       <Trash2 className="w-3 h-3" />
                       Delete
                     </button>
+                    )}
                   </td>
                 </tr>
               ))

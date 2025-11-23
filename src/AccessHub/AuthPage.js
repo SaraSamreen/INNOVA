@@ -37,28 +37,6 @@ const AuthPage = () => {
 
     const data = await res.json();
 
-    // Handle suspended account with detailed modal
-    if (res.status === 403 && data.suspended) {
-      const suspendedDate = data.suspendedAt 
-        ? new Date(data.suspendedAt).toLocaleDateString() 
-        : 'recently';
-      
-      const message = `
-🚫 Account Suspended
-
-Your account was suspended on ${suspendedDate}.
-
-Reason: ${data.reason || 'Policy violation'}
-
-Please contact our support team at support@yourapp.com for assistance.
-      `;
-      
-      alert(message);
-      setError('Account suspended. Please contact support.');
-      setLoading(false);
-      return;
-    }
-
     // Handle deleted user or invalid credentials
     if (res.status === 401) {
       const deletDate = data.deleteAt 
