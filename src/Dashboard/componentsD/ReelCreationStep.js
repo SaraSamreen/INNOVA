@@ -30,6 +30,15 @@ export default function ReelCreationStep() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-blue-50 to-white relative overflow-hidden">
+      
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/dashboard")}
+        className="absolute top-6 left-[110px] z-[9999] bg-white shadow-md px-4 py-2 rounded-full text-gray-700 font-medium hover:bg-gray-100 transition"
+      >
+        ← Back
+      </button>
+
       {/* Sidebar */}
       <Sidebar />
 
@@ -50,43 +59,45 @@ export default function ReelCreationStep() {
         </p>
 
         {/* Buttons grid */}
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl">
-  {/* AI Assistant - tallest */}
-  <button
-    onClick={() => handleSelect("ai-assistant")}
-    className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-green-400 via-teal-400 to-blue-400 ${
-      selectedMethod === "ai-assistant"
-        ? "scale-105 shadow-lg text-white"
-        : "hover:scale-110 text-white"
-    }`}
-  >
-    AI Assistant
-  </button>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl">
+          
+          {/* AI Assistant */}
+          <button
+            onClick={() => handleSelect("ai-assistant")}
+            className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-green-400 via-teal-400 to-blue-400 ${
+              selectedMethod === "ai-assistant"
+                ? "scale-105 shadow-lg text-white"
+                : "hover:scale-110 text-white"
+            }`}
+          >
+            AI Assistant
+          </button>
 
-  {/* Template Browser - medium */}
-  <button
-    onClick={() => handleSelect("template")}
-    className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-blue-400 via-teal-400 to-green-400 ${
-      selectedMethod === "template"
-        ? "scale-105 shadow-lg text-white"
-        : "hover:scale-110 text-white"
-    }`}
-  >
-    Template Browser
-  </button>
+          {/* Template Browser */}
+          <button
+            onClick={() => handleSelect("template")}
+            className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-blue-400 via-teal-400 to-green-400 ${
+              selectedMethod === "template"
+                ? "scale-105 shadow-lg text-white"
+                : "hover:scale-110 text-white"
+            }`}
+          >
+            Template Browser
+          </button>
 
-  {/* Quick Reel - shortest */}
-  <button
-    onClick={() => handleSelect("quick-reel")}
-    className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-green-400 via-teal-400 to-blue-400 ${
-      selectedMethod === "quick-reel"
-        ? "scale-105 shadow-lg text-white"
-        : "hover:scale-110 text-white"
-    }`}
-  >
-    Quick Reel
-  </button>
-</div>
+          {/* Quick Reel */}
+          <button
+            onClick={() => handleSelect("quick-reel")}
+            className={`p-6 rounded-2xl shadow-md text-3xl font-bold transition-all duration-300 transform h-60 flex items-center justify-center bg-gradient-to-b from-green-400 via-teal-400 to-blue-400 ${
+              selectedMethod === "quick-reel"
+                ? "scale-105 shadow-lg text-white"
+                : "hover:scale-110 text-white"
+            }`}
+          >
+            Quick Reel
+          </button>
+
+        </div>
 
         {/* Continue button */}
         <button

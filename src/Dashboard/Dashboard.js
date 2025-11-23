@@ -85,7 +85,7 @@ export default function Dashboard() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-white to-blue-400 flex flex-col">
-        <Topbar projectTitle="INNOVA AI Studio" />
+        <Topbar projectTitle="INNOVA  Studio" />
         <div className="flex flex-1">
           <Sidebar />
           <main className="flex-1 p-8">

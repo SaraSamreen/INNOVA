@@ -3,7 +3,7 @@ flask==3.0.3
 flask-cors==4.0.1
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
-
+pytrends==4.9.2
 # ========== Environment & Config ==========
 python-dotenv==1.0.1
 pydantic==2.9.2

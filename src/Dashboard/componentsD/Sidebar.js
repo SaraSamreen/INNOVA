@@ -21,7 +21,6 @@ const Sidebar = () => {
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
-    { path: "/simple-chat", icon: MessageCircle, label: "Chat" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
     { path: "/video-editor", icon: Video, label: "Video Editor" },
 

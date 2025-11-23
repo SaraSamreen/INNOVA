@@ -10,7 +10,7 @@ import LogoGenerator from "./Dashboard/componentsD/LogoGenerator";
 import PosterGenerator from "./Dashboard/componentsD/PosterGenerator";
 import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
 import TemplateEditor from "./TemplateEditor/components/TemplateEditor";
-import Designproduct from './DesignProduct/DesignProduct';
+import Designproduct from './DesignProduct/MarketSearchAnalyzer';
 import ProductBeautifier from './Dashboard/componentsD/ProductBeautifier';
 import Bgremover from './Dashboard/componentsD/BackRemover';
 import ProductStaging from './Dashboard/componentsD/ProductStaging';
