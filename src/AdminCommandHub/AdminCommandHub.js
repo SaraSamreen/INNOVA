@@ -2,27 +2,21 @@ import React, { useState } from "react";
 import AdminHeader from "./components/admin-header";
 import AdminSidebar from "./components/admin-sidebar";
 import AdvertiserManagement from "./components/advertiser-management";
-import ActivityLogs from "./components/activity-logs";
-import SubscriptionPlans from "./components/subscription-plans";
 import PaymentTracking from "./components/payment-tracking";
-import DiscountManagement from "./components/discount-management";
+import SuspendUser from "./components/UserManagement";
 
 const AdminCommandHub = () => {
   const [activeTab, setActiveTab] = useState("advertisers");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const renderActiveComponent = () => {
     switch (activeTab) {
       case "advertisers":
         return <AdvertiserManagement />;
-      case "activity-logs":
-        return <ActivityLogs />;
-      case "subscription-plans":
-        return <SubscriptionPlans />;
+      case "suspend-user":
+        return <SuspendUser />;
       case "payment-tracking":
         return <PaymentTracking />;
-      case "discount-management":
-        return <DiscountManagement />;
       default:
         return <AdvertiserManagement />;
     }

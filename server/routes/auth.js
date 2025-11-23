@@ -115,6 +115,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // CHECK IF USER IS SUSPENDED
+    if (user.suspended) {
+      console.log('🚫 Suspended user login attempt:', user.email);
+      return res.status(403).json({ 
+        message: 'Your account has been suspended. Please contact support for assistance.',
+        suspended: true,
+        suspendedAt: user.suspendedAt,
+        reason: user.suspensionReason || 'Account suspended by administrator'
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -137,7 +148,9 @@ router.post('/login', async (req, res) => {
         email: user.email, 
         name: user.name,
         role: user.role || 'user',
-        permissions: user.permissions
+        plan: user.plan || 'freemium',
+        permissions: user.permissions,
+        suspended: false
       }
     });
   } catch (err) {

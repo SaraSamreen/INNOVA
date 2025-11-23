@@ -109,7 +109,11 @@ if (fs.existsSync('./routes/aiRoutes.js')) {
 if (fs.existsSync('./routes/video.js')) {
   app.use('/api/video', require('./routes/video'));
 }
-
+// In your server.js or app.js
+if (fs.existsSync('./routes/admin')){
+  // Make sure this line exists:
+  app.use('/api/admin',require('./routes/admin'));
+}
 // Test Routes
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });

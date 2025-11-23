@@ -10,14 +10,12 @@ import {
 } from "lucide-react"
 
 const AdminSidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
-  const HEADER_HEIGHT = "84px" // adjust if your header is different
+  const HEADER_HEIGHT = "94px" // adjust if your header is different
 
   const menuItems = [
     { id: "advertisers", label: "Advertiser Management", icon: Users },
-    { id: "activity-logs", label: "Activity Logs", icon: BarChart3 },
-    { id: "subscription-plans", label: "Subscription Plans", icon: CreditCard },
     { id: "payment-tracking", label: "Payment Tracking", icon: Wallet },
-    { id: "discount-management", label: "Discount Management", icon: TicketPercent },
+    { id: "suspend-user", label: "Suspend User", icon: BarChart3 },
   ]
 
   return (

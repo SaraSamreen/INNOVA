@@ -24,34 +24,86 @@ const AuthPage = () => {
   };
 
   const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword })
-      });
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: loginEmail, password: loginPassword })
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+    const data = await res.json();
 
-      // Store user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      alert('Login successful');
+    // Handle suspended account with detailed modal
+    if (res.status === 403 && data.suspended) {
+      const suspendedDate = data.suspendedAt 
+        ? new Date(data.suspendedAt).toLocaleDateString() 
+        : 'recently';
       
-      // Redirect based on ACTUAL role from database
-      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
-    } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
+      const message = `
+🚫 Account Suspended
+
+Your account was suspended on ${suspendedDate}.
+
+Reason: ${data.reason || 'Policy violation'}
+
+Please contact our support team at support@yourapp.com for assistance.
+      `;
+      
+      alert(message);
+      setError('Account suspended. Please contact support.');
       setLoading(false);
+      return;
     }
-  };
+
+    // Handle deleted user or invalid credentials
+    if (res.status === 401) {
+      const deletDate = data.deleteAt 
+        ? new Date(data.deleteAt).toLocaleDateString() 
+        : 'recently';
+      
+      const message = `
+🚫 Account Deleted
+
+Your account was deleted on ${deletDate}.
+
+Reason: ${data.reason || 'Policy violation'}
+
+Please contact our support team at support@yourapp.com for assistance.
+      `;
+      
+      alert(message);
+      setError('Account Deleted. Please contact support.');
+      setLoading(false);
+      return;
+    
+    }
+
+    // Handle other errors
+    if (!res.ok) {
+      throw new Error(data.message || 'Login failed');
+    }
+
+    // Successful login
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+
+    console.log('✅ Login successful:', data.user.email);
+    alert('Login successful! Redirecting...');
+    
+    // Redirect based on role
+    window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
+
+  } catch (err) {
+    console.error('Login error:', err);
+    setError(err.message || 'Login failed. Please check your credentials.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
