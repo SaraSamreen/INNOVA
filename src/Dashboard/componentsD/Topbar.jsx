@@ -66,9 +66,7 @@ export default function Topbar({ projectTitle = 'DesignMind / New Concept' }) {
     // Navigate to login page
     navigate('/login');
   };
-  const handleNotifications = () => {
-    navigate('/simple-chat');
-    };
+
 
   // Get user initials from name
   const getUserInitials = () => {
@@ -88,13 +86,7 @@ export default function Topbar({ projectTitle = 'DesignMind / New Concept' }) {
 
       <div className="flex items-center gap-4">
       
-       <button
-  onClick={handleNotifications}
-  className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-50 text-slate-600 hover:text-blue-600 transition-colors"
-  title="Notifications"
->
-  <Bell className="w-6 h-6" />
-</button>
+       
 
         
         {/* User Avatar and Name */}

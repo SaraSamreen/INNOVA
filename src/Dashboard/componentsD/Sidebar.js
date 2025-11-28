@@ -23,6 +23,7 @@ const Sidebar = () => {
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
     { path: "/video-editor", icon: Video, label: "Video Editor" },
+    { path: "/simple-chat", icon: MessageCircle, label: "Chat" },
 
   ];
 

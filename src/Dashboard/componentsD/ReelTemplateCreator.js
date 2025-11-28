@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Play, Pause, Music, Download, X, Wand2, Type, Image, Trash2 } from "lucide-react";
+import { Upload, Play, Pause, Music, Download, X, Wand2, Type, Image, Trash2, Save, Loader } from "lucide-react";
+import { supabase } from '../../supabaseClient';
 
 export default function ReelTemplateCreator() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -9,6 +10,9 @@ export default function ReelTemplateCreator() {
   const [textPosition, setTextPosition] = useState("center");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftError, setDraftError] = useState(null);
+  const [draftSuccess, setDraftSuccess] = useState(false);
   
   const audioRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -93,6 +97,175 @@ export default function ReelTemplateCreator() {
 
     return () => clearInterval(interval);
   }, [uploadedImages.length]);
+
+  // Save to Drafts Function
+  const saveToDrafts = async () => {
+    // Get user from localStorage (MongoDB user)
+    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    console.log('📦 Raw userData from localStorage:', userData);
+    
+    if (!userData || !token) {
+      setDraftError('Please log in to save drafts');
+      return;
+    }
+
+    let user, userId;
+    try {
+      user = JSON.parse(userData);
+      console.log('🔍 Parsed user object:', user);
+      
+      // Try to get user ID from user object (check all possible fields)
+      userId = user._id || user.id || user.userId;
+      
+      // If not in user object, decode from JWT token
+      if (!userId && token) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+          const decoded = JSON.parse(jsonPayload);
+          userId = decoded.userId || decoded.id || decoded._id;
+          console.log('🔓 Decoded user ID from token:', userId);
+        } catch (decodeErr) {
+          console.error('Failed to decode token:', decodeErr);
+        }
+      }
+      
+      console.log('🆔 Final User ID:', userId);
+      
+      if (!userId) {
+        console.error('❌ User object:', user);
+        throw new Error('User ID not found in user data or token');
+      }
+    } catch (err) {
+      console.error('❌ Error details:', err);
+      setDraftError(`Invalid user session: ${err.message}. Please log in again.`);
+      return;
+    }
+
+    if (!selectedTemplate || uploadedImages.length === 0) {
+      setDraftError('Please select a template and add at least one image');
+      return;
+    }
+
+    try {
+      setSavingDraft(true);
+      setDraftError(null);
+      setDraftSuccess(false);
+
+      // Create canvas to generate image
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      
+      canvas.width = 1080;
+      canvas.height = 1920;
+
+      // Draw background gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      const colors = selectedTemplate.gradient.match(/#[0-9a-f]{6}/gi);
+      if (colors) {
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(1, colors[1]);
+      }
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw first image
+      const img = new window.Image();
+      img.src = uploadedImages[0];
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const x = (canvas.width - img.width * scale) / 2;
+      const y = (canvas.height - img.height * scale) / 2;
+      
+      ctx.globalAlpha = 0.8;
+      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+      ctx.globalAlpha = 1.0;
+
+      // Draw text
+      if (text) {
+        ctx.font = "bold 80px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 4;
+        ctx.textAlign = "center";
+        
+        const yPos = textPosition === "top" ? 200 : textPosition === "center" ? canvas.height / 2 : canvas.height - 200;
+        
+        ctx.strokeText(text, canvas.width / 2, yPos);
+        ctx.fillText(text, canvas.width / 2, yPos);
+      }
+
+      // Convert canvas to blob
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+      // Upload to Supabase Storage
+      const timestamp = Date.now();
+      const storagePath = `${userId}/images/${timestamp}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('drafts')
+        .upload(storagePath, blob, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('drafts')
+        .getPublicUrl(storagePath);
+
+      // Save metadata to database
+      const draft = {
+        user_id: userId.toString(), // Ensure it's a string
+        type: 'image',
+        media_url: publicUrl,
+        storage_path: storagePath,
+        timestamp: Date.now(),
+        created_at: new Date().toISOString(),
+        duration: null,
+        text_overlays: text ? [{ text, position: textPosition }] : [],
+        filters: {
+          template: selectedTemplate.name,
+          imageCount: uploadedImages.length
+        }
+      };
+
+      console.log('📝 Draft object to insert:', draft);
+
+      const { data: insertData, error: insertError } = await supabase
+        .from('drafts')
+        .insert([draft])
+        .select();
+
+      if (insertError) {
+        console.error('❌ Insert error:', insertError);
+        throw insertError;
+      }
+      
+      console.log('✅ Draft saved successfully:', insertData);
+
+      setDraftSuccess(true);
+      setTimeout(() => setDraftSuccess(false), 3000);
+
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setDraftError(`Failed to save: ${err.message}`);
+    } finally {
+      setSavingDraft(false);
+    }
+  };
 
   const renderTemplateLayout = () => {
     if (!selectedTemplate || uploadedImages.length === 0) {
@@ -299,6 +472,29 @@ export default function ReelTemplateCreator() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Quick Reels Template Creator</h1>
           <p className="text-gray-600">Create stunning animated Instagram/TikTok reels with up to 5 photos</p>
         </div>
+
+        {/* Success/Error Messages */}
+        {draftSuccess && (
+          <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-lg flex items-center gap-3">
+            <Save className="w-5 h-5" />
+            <span className="font-medium">✅ Saved to drafts successfully!</span>
+            <a href="/drafts" className="ml-auto text-green-700 underline hover:text-green-900">
+              View Drafts
+            </a>
+          </div>
+        )}
+
+        {draftError && (
+          <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg flex justify-between items-center">
+            <span>{draftError}</span>
+            <button 
+              onClick={() => setDraftError(null)}
+              className="text-red-700 hover:text-red-900 font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
@@ -508,20 +704,40 @@ export default function ReelTemplateCreator() {
                 </div>
               </div>
 
-              {/* Download Button */}
-              <div className="mt-6 flex justify-center">
+              {/* Action Buttons */}
+              <div className="mt-6 flex justify-center gap-3">
+                {/* Save to Drafts Button */}
+                <button
+                  onClick={saveToDrafts}
+                  disabled={!selectedTemplate || uploadedImages.length === 0 || savingDraft}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-all transform hover:scale-105 disabled:transform-none"
+                >
+                  {savingDraft ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      Save to Drafts
+                    </>
+                  )}
+                </button>
+
+                {/* Download Button */}
                 <button
                   onClick={downloadReel}
                   disabled={!selectedTemplate || uploadedImages.length === 0}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-all transform hover:scale-105"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-all transform hover:scale-105 disabled:transform-none"
                 >
                   <Download className="w-5 h-5" />
-                  Download Reel Preview
+                  Download
                 </button>
               </div>
 
               <p className="text-sm text-gray-500 text-center mt-4">
-                Preview shows animation cycle. Download creates a snapshot with all images.
+                Preview shows animation cycle. Download/Save creates a snapshot with all images.
               </p>
             </div>
           </div>

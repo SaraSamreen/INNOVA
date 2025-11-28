@@ -87,8 +87,15 @@ export default function MarketSearchAnalyzer() {
     }
   };
 
-  const generateDemoResponse = (query) => {
+const generateDemoResponse = (query) => {
     const lowerQuery = query.toLowerCase();
+    
+    // Extract product/topic from query
+    const extractTopic = (q) => {
+      // Remove common question words
+      const cleaned = q.replace(/(how viral is|trending|popular|demand for|about|the|in 2024|in 2025)/gi, '').trim();
+      return cleaned || 'this topic';
+    };
     
     // Best time to post queries
     if (lowerQuery.includes('best time') || lowerQuery.includes('when to post') || lowerQuery.includes('optimal time')) {
@@ -98,15 +105,24 @@ export default function MarketSearchAnalyzer() {
                    lowerQuery.includes('tech') ? 'Technology' : 'General';
       
       return {
-        analysis: `⏰ **Best Times to Post ${topic} Content**\n\n**Peak Engagement Hours:**\n• Monday-Friday: 6:00 AM - 8:00 AM (morning workouts)\n• Monday-Friday: 5:00 PM - 7:00 PM (evening routines)\n• Saturday-Sunday: 8:00 AM - 10:00 AM (weekend activity)\n\n**Optimal Days:**\n🔥 Monday (motivation high) - 85% engagement\n📈 Wednesday (mid-week boost) - 78% engagement\n💪 Sunday (planning ahead) - 82% engagement\n\n**Audience Activity:**\n• Search volume peaks at 6 AM and 6 PM\n• Weekend content performs 23% better\n• Video content gets 2.3x more engagement\n\n💡 **Pro Tip:** Post 30 minutes before peak times for maximum algorithm boost!`,
+        analysis: `⏰ **Best Times to Post ${topic} Content**\n\n**Peak Engagement Hours:**\n• Monday-Friday: 6:00 AM - 8:00 AM (morning routines)\n• Monday-Friday: 5:00 PM - 7:00 PM (evening wind-down)\n• Saturday-Sunday: 8:00 AM - 10:00 AM (weekend activity)\n\n**Optimal Days:**\n🔥 Monday (motivation high) - 85% engagement\n📈 Wednesday (mid-week boost) - 78% engagement\n💪 Sunday (planning ahead) - 82% engagement\n\n**Audience Activity:**\n• Search volume peaks at 6 AM and 6 PM\n• Weekend content performs 23% better\n• Video content gets 2.3x more engagement\n\n💡 **Pro Tip:** Post 30 minutes before peak times for maximum algorithm boost!`,
         data: { type: 'timing', topic: topic }
       };
     }
     
-    if (lowerQuery.includes('trending') || lowerQuery.includes('popular')) {
+    // Viral/trending product queries
+    if (lowerQuery.includes('viral') || lowerQuery.includes('trending') || lowerQuery.includes('popular') || lowerQuery.includes('demand')) {
+      const topic = extractTopic(lowerQuery);
+      const isViral = Math.random() > 0.3; // 70% chance of being viral for demo
+      const trendScore = Math.floor(Math.random() * 40) + 60; // 60-100
+      const searchVolume = (Math.random() * 5 + 2).toFixed(1); // 2-7M
+      const growth = Math.floor(Math.random() * 80) + 20; // 20-100%
+      
       return {
-        analysis: "📊 Current trending topics:\n\n1. **AI Tools** - 🔥 Surging 145% this month\n2. **Sustainable Fashion** - ⬆️ Growing 67% interest\n3. **Remote Work Tech** - 📈 Steady 32% increase\n4. **Health & Wellness** - 💪 Up 89% in searches\n\nThese topics show strong engagement potential for content creation.",
-        data: { type: 'trends', items: ['AI Tools', 'Sustainable Fashion', 'Remote Work Tech', 'Health & Wellness'] }
+        analysis: `🔥 **Market Analysis: ${topic.charAt(0).toUpperCase() + topic.slice(1)}**\n\n**Virality Score:** ${trendScore}/100 ${isViral ? '🚀 HIGH' : '📊 MODERATE'}\n\n**Key Metrics:**\n• Monthly Search Volume: ${searchVolume}M searches\n• Growth Rate: +${growth}% vs last year\n• Social Media Mentions: ${isViral ? 'Surging' : 'Steady'}\n• Competition Level: ${trendScore > 75 ? 'High' : 'Moderate'}\n\n**Market Insights:**\n${isViral ? 
+  `• ✨ Strong viral potential across TikTok and Instagram\n• 🎯 Peak interest among 18-34 age demographic\n• 💰 High commercial intent - people are buying\n• 📈 Trending upward in lifestyle/wellness spaces` :
+  `• 📊 Stable market presence with consistent demand\n• 🎯 Established audience base\n• 💡 Good opportunity for niche content\n• 📈 Moderate growth trajectory`}\n\n**Content Opportunities:**\n• ${isViral ? 'Ride the trend wave NOW' : 'Focus on evergreen content'}\n• Best platforms: Instagram, Pinterest, TikTok\n• Recommended posting frequency: 3-5x per week\n\n💡 **Bottom Line:** ${isViral ? 'Hot market! Create content ASAP to capitalize on the trend.' : 'Solid evergreen niche with reliable engagement potential.'}`,
+        data: { type: 'viral-analysis', topic, score: trendScore, viral: isViral }
       };
     }
     
@@ -117,16 +133,11 @@ export default function MarketSearchAnalyzer() {
       };
     }
     
-    if (lowerQuery.includes('market') || lowerQuery.includes('product')) {
-      return {
-        analysis: "📦 Product Market Insights:\n\n**Search Volume:** High (8.2M monthly)\n**Competition:** Moderate\n**Opportunity Score:** 7.5/10\n\n**Best times to post:**\n- Weekdays: 9 AM - 11 AM\n- Weekends: 2 PM - 5 PM\n\n**Related keywords:** Check trending hashtags for this niche.",
-        data: { type: 'market', score: 7.5 }
-      };
-    }
-    
+    // General fallback with topic awareness
+    const topic = extractTopic(lowerQuery);
     return {
-      analysis: "🤖 I can help you with:\n\n• **Trend Discovery** - Find what's hot right now\n• **Product Research** - Analyze market demand\n• **Comparison** - Compare multiple products/topics\n• **Best Times** - Optimal posting schedules\n\nTry asking specific questions about products or trends!",
-      data: null
+      analysis: `📦 **Market Insights: ${topic.charAt(0).toUpperCase() + topic.slice(1)}**\n\n**Quick Analysis:**\n• Search Interest: Moderate to High\n• Market Opportunity: 7.2/10\n• Competition: Moderate\n\n**Best Posting Times:**\n- Weekdays: 9 AM - 11 AM, 6 PM - 8 PM\n- Weekends: 2 PM - 5 PM\n\n**Recommendations:**\n✅ Focus on visual content (photos/videos)\n✅ Use trending hashtags in this niche\n✅ Post consistently 3-4x per week\n\n💡 **Tip:** Try asking "how viral is ${topic}" for detailed trend analysis!`,
+      data: { type: 'market', score: 7.2 }
     };
   };
 

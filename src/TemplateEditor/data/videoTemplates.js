@@ -88,15 +88,15 @@ export const videoTemplates = {
               id: "intro-header-2",
               type: "text", 
               content: "Brief Intro of the App",
-              position: { x: 420, y: 60 },
+              position: { x: 47, y: 60 },
               style: { 
                 fontSize: "32px", 
                 fontWeight: "bold", 
                 color: "white",
-                textAlign: "center",
+                textAlign: "left",
                 background: "rgba(147, 112, 147, 0.85)",
-                padding: "20px 40px",
-                borderRadius: "12px",
+                padding: "10px 10px",
+                borderRadius: "5px",
                 width: "400px"
               }
             },
@@ -104,12 +104,12 @@ export const videoTemplates = {
               id: "intro-description-2",
               type: "text",
               content: "HeyGen app is an app that lists most of the flower shops in the city and sells a wide variety of flowers.\n\nWe also provide courier service to ensure the freshness of the flowers you order.",
-              position: { x: 420, y: 180 },
+              position: { x: 40, y: 180 },
               style: { 
                 fontSize: "16px", 
                 color: "white",
                 lineHeight: "1.8",
-                textAlign: "center",
+                textAlign: "left",
                 width: "400px"
               }
             }
@@ -127,7 +127,7 @@ export const videoTemplates = {
               id: "how-to-header-3",
               type: "text",
               content: "HOW TO USE?",
-              position: { x: 500, y: 60 },
+              position: { x: 40, y: 180 },
               style: { 
                 fontSize: "42px", 
                 fontWeight: "bold", 
@@ -135,31 +135,11 @@ export const videoTemplates = {
                 letterSpacing: "2px",
                 textAlign: "center",
                 background: "rgba(147, 112, 147, 0.85)",
-                padding: "20px 50px",
+                padding: "20px 40px",
                 borderRadius: "12px"
               }
             },
-            {
-              id: "step-1-3",
-              type: "text",
-              content: "1. Log in to create your account.",
-              position: { x: 500, y: 160 },
-              style: { fontSize: "16px", color: "white", textAlign: "left" }
-            },
-            {
-              id: "step-2-3",
-              type: "text",
-              content: "2. Choose a flower shop near you.",
-              position: { x: 500, y: 195 },
-              style: { fontSize: "16px", color: "white", textAlign: "left" }
-            },
-            {
-              id: "step-3-3",
-              type: "text",
-              content: "3. Choose the flower you want to buy.",
-              position: { x: 500, y: 230 },
-              style: { fontSize: "16px", color: "white", textAlign: "left" }
-            }
+           
           ]
         },
         {
@@ -173,7 +153,7 @@ export const videoTemplates = {
             {
               id: "tagline-4",
               type: "text",
-              content: "Where Every Bloom Tells a Story",
+              content: "",
               position: { x: 50, y: 60 },
               style: { 
                 fontSize: "42px", 
@@ -187,17 +167,9 @@ export const videoTemplates = {
             {
               id: "download-apple-4",
               type: "text",
-              content: "Download on the\nApp Store",
+              content: "",
               position: { x: 680, y: 330 },
-              style: { 
-                fontSize: "14px", 
-                color: "white",
-                background: "rgba(0,0,0,0.7)",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                textAlign: "center",
-                lineHeight: "1.4"
-              }
+              
             }
           ]
         }

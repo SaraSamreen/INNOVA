@@ -51,13 +51,7 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
 
 // Product Management Tools
 const productTools = [
-  {
-    id: "img1",
-    title: " Product Beautifier",
-    description: "Convert any product image into a studio-grade professional product shot in seconds.",
-    image: "/products/img1.jpg",
-    route: "/product-beautifier"
-  },
+  
   {
     id: "img2",
     title: " Product Staging",
@@ -66,18 +60,18 @@ const productTools = [
     route: "/product-staging"
   },
   {
+    id: "img1",
+    title: " Product Beautifier",
+    description: "Convert any product image into a studio-grade professional product shot in seconds.",
+    image: "/products/img1.jpg",
+    route: "/product-beautifier"
+  },
+  {
     id: "img3",
     title: "AI Backgrounds",
     description: "Generate realistic AI backgrounds in less than a second.",
     image: "/products/img3.jpg",
     route: "/prompt-background"
-  },
-  {
-    id: "img4",
-    title: "Background Remover",
-    description: "Remove the background of your image automatically.",
-    image: "/products/img4.jpg",
-    route: "/background-remover"
   }
 ];
 
@@ -134,11 +128,11 @@ export default function Dashboard() {
               </div>
 
               {/* Product Management Section */}
-              <div className="max-w-7xl w-full mb-16">
-                <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
+              <div className="max-w-6xl w-full mb-16">
+                <h2 className="text-3xl font-bold text-center mb-10 text-foreground">
                   Product Studio
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {productTools.map((tool, idx) => (
                     <Link
                       key={tool.id}
@@ -147,7 +141,7 @@ export default function Dashboard() {
                       style={{ animationDelay: `${idx * 100}ms` }}
                     >
                       {/* Image Container */}
-                      <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+                      <div className="relative h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
                         <img
                           src={tool.image}
                           alt={tool.title}
@@ -158,16 +152,16 @@ export default function Dashboard() {
                       </div>
                       
                       {/* Content */}
-                      <div className="p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">
+                      <div className="p-5">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
                           {tool.title}
                         </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">
+                        <p className="text-sm text-gray-600 leading-relaxed mb-3">
                           {tool.description}
                         </p>
                         
                         {/* Image ID Tag */}
-                        <div className="mt-4 inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full">
+                        <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full">
                           {tool.id}
                         </div>
                       </div>

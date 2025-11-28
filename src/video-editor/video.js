@@ -540,13 +540,7 @@ export default function VideoEditor() {
                 >
                   {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
-                <button
-                  onClick={handleSplitVideo}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2 font-medium"
-                >
-                  <Scissors size={18} />
-                  Split
-                </button>
+                
               </div>
             </div>
           )}
@@ -749,33 +743,28 @@ export default function VideoEditor() {
             </div>
           </div>
 
-          {/* Audio */}
+          {/*  */}
           <div className="p-5 border-b border-gray-200">
             <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              🎵 Audio Settings
+            
             </h3>
             
-            {/* Keep Original Audio Toggle */}
+            {/**/}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={keepOriginalAudio}
-                  onChange={(e) => setKeepOriginalAudio(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
+               
                 <div>
-                  <span className="text-sm font-medium text-gray-900">Keep Original Video Audio</span>
+                  <span className="text-sm font-medium text-gray-900"></span>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Original audio continues even when clips are inserted
+                    
                   </p>
                 </div>
               </label>
             </div>
 
-            {/* Background Music */}
+            
             <div>
-              <p className="text-xs font-medium text-gray-700 mb-2">Background Music:</p>
+              <p className="text-xs font-medium text-gray-700 mb-2">:</p>
               {audio ? (
                 <div className="space-y-2">
                   <audio controls className="w-full" src={audio} />
@@ -794,9 +783,7 @@ export default function VideoEditor() {
                     onChange={handleAudioUpload}
                     className="hidden"
                   />
-                  <div className="px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium text-center cursor-pointer hover:bg-green-100 transition-all border border-green-200">
-                    🎵 Upload Background Music
-                  </div>
+                 
                 </label>
               )}
             </div>
@@ -804,10 +791,7 @@ export default function VideoEditor() {
 
           {/* Insert Media & Clips */}
           <div className="p-5">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Scissors size={16} />
-              Insert & Split
-            </h3>
+           
             
             <label className="block mb-3">
               <input
@@ -817,9 +801,7 @@ export default function VideoEditor() {
                 disabled={!video}
                 className="hidden"
               />
-              <div className="px-4 py-3 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium text-center cursor-pointer hover:bg-indigo-100 transition-all border border-indigo-200 disabled:opacity-50">
-                📽️ Insert Video/Image
-              </div>
+              
             </label>
 
             {clips.length > 0 && (
@@ -828,9 +810,7 @@ export default function VideoEditor() {
                 {clips.map((clip) => (
                   <div key={clip.id} className="p-2 bg-gray-50 rounded border border-gray-200 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-700">
-                        {clip.type === 'split' ? '✂️ Split' : clip.type === 'image' ? '🖼️ Image' : '📽️ Video'}
-                      </span>
+                      
                       <button
                         onClick={() => setClips(clips.filter(c => c.id !== clip.id))}
                         className="text-red-600 hover:bg-red-50 p-1 rounded"

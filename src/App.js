@@ -12,9 +12,8 @@ import TemplateBrowser from './TemplateEditor/components/TemplateBrowser';
 import TemplateEditor from "./TemplateEditor/components/TemplateEditor";
 import Designproduct from './DesignProduct/MarketSearchAnalyzer';
 import ProductBeautifier from './Dashboard/componentsD/ProductBeautifier';
-import Bgremover from './Dashboard/componentsD/BackRemover';
 import ProductStaging from './Dashboard/componentsD/ProductStaging';
-import Promptbg from './Dashboard/componentsD/PromptBackgroundStaging';
+import Promptbg from './Dashboard/componentsD/ProductModelShowcase';
 import ReelTemplateCreator from './Dashboard/componentsD/ReelTemplateCreator';
 import Forgotpass from './AccessHub/Forgotpass';
 import Settings from './Dashboard/componentsD/Settings';
@@ -44,7 +43,6 @@ function AppWrapper() {
          <Route path="/product-staging" element={<ProductStaging />} />
          <Route path="/product-beautifier" element={<ProductBeautifier />} />
          <Route path="/design-product" element={<Designproduct />} />
-         <Route path="/background-remover" element={<Bgremover />} />
           <Route path="/prompt-background" element={<Promptbg />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/quick-reel" element={<ReelTemplateCreator />} />

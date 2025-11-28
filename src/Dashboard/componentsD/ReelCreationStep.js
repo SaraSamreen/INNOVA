@@ -96,6 +96,7 @@ export default function ReelCreationStep() {
           >
             Quick Reel
           </button>
+          
 
         </div>
 

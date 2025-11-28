@@ -147,7 +147,7 @@ export default function AvatarVideoGenerator() {
 
     const words = script.split(/\s+/).filter(Boolean);
     if (words.length > 150) {
-      setError("Script too long! Keep under 150 words for free tier.");
+      setError("Script too long! Keep under 150 words.");
       return;
     }
 
@@ -278,7 +278,7 @@ export default function AvatarVideoGenerator() {
             {inputMethod === "script" ? (
               <div>
                 <textarea
-                  placeholder="Enter your marketing script here... (Keep under 150 words for free tier)"
+                  placeholder="Enter your marketing script here... (Keep under 150 words.)"
                   className="w-full h-44 p-4 border-2 border-purple-200 rounded-xl focus:border-purple-500 outline-none resize-none text-gray-700"
                   value={script}
                   onChange={(e) => setScript(e.target.value)}

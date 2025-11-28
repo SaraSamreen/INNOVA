@@ -8,6 +8,7 @@ const AuthPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   
   // Form states
   const [loginEmail, setLoginEmail] = useState('');
@@ -18,10 +19,77 @@ const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const validateEmail = (email) => {
-    if (/^\d/.test(email)) return false;
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
+  const value = String(email).toLowerCase().trim();
+
+  // Basic email format check
+  const re =
+    /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+
+  if (!re.test(value)) return false;
+
+  // Extract the username (before @)
+  const username = value.split("@")[0];
+
+  // ❌ block usernames that start with a number
+  if (/^[0-9]/.test(username)) return false;
+
+  // ❌ block usernames like "xxxx", "yyyy", "aaaa", "1111", "11cc"
+  if (/^(.)\1{1,}$/i.test(username)) return false;
+
+  // ❌ block common placeholder usernames
+  const fakePatterns = ["test", "abcd", "abc123", "qwerty", "demo"];
+  if (fakePatterns.includes(username)) return false;
+
+  // ❌ block too short usernames
+  if (username.length < 3) return false;
+
+  return true;
+};
+
+  const validateName = (name) => {
+    // Name should only contain letters and spaces
+    // No numbers or special characters
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    
+    if (!nameRegex.test(name)) {
+      return { valid: false, message: 'Name should only contain letters and spaces' };
+    }
+    
+    // Check minimum length
+    if (name.trim().length < 2) {
+      return { valid: false, message: 'Name must be at least 2 characters long' };
+    }
+    
+    // Check for multiple consecutive spaces
+    if (/\s{2,}/.test(name)) {
+      return { valid: false, message: 'Name cannot have multiple consecutive spaces' };
+    }
+    
+    return { valid: true };
   };
+
+  const validatePassword = (password) => {
+    if (password.length < 6) {
+      return { valid: false, message: 'Password must be at least 6 characters long' };
+    }
+    
+    // Optional: Add stronger password requirements
+    // Uncomment below for stronger validation
+    /*
+    if (!/[A-Z]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one uppercase letter' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one lowercase letter' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { valid: false, message: 'Password must contain at least one number' };
+    }
+    */
+    
+    return { valid: true };
+  };
+
 
   const handleLoginSubmit = async (e) => {
   e.preventDefault();
@@ -88,20 +156,56 @@ Please contact our support team at support@yourapp.com for assistance.
     setError('');
     setLoading(true);
 
+    // Validate name
+    if (!name.trim()) {
+      setError('Full name is required');
+      setLoading(false);
+      return;
+    }
+
+    const nameValidation = validateName(name);
+    if (!nameValidation.valid) {
+      setError(nameValidation.message);
+      setLoading(false);
+      return;
+    }
+
+    // Validate email
+    if (!signupEmail.trim()) {
+      setError('Email address is required');
+      setLoading(false);
+      return;
+    }
+
     if (!validateEmail(signupEmail)) {
       setError('Please enter a valid email address (cannot start with a number).');
       setLoading(false);
       return;
     }
 
-    if (signupPassword !== confirmPassword) {
-      setError('Passwords do not match');
+    // Validate password
+    if (!signupPassword.trim()) {
+      setError('Password is required');
       setLoading(false);
       return;
     }
 
-    if (signupPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+    const passwordValidation = validatePassword(signupPassword);
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.message);
+      setLoading(false);
+      return;
+    }
+
+    // Validate confirm password
+    if (!confirmPassword.trim()) {
+      setError('Confirm password is required');
+      setLoading(false);
+      return;
+    }
+
+    if (signupPassword !== confirmPassword) {
+      setError('Passwords do not match');
       setLoading(false);
       return;
     }
@@ -183,11 +287,7 @@ const handleGoogleAuth = async () => {
             isLogin ? 'order-1' : 'order-2'
           }`}>
             <div className="absolute inset-0">
-              <img
-                src="/luxury.jpg"
-                alt="Luxury fashion"
-                className="w-full h-full object-cover"
-              />
+      
             </div>
             
             <div className="relative z-10 h-full flex flex-col items-center justify-center -mt-16 p-8 text-white">
@@ -461,9 +561,9 @@ const handleGoogleAuth = async () => {
                           </div>
                         </div>
 
-                        {/* Signup Button */}
+                        {/* Signup Button - FIXED */}
                         <button
-                          onClick={() => setIsLogin(true)}
+                          onClick={handleSignupSubmit}
                           disabled={loading}
                           className="w-full bg-gradient-to-r from-[#3E8EDE] to-[#2E7BC8] text-white py-3.5 rounded-[14px] font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                         >

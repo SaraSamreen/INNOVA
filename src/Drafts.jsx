@@ -1,67 +1,219 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { Download, Trash2, ArrowLeft, Video, Image as ImageIcon, Play } from "lucide-react";
+import { Download, Trash2, Video, Image, Play, Loader } from "lucide-react";
+import { supabase } from './supabaseClient'; // Import from your centralized file
 
 export default function Drafts() {
-  const location = useLocation();
-  const [imageDrafts, setImageDrafts] = useState([]);
-  const [videoDrafts, setVideoDrafts] = useState([]);
+  const [drafts, setDrafts] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftError, setDraftError] = useState(null);
+  const [draftSuccess, setDraftSuccess] = useState(false);
 
   useEffect(() => {
-    // Load existing image drafts
-    const savedImageDrafts = JSON.parse(localStorage.getItem("productDrafts") || "[]");
+    // Get user from localStorage (MongoDB authentication)
+    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
     
-    // Load existing video drafts
-    const savedVideoDrafts = JSON.parse(localStorage.getItem("videoDrafts") || "[]");
-    
-    // If there's a new image draft from navigation state
-    if (location.state?.newDraft) {
-      const newImageDrafts = [location.state.newDraft, ...savedImageDrafts];
-      setImageDrafts(newImageDrafts);
-      localStorage.setItem("productDrafts", JSON.stringify(newImageDrafts));
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        
+        // Check all possible user ID fields
+        let userId = parsedUser._id || parsedUser.id || parsedUser.userId;
+        
+        // If user ID not in user object, decode from JWT token
+        if (!userId && token) {
+          try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const decoded = JSON.parse(jsonPayload);
+            userId = decoded.userId || decoded.id || decoded._id;
+            console.log('Decoded user ID from token:', userId);
+          } catch (decodeErr) {
+            console.error('Failed to decode token:', decodeErr);
+          }
+        }
+        
+        if (userId) {
+          fetchDrafts(userId.toString());
+        } else {
+          console.error('User ID not found');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+        setLoading(false);
+      }
     } else {
-      setImageDrafts(savedImageDrafts);
+      setLoading(false);
     }
+  }, []);
 
-    // If there's a new video draft from navigation state
-    if (location.state?.newVideoDraft) {
-      const newVideoDrafts = [location.state.newVideoDraft, ...savedVideoDrafts];
-      setVideoDrafts(newVideoDrafts);
-      localStorage.setItem("videoDrafts", JSON.stringify(newVideoDrafts));
-    } else {
-      setVideoDrafts(savedVideoDrafts);
-    }
-    
-    // Clear navigation state
-    if (location.state?.newDraft || location.state?.newVideoDraft) {
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
+  const fetchDrafts = async (userId) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const deleteImageDraft = (timestamp) => {
-    const updated = imageDrafts.filter((draft) => draft.timestamp !== timestamp);
-    setImageDrafts(updated);
-    localStorage.setItem("productDrafts", JSON.stringify(updated));
+      // Query Supabase for user's drafts using MongoDB user ID
+      const { data, error: fetchError } = await supabase
+        .from('drafts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      setDrafts(data || []);
+    } catch (err) {
+      console.error('Error fetching drafts:', err);
+      setError('Failed to load drafts. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteVideoDraft = (timestamp) => {
-    const updated = videoDrafts.filter((draft) => draft.timestamp !== timestamp);
-    setVideoDrafts(updated);
-    localStorage.setItem("videoDrafts", JSON.stringify(updated));
+  const saveDraft = async (draftData, type) => {
+    if (!user) {
+      setError('Please log in to save drafts');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+
+      const userId = user._id || user.id; // MongoDB user ID
+      let mediaUrl = '';
+      let storagePath = '';
+
+      if (type === 'image' && draftData.image) {
+        // Convert base64 to blob
+        const response = await fetch(draftData.image);
+        const blob = await response.blob();
+
+        // Create unique file path: userId/images/timestamp.png
+        const timestamp = Date.now();
+        storagePath = `${userId}/images/${timestamp}.png`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('drafts')
+          .upload(storagePath, blob, {
+            contentType: 'image/png',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('drafts')
+          .getPublicUrl(storagePath);
+
+        mediaUrl = publicUrl;
+
+      } else if (type === 'video' && draftData.videoUrl) {
+        // For videos
+        if (draftData.videoUrl.startsWith('blob:') || draftData.videoUrl.startsWith('data:')) {
+          const response = await fetch(draftData.videoUrl);
+          const blob = await response.blob();
+
+          const timestamp = Date.now();
+          storagePath = `${userId}/videos/${timestamp}.mp4`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('drafts')
+            .upload(storagePath, blob, {
+              contentType: 'video/mp4',
+              upsert: false
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('drafts')
+            .getPublicUrl(storagePath);
+
+          mediaUrl = publicUrl;
+        } else {
+          mediaUrl = draftData.videoUrl;
+        }
+      }
+
+      // Save metadata to Supabase database
+      const draft = {
+        user_id: userId, // MongoDB user ID
+        type,
+        media_url: mediaUrl,
+        storage_path: storagePath,
+        timestamp: Date.now(),
+        created_at: new Date().toISOString(),
+        duration: type === 'video' ? (draftData.duration || 0) : null,
+        text_overlays: type === 'video' ? (draftData.textOverlays || []) : null,
+        filters: type === 'video' ? (draftData.filters || {}) : null
+      };
+
+      const { error: insertError } = await supabase
+        .from('drafts')
+        .insert([draft]);
+
+      if (insertError) throw insertError;
+
+      // Refresh drafts list
+      await fetchDrafts(userId);
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setError(`Failed to save draft: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const downloadImageDraft = (draft) => {
-    const link = document.createElement("a");
-    link.href = draft.image;
-    link.download = `draft-${draft.timestamp}.png`;
+  const deleteDraft = async (draftId, storagePath) => {
+    try {
+      // Delete from Supabase Storage
+      if (storagePath) {
+        const { error: deleteStorageError } = await supabase.storage
+          .from('drafts')
+          .remove([storagePath]);
+
+        if (deleteStorageError) {
+          console.error('Error deleting file:', deleteStorageError);
+        }
+      }
+
+      // Delete from database
+      const { error: deleteDbError } = await supabase
+        .from('drafts')
+        .delete()
+        .eq('id', draftId);
+
+      if (deleteDbError) throw deleteDbError;
+
+      // Update local state
+      setDrafts(drafts.filter(d => d.id !== draftId));
+    } catch (err) {
+      console.error('Error deleting draft:', err);
+      setError('Failed to delete draft. Please try again.');
+    }
+  };
+
+  const downloadDraft = (draft) => {
+    const link = document.createElement('a');
+    link.href = draft.media_url;
+    link.download = `draft-${draft.timestamp}.${draft.type === 'image' ? 'png' : 'mp4'}`;
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const downloadVideoDraft = (draft) => {
-    window.open(draft.videoUrl, '_blank');
   };
 
   const formatDate = (timestamp) => {
@@ -81,39 +233,79 @@ export default function Drafts() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const totalDrafts = imageDrafts.length + videoDrafts.length;
-  const allDrafts = [
-    ...imageDrafts.map(d => ({ ...d, type: 'image' })),
-    ...videoDrafts.map(d => ({ ...d, type: 'video' }))
-  ].sort((a, b) => b.timestamp - a.timestamp);
+  const imageDrafts = drafts.filter(d => d.type === 'image');
+  const videoDrafts = drafts.filter(d => d.type === 'video');
+  const totalDrafts = drafts.length;
 
   const filteredDrafts = activeTab === 'all' 
-    ? allDrafts 
+    ? drafts 
     : activeTab === 'images' 
-    ? allDrafts.filter(d => d.type === 'image')
-    : allDrafts.filter(d => d.type === 'video');
+    ? imageDrafts
+    : videoDrafts;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your drafts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center max-w-md">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
+          <p className="text-gray-600 mb-6">Please log in to view your drafts</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Link 
-            to="/dashboard" 
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-4 no-underline"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium">Back to Dashboard</span>
-          </Link>
-          
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Drafts</h1>
               <p className="text-gray-600 mt-1">
-                {totalDrafts} {totalDrafts === 1 ? "draft" : "drafts"} saved
+                Welcome, {user.name || user.email} • {totalDrafts} {totalDrafts === 1 ? "draft" : "drafts"} saved
               </p>
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex justify-between items-center">
+              <span>{error}</span>
+              <button 
+                onClick={() => setError(null)}
+                className="text-red-700 hover:text-red-900 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Uploading Indicator */}
+          {uploading && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+              <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              <span className="text-blue-700">Saving draft to cloud...</span>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm w-fit">
@@ -135,7 +327,7 @@ export default function Drafts() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <ImageIcon size={16} />
+              <Image size={16} />
               Images ({imageDrafts.length})
             </button>
             <button
@@ -171,14 +363,14 @@ export default function Drafts() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDrafts.map((draft) => (
               <div
-                key={draft.timestamp}
+                key={draft.id}
                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden"
               >
                 {/* Preview */}
                 <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden relative group">
                   {draft.type === 'image' ? (
                     <img
-                      src={draft.image}
+                      src={draft.media_url}
                       alt="Draft"
                       className="w-full h-full object-cover"
                     />
@@ -207,7 +399,7 @@ export default function Drafts() {
                     }`}>
                       {draft.type === 'image' ? (
                         <>
-                          <ImageIcon size={12} />
+                          <Image size={12} />
                           Image
                         </>
                       ) : (
@@ -234,13 +426,13 @@ export default function Drafts() {
                   {/* Video details */}
                   {draft.type === 'video' && (
                     <div className="mb-3 text-xs text-gray-600 space-y-1">
-                      {draft.textOverlays && draft.textOverlays.length > 0 && (
+                      {draft.text_overlays && draft.text_overlays.length > 0 && (
                         <div className="flex items-center gap-1">
                           <span className="font-medium">Text:</span>
-                          <span>{draft.textOverlays.length} overlay(s)</span>
+                          <span>{draft.text_overlays.length} overlay(s)</span>
                         </div>
                       )}
-                      {draft.filters && (
+                      {draft.filters && Object.keys(draft.filters).length > 0 && (
                         <div className="flex items-center gap-1">
                           <span className="font-medium">Filters:</span>
                           <span>Applied</span>
@@ -251,22 +443,14 @@ export default function Drafts() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => 
-                        draft.type === 'image' 
-                          ? downloadImageDraft(draft) 
-                          : downloadVideoDraft(draft)
-                      }
+                      onClick={() => downloadDraft(draft)}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-all shadow-md"
                     >
                       <Download className="w-4 h-4" />
                       Download
                     </button>
                     <button
-                      onClick={() => 
-                        draft.type === 'image' 
-                          ? deleteImageDraft(draft.timestamp) 
-                          : deleteVideoDraft(draft.timestamp)
-                      }
+                      onClick={() => deleteDraft(draft.id, draft.storage_path)}
                       className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-all shadow-md"
                     >
                       <Trash2 className="w-4 h-4" />
