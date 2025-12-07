@@ -283,23 +283,30 @@ const handleGoogleAuth = async () => {
       <div className="h-full w-full">
         <div className="grid md:grid-cols-2 h-full">
           {/* Image Side */}
-          <div className={`relative bg-gradient-to-br from-[#2E7BC8] to-[#1E6BB0] overflow-hidden ${
+          <div className={`relative overflow-hidden bg-[#EBECED] ${
             isLogin ? 'order-1' : 'order-2'
           }`}>
-            <div className="absolute inset-0">
-      
-            </div>
             
-            <div className="relative z-10 h-full flex flex-col items-center justify-center -mt-16 p-8 text-white">
-              <div className="max-w-lg text-center">
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  INNOVA
-                </h1>
-                <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
-                  Empowering innovation through elegant design and cutting-edge technology
-                </p>
-              </div>
-            </div>
+            <div className="relative z-10 h-full flex flex-col items-center justify-center p-8">
+  <div className="max-w-md text-center">
+  <img 
+    src="/all-features.svg" 
+    alt="INNOVA Features" 
+    className="w-full max-w-md mx-auto mb-8 drop-shadow-2xl"
+  />
+  <p
+  className="text-2xl md:text-3xl text-black font-medium leading-relaxed"
+  style={{ fontFamily: "Times New Roman, Times, serif" }}
+>
+  Create. Schedule. Post. Grow. <br />
+  <span className="font-bold">All in One Place.</span>
+</p>
+
+
+</div>
+
+
+</div>
           </div>
 
           {/* Forms Side */}
@@ -312,7 +319,7 @@ const handleGoogleAuth = async () => {
                 isLogin ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
               }`}>
                 <div className="h-full overflow-y-auto">
-                  <div className="min-h-full flex flex-col justify-center p-8 lg:p-12">
+                  <div className="min-h-full flex flex-col justify-center px-8 lg:px-12 py-4">
                     <div className="max-w-md mx-auto w-full">
                       <h2 className="text-4xl font-bold text-[#3E8EDE] mb-2">Login</h2>
                       <p className="text-[#374151] mb-8">Welcome back! Please login to continue</p>
@@ -440,7 +447,7 @@ const handleGoogleAuth = async () => {
                 !isLogin ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
               }`}>
                 <div className="h-full overflow-y-auto">
-                  <div className="min-h-full flex flex-col justify-center p-8 lg:p-12 py-8">
+                  <div className="min-h-full flex flex-col justify-center px-8 lg:px-12 py-4">
                     <div className="max-w-md mx-auto w-full">
                       <h2 className="text-4xl font-bold text-[#3E8EDE] mb-2">Sign Up</h2>
                       <p className="text-[#374151] mb-6">Create your account and start your journey</p>

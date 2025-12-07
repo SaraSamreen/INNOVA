@@ -55,6 +55,21 @@ const getVideoDuration = async (filePath) => {
   }
 };
 
+// Get video properties
+const getVideoProperties = async (filePath) => {
+  try {
+    const { stdout } = await execPromise(
+      `ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of csv=p=0 "${filePath}"`
+    );
+    const [width, height, fps] = stdout.trim().split(',');
+    const framerate = fps ? eval(fps) : 30; // Convert "30/1" to 30
+    return { width: parseInt(width), height: parseInt(height), framerate };
+  } catch (error) {
+    console.error('Error getting video properties:', error);
+    return { width: 1920, height: 1080, framerate: 30 };
+  }
+};
+
 // ============================================
 // UPLOAD VIDEO/AUDIO/IMAGE
 // ============================================
@@ -109,8 +124,7 @@ router.post('/process', async (req, res) => {
       textOverlays,
       audioFile,
       clips,
-      keepOriginalAudio,
-      muteInsertedClips
+      keepOriginalAudio
     } = req.body;
 
     if (!inputFile) {
@@ -138,138 +152,191 @@ router.post('/process', async (req, res) => {
     }
 
     console.log('🎬 Processing video:', inputFile);
-    console.log('Filters:', filters);
-    console.log('Text overlays:', textOverlays);
-    console.log('Clips:', clips);
-    console.log('Keep original audio:', keepOriginalAudio);
+    console.log('📊 Clips to process:', clips?.length || 0);
+    console.log('🔊 Keep original audio:', keepOriginalAudio);
 
-    // Handle splits and inserts
-    let ffmpegCommand = '';
-    let hasClips = clips && clips.length > 0;
     const tempFiles = [];
-    let originalAudioFile = null;
+    let processedVideoPath = inputPath;
 
-    if (hasClips) {
-      // Extract original audio if keeping it
-      if (keepOriginalAudio) {
-        originalAudioFile = path.join(__dirname, '../uploads', `original_audio_${Date.now()}.aac`);
-        tempFiles.push(originalAudioFile);
-        await execPromise(
-          `ffmpeg -i "${inputPath}" -vn -acodec copy "${originalAudioFile}" -y`
-        );
-      }
+    // ==================================================
+    // STEP 1: Handle clips (splits and inserts)
+    // ==================================================
+   // ==================================================
+// STEP 1: Handle clips (splits and inserts)
+// ==================================================
+if (clips && clips.length > 0) {
+  console.log('🎞️ Processing clips and splits...');
+  
+  // Get original video properties
+  const videoProps = await getVideoProperties(inputPath);
+  console.log('📐 Video properties:', videoProps);
+  
+  // Create timeline segments
+  const concatFilePath = path.join(__dirname, '../uploads', `concat_${Date.now()}.txt`);
+  tempFiles.push(concatFilePath);
+  let concatContent = '';
+  
+  // Sort all clips by time
+  const sortedClips = [...clips].sort((a, b) => {
+    const timeA = a.startTime || a.insertAt || 0;
+    const timeB = b.startTime || b.insertAt || 0;
+    return timeA - timeB;
+  });
 
-      // Create concat file for splits and inserts
-      const concatFilePath = path.join(__dirname, '../uploads', `concat_${Date.now()}.txt`);
-      let concatContent = '';
+  console.log('📋 Sorted clips:', sortedClips.map(c => ({
+    type: c.type,
+    time: c.startTime || c.insertAt,
+    duration: c.duration
+  })));
+
+  let lastTime = trim?.start || 0;
+  const endTime = trim?.end || await getVideoDuration(inputPath);
+  let segmentIndex = 0;
+
+  // Build timeline segments
+  for (const clip of sortedClips) {
+    const clipTime = clip.startTime || clip.insertAt;
+    
+    // Add segment from lastTime to current clip
+    if (clipTime > lastTime) {
+      const segmentDuration = clipTime - lastTime;
+      console.log(`➕ Adding main video segment: ${lastTime}s to ${clipTime}s (${segmentDuration}s)`);
       
-      // Sort clips by time
-      const sortedClips = [...clips].sort((a, b) => {
-        const timeA = a.startTime || a.insertAt || 0;
-        const timeB = b.startTime || b.insertAt || 0;
-        return timeA - timeB;
-      });
-
-      let lastTime = 0;
-
-      for (let i = 0; i < sortedClips.length; i++) {
-        const clip = sortedClips[i];
-        
-        if (clip.type === 'split') {
-          // Create segment before split
-          const segmentFile = path.join(__dirname, '../uploads', `segment_${Date.now()}_${i}.mp4`);
-          tempFiles.push(segmentFile);
-          
-          await execPromise(
-            `ffmpeg -i "${inputPath}" -ss ${lastTime} -t ${clip.startTime - lastTime} -c copy "${segmentFile}" -y`
-          );
-          concatContent += `file '${segmentFile}'\n`;
-          lastTime = clip.startTime;
-        } else if (clip.type === 'video' || clip.type === 'image') {
-          // Add segment up to insert point
-          if (clip.insertAt > lastTime) {
-            const segmentFile = path.join(__dirname, '../uploads', `segment_${Date.now()}_${i}_a.mp4`);
-            tempFiles.push(segmentFile);
-            
-            await execPromise(
-              `ffmpeg -i "${inputPath}" -ss ${lastTime} -t ${clip.insertAt - lastTime} -c copy "${segmentFile}" -y`
-            );
-            concatContent += `file '${segmentFile}'\n`;
-            lastTime = clip.insertAt;
-          }
-          
-          // Add inserted clip
-          const insertedFilePath = path.join(__dirname, '../uploads', clip.filename);
-          if (fs.existsSync(insertedFilePath)) {
-            if (clip.type === 'image') {
-              // Convert image to video segment (no audio)
-              const imageVideoFile = path.join(__dirname, '../uploads', `image_${Date.now()}_${i}.mp4`);
-              tempFiles.push(imageVideoFile);
-              await execPromise(
-                `ffmpeg -loop 1 -i "${insertedFilePath}" -f lavfi -i anullsrc -c:v libx264 -t 3 -pix_fmt yuv420p -vf scale=1920:1080 -c:a aac -shortest "${imageVideoFile}" -y`
-              );
-              concatContent += `file '${imageVideoFile}'\n`;
-            } else {
-              // Mute inserted video clips if specified
-              if (clip.muteInsertedClip) {
-                const mutedClipFile = path.join(__dirname, '../uploads', `muted_${Date.now()}_${i}.mp4`);
-                tempFiles.push(mutedClipFile);
-                await execPromise(
-                  `ffmpeg -i "${insertedFilePath}" -f lavfi -i anullsrc -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "${mutedClipFile}" -y`
-                );
-                concatContent += `file '${mutedClipFile}'\n`;
-              } else {
-                concatContent += `file '${insertedFilePath}'\n`;
-              }
-            }
-          }
-        }
-      }
-
-      // Add remaining video after last clip
-      const duration = await getVideoDuration(inputPath);
-      if (lastTime < duration) {
-        const finalSegmentFile = path.join(__dirname, '../uploads', `segment_${Date.now()}_final.mp4`);
-        tempFiles.push(finalSegmentFile);
-        
-        await execPromise(
-          `ffmpeg -i "${inputPath}" -ss ${lastTime} -c copy "${finalSegmentFile}" -y`
-        );
-        concatContent += `file '${finalSegmentFile}'\n`;
-      }
-
-      // Write concat file
-      fs.writeFileSync(concatFilePath, concatContent);
-
-      // Concatenate all segments (without audio if we're keeping original)
-      const concatenatedFile = path.join(__dirname, '../uploads', `concatenated_${Date.now()}.mp4`);
-      tempFiles.push(concatenatedFile);
+      const segmentFile = path.join(__dirname, '../uploads', `segment_${Date.now()}_${segmentIndex++}.mp4`);
+      tempFiles.push(segmentFile);
       
       await execPromise(
-        `ffmpeg -f concat -safe 0 -i "${concatFilePath}" -c copy "${concatenatedFile}" -y`
+        `ffmpeg -ss ${lastTime} -i "${inputPath}" -t ${segmentDuration} -c:v libx264 -preset fast -c:a aac -b:a 192k -ar 48000 -ac 2 "${segmentFile}" -y`
       );
-
-      // If keeping original audio, add it back
-      if (keepOriginalAudio && originalAudioFile) {
-        const videoWithOriginalAudio = path.join(__dirname, '../uploads', `with_audio_${Date.now()}.mp4`);
-        tempFiles.push(videoWithOriginalAudio);
-        
-        await execPromise(
-          `ffmpeg -i "${concatenatedFile}" -i "${originalAudioFile}" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "${videoWithOriginalAudio}" -y`
-        );
-        
-        ffmpegCommand = `ffmpeg -i "${videoWithOriginalAudio}"`;
-      } else {
-        ffmpegCommand = `ffmpeg -i "${concatenatedFile}"`;
-      }
-
-      // Clean up concat file
-      fs.unlinkSync(concatFilePath);
-    } else {
-      ffmpegCommand = `ffmpeg -i "${inputPath}"`;
+      concatContent += `file '${segmentFile}'\n`;
     }
 
-    // Build FFmpeg filter chain
+    // Handle split (just marks division point, doesn't insert anything)
+    if (clip.type === 'split') {
+      console.log(`✂️ Split marker at ${clipTime}s`);
+      lastTime = clipTime;
+      continue;
+    }
+
+    // Handle video/image insert
+    if (clip.type === 'video' || clip.type === 'image') {
+      const insertedFilePath = path.join(__dirname, '../uploads', clip.filename);
+      
+      if (!fs.existsSync(insertedFilePath)) {
+        console.warn(`⚠️ Inserted file not found: ${clip.filename}`);
+        continue;
+      }
+
+      console.log(`🎬 Inserting ${clip.type} at ${clipTime}s: ${clip.filename}`);
+      
+      const processedClipFile = path.join(__dirname, '../uploads', `clip_insert_${Date.now()}_${segmentIndex++}.mp4`);
+      tempFiles.push(processedClipFile);
+
+      if (clip.type === 'image') {
+        // Convert image to video segment with matching properties and silent audio
+        const imageDuration = clip.duration || 3;
+        console.log(`📷 Converting image to ${imageDuration}s video with silent audio`);
+        
+        await execPromise(
+          `ffmpeg -loop 1 -i "${insertedFilePath}" -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -t ${imageDuration} ` +
+          `-vf "scale=${videoProps.width}:${videoProps.height}:force_original_aspect_ratio=decrease,` +
+          `pad=${videoProps.width}:${videoProps.height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=${videoProps.framerate}" ` +
+          `-c:v libx264 -preset fast -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -ac 2 -shortest "${processedClipFile}" -y`
+        );
+      } else {
+        // Process inserted video - resize to match main video, handle audio
+        console.log(`🎥 Processing inserted video (muted: ${clip.muteInsertedClip})`);
+        
+        // Mute inserted clip if specified OR if keeping original audio
+        if (clip.muteInsertedClip !== false || keepOriginalAudio) {
+          // Add silent audio track
+          await execPromise(
+            `ffmpeg -i "${insertedFilePath}" -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 ` +
+            `-vf "scale=${videoProps.width}:${videoProps.height}:force_original_aspect_ratio=decrease,` +
+            `pad=${videoProps.width}:${videoProps.height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=${videoProps.framerate}" ` +
+            `-c:v libx264 -preset fast -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -ac 2 -shortest "${processedClipFile}" -y`
+          );
+        } else {
+          // Keep inserted clip audio
+          await execPromise(
+            `ffmpeg -i "${insertedFilePath}" ` +
+            `-vf "scale=${videoProps.width}:${videoProps.height}:force_original_aspect_ratio=decrease,` +
+            `pad=${videoProps.width}:${videoProps.height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=${videoProps.framerate}" ` +
+            `-c:v libx264 -preset fast -c:a aac -b:a 192k -ar 48000 -ac 2 "${processedClipFile}" -y`
+          );
+        }
+      }
+      
+      concatContent += `file '${processedClipFile}'\n`;
+      lastTime = clipTime; // Don't advance time for inserts - they're additions
+    }
+  }
+
+  // Add remaining video after last clip/split
+  if (lastTime < endTime) {
+    const remainingDuration = endTime - lastTime;
+    console.log(`➕ Adding final segment: ${lastTime}s to ${endTime}s (${remainingDuration}s)`);
+    
+    const finalSegmentFile = path.join(__dirname, '../uploads', `segment_${Date.now()}_final.mp4`);
+    tempFiles.push(finalSegmentFile);
+    
+    await execPromise(
+      `ffmpeg -ss ${lastTime} -i "${inputPath}" -t ${remainingDuration} -c:v libx264 -preset fast -c:a aac -b:a 192k -ar 48000 -ac 2 "${finalSegmentFile}" -y`
+    );
+    concatContent += `file '${finalSegmentFile}'\n`;
+  }
+
+  // Write concat file
+  fs.writeFileSync(concatFilePath, concatContent);
+  console.log('📝 Concat file created with', concatContent.split('\n').filter(Boolean).length, 'segments');
+
+  // Concatenate all segments
+  const concatenatedFile = path.join(__dirname, '../uploads', `concatenated_${Date.now()}.mp4`);
+  tempFiles.push(concatenatedFile);
+  
+  console.log('🔗 Concatenating segments...');
+  
+  // Use concat demuxer with copy - all segments now have matching audio
+  await execPromise(
+    `ffmpeg -f concat -safe 0 -i "${concatFilePath}" -c copy "${concatenatedFile}" -y`
+  );
+  
+  processedVideoPath = concatenatedFile;
+  console.log('✅ Concatenated successfully');
+  
+} else if (trim && (trim.start > 0 || trim.end)) {
+  // Apply trim without clips
+  console.log('✂️ Applying trim only...');
+  const trimmedFile = path.join(__dirname, '../uploads', `trimmed_${Date.now()}.mp4`);
+  tempFiles.push(trimmedFile);
+  
+  let trimCmd = `ffmpeg -ss ${trim.start || 0} -i "${inputPath}"`;
+  if (trim.end) trimCmd += ` -t ${trim.end - (trim.start || 0)}`;
+  trimCmd += ` -c:v libx264 -preset fast -c:a aac -b:a 192k -ar 48000 -ac 2 "${trimmedFile}" -y`;
+  
+  await execPromise(trimCmd);
+  processedVideoPath = trimmedFile;
+} else if (trim && (trim.start > 0 || trim.end)) {
+      // Apply trim without clips
+      console.log('✂️ Applying trim only...');
+      const trimmedFile = path.join(__dirname, '../uploads', `trimmed_${Date.now()}.mp4`);
+      tempFiles.push(trimmedFile);
+      
+      let trimCmd = `ffmpeg -i "${inputPath}"`;
+      if (trim.start > 0) trimCmd += ` -ss ${trim.start}`;
+      if (trim.end) trimCmd += ` -t ${trim.end - (trim.start || 0)}`;
+      trimCmd += ` -c copy "${trimmedFile}" -y`;
+      
+      await execPromise(trimCmd);
+      processedVideoPath = trimmedFile;
+    }
+
+    // ==================================================
+    // STEP 2: Apply filters and text overlays
+    // ==================================================
+    console.log('🎨 Applying filters and effects...');
+    
+    let ffmpegCommand = `ffmpeg -i "${processedVideoPath}"`;
     let filterComplex = [];
     let videoFilter = '[0:v]';
 
@@ -305,16 +372,15 @@ router.post('/process', async (req, res) => {
       }
     }
 
-    // Add text overlays with position
+    // Add text overlays
     if (textOverlays && textOverlays.length > 0) {
+      console.log(`📝 Adding ${textOverlays.length} text overlays...`);
       textOverlays.forEach((text, index) => {
         const escapedText = text.text.replace(/'/g, "\\'").replace(/:/g, "\\:");
         const fontSize = text.size || 36;
         const color = text.color || '#FFFFFF';
         const x = text.x || 400;
         const y = text.y || 225;
-        
-        // Text timing
         const startTime = text.startTime || 0;
         const endTime = startTime + (text.duration || 5);
         
@@ -332,17 +398,16 @@ router.post('/process', async (req, res) => {
       });
     }
 
-    // Add audio if provided
+    // Add background audio if provided
     if (audioFile) {
       const audioPath = path.join(__dirname, '../uploads', audioFile);
       if (fs.existsSync(audioPath)) {
+        console.log('🎵 Adding background audio...');
         ffmpegCommand += ` -i "${audioPath}"`;
         
-        // Determine final video label
         const finalVideoLabel = videoFilter.replace('[', '').replace(']', '');
         
         if (filterComplex.length > 0) {
-          // Add audio mixing to filter complex
           const audioMixFilter = `[1:a]volume=0.5[a1];[0:a][a1]amix=inputs=2:duration=first[aout]`;
           filterComplex.push(audioMixFilter);
           ffmpegCommand += ` -filter_complex "${filterComplex.join(';')}" -map "[${finalVideoLabel}]" -map "[aout]"`;
@@ -351,37 +416,22 @@ router.post('/process', async (req, res) => {
         }
       }
     } else {
-      // Add filter complex if any filters or text overlays exist
       if (filterComplex.length > 0) {
         const finalVideoOutput = videoFilter.replace('[', '').replace(']', '');
         ffmpegCommand += ` -filter_complex "${filterComplex.join(';')}" -map "[${finalVideoOutput}]" -map 0:a?`;
       } else {
-        // No filters, just copy streams
-        if (!hasClips) {
-          ffmpegCommand += ' -c:v copy -c:a copy';
-        }
-      }
-    }
-
-    // Add trim if specified and no clips
-    if (!hasClips && trim && (trim.start > 0 || trim.end)) {
-      if (trim.start > 0) {
-        ffmpegCommand += ` -ss ${trim.start}`;
-      }
-      if (trim.end && trim.end !== trim.start) {
-        ffmpegCommand += ` -t ${trim.end - trim.start}`;
+        ffmpegCommand += ' -map 0:v -map 0:a?';
       }
     }
 
     // Output settings
     ffmpegCommand += ` -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 192k "${outputPath}" -y`;
 
-    console.log('🎬 FFmpeg command:', ffmpegCommand);
-
-    // Execute FFmpeg
+    console.log('🎬 Executing final FFmpeg command...');
     await execPromise(ffmpegCommand);
 
     // Clean up temporary files
+    console.log('🗑️ Cleaning up temporary files...');
     tempFiles.forEach(file => {
       if (fs.existsSync(file)) {
         try {
@@ -392,9 +442,8 @@ router.post('/process', async (req, res) => {
       }
     });
 
-    console.log('✅ Video processed successfully:', outputName);
+    console.log('✅ Video processed successfully!');
 
-    // Return download URL
     res.json({
       success: true,
       message: 'Video processed successfully',

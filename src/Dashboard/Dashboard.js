@@ -53,14 +53,14 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
 const productTools = [
   
   {
-    id: "img2",
+    id: "img1",
     title: " Product Staging",
     description: "Create realistic product scenes to put your product in action.",
     image: "/products/img2.jpg",
     route: "/product-staging"
   },
   {
-    id: "img1",
+    id: "img2",
     title: " Product Beautifier",
     description: "Convert any product image into a studio-grade professional product shot in seconds.",
     image: "/products/img1.jpg",
@@ -78,7 +78,7 @@ const productTools = [
 export default function Dashboard() {
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-white to-blue-400 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-white to-blue-500 flex flex-col">
         <Topbar projectTitle="INNOVA  Studio" />
         <div className="flex flex-1">
           <Sidebar />
@@ -171,7 +171,7 @@ export default function Dashboard() {
               </div>
 
               {/* Feature Grid */}
-              <div className="max-w-5xl w-full ml-auto mr-8">
+              <div className="max-w-5xl w-full mx-auto">
                 <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
                   Features of INNOVA
                 </h2>
