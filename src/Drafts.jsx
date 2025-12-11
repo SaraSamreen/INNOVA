@@ -74,7 +74,7 @@ export default function Drafts() {
       setDrafts(data || []);
     } catch (err) {
       console.error('Error fetching drafts:', err);
-      setError('Failed to load drafts. Please try again.');
+      setError('');
     } finally {
       setLoading(false);
     }

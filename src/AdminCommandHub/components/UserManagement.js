@@ -131,7 +131,7 @@ const UserManagement = () => {
       // Refresh users list
       fetchUsers();
       setDeleteModal({ show: false, user: null });
-      alert("User deleted successfully");
+      
     } catch (err) {
       console.error("Error deleting user:", err);
       alert("Failed to delete user: " + err.message);
@@ -215,7 +215,7 @@ const UserManagement = () => {
           onChange={(e) => setFilterPlan(e.target.value)}
         >
           <option value="all">All Plans</option>
-          <option value="freemium">Freemium</option>
+          <option value="Standard">Standard</option>
           <option value="premium">Premium</option>
         </select>
       </div>
@@ -261,7 +261,7 @@ const UserManagement = () => {
                           : "bg-gray-100 text-gray-700"
                       }`}
                     >
-                      {user.plan || "freemium"}
+                      {user.plan || "Standard"}
                     </span>
                   </td>
                   <td>

@@ -57,10 +57,7 @@ console.log("Connecting to MongoDB...", mongoURI ? "OK" : "NO CONNECTION STRING!
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI);
 
     console.log("✅ MongoDB connected successfully");
 
@@ -86,13 +83,30 @@ dirs.forEach(dir => {
   }
 });
 
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use('/processed', express.static('processed'));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/payment', require('./routes/payment'));
+
+// Add after other requires
+const instagramScheduler = require('./services/instagramScheduler');
+
+// Add after directory setup
+const instagramDir = path.join(__dirname, 'uploads', 'instagram');
+if (!fs.existsSync(instagramDir)) {
+  fs.mkdirSync(instagramDir, { recursive: true });
+  console.log('📁 Created directory: uploads/instagram');
+}
+
+// Add after other routes
+app.use('/api/instagram', require('./routes/instagram'));
+
+// Start scheduler after server listen
+instagramScheduler.startScheduler();
 
 // AI Routes
 const avatarVideoRoutes = require('./routes/avatarVideoRoutes');

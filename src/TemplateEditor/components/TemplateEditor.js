@@ -17,12 +17,9 @@ export default function TemplateEditor() {
   const [totalDuration, setTotalDuration] = useState(17)
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
   const [selectedElement, setSelectedElement] = useState(null)
-  const [selectedSceneForImage, setSelectedSceneForImage] = useState(null)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   
-  const [sceneAvatars, setSceneAvatars] = useState({})
   const [sceneImages, setSceneImages] = useState({})
-  const [sceneAudioBlobs, setSceneAudioBlobs] = useState({})
   
   const [scenes, setScenes] = useState([
     {
@@ -30,8 +27,8 @@ export default function TemplateEditor() {
       startTime: 0,
       endTime: 4.25,
       script: "Your online high-quality flower shop app is published!",
-      avatar: "scarlett",
       voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
+      thumbnail: "/heygen-app-presentation-video-frame-with-avatar.jpg",
       elements: [
         {
           id: "title-1",
@@ -54,8 +51,8 @@ export default function TemplateEditor() {
       startTime: 4.25,
       endTime: 8.5,
       script: "HeyGen is an app that lists most of the flower shops in your city and sells flowers online.",
-      avatar: "scarlett",
       voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
+      thumbnail: "/heygen-app-presentation-video-frame-with-avatar.jpg",
       elements: [
         {
           id: "main-text-2",
@@ -78,8 +75,8 @@ export default function TemplateEditor() {
       startTime: 8.5,
       endTime: 12.75,
       script: "Start in a few simple steps as follow.",
-      avatar: "scarlett", 
       voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
+      thumbnail: "/heygen-app-presentation-video-frame-with-avatar.jpg",
       elements: [
         {
           id: "how-to-title-3",
@@ -95,8 +92,8 @@ export default function TemplateEditor() {
       startTime: 12.75,
       endTime: 17,
       script: "Let's make a better life with flowers! Download now!",
-      avatar: "scarlett",
       voiceSettings: { voice: "Scarlett - Professional", emotion: "Expressive" },
+      thumbnail: "/heygen-app-presentation-video-frame-with-avatar.jpg",
       elements: [
         {
           id: "cta-title-4",
@@ -120,12 +117,6 @@ export default function TemplateEditor() {
     voice: "Scarlett - Professional",
     emotion: "Expressive"
   })
-
-  const avatars = [
-    { id: "scarlett", name: "Scarlett", thumbnail: "/professional-woman-avatar.png" },
-    { id: "james", name: "James", thumbnail: "/professional-man-avatar.png" },
-    { id: "emma", name: "Emma", thumbnail: "/business-woman-avatar.png" },
-  ]
 
   const voices = ["Scarlett - Professional", "James - Friendly", "Emma - Energetic", "David - Authoritative"]
   const emotions = ["Natural", "Expressive", "Calm", "Excited"]
@@ -278,41 +269,22 @@ export default function TemplateEditor() {
     )
   }
 
-  const handleAvatarChange = (sceneId, avatarId) => {
-    setScenes(prevScenes =>
-      prevScenes.map(scene =>
-        scene.id === sceneId ? { ...scene, avatar: avatarId } : scene
-      )
-    )
-  }
-
-  const handleCustomAvatarUpload = (event) => {
-    const file = event.target.files[0]
-    if (file && currentScene !== null) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const sceneId = scenes[currentScene].id
-        setSceneAvatars(prev => ({
-          ...prev,
-          [sceneId]: e.target.result
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleImageUpload = (event, sceneId, elementId) => {
+  const handleSceneImageUpload = (event, sceneId) => {
     const file = event.target.files[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = (e) => {
         setSceneImages(prev => ({
           ...prev,
-          [sceneId]: {
-            ...(prev[sceneId] || {}),
-            [elementId]: e.target.result
-          }
+          [sceneId]: e.target.result
         }))
+        
+        // Also update the scene thumbnail
+        setScenes(prevScenes =>
+          prevScenes.map(scene =>
+            scene.id === sceneId ? { ...scene, thumbnail: e.target.result } : scene
+          )
+        )
       }
       reader.readAsDataURL(file)
     }
@@ -354,13 +326,9 @@ export default function TemplateEditor() {
     return scenes[currentScene] || scenes[0]
   }
 
-  const getCurrentAvatar = () => {
+  const getCurrentSceneImage = () => {
     const scene = getCurrentScene()
-    const customAvatar = sceneAvatars[scene.id]
-    if (customAvatar) return customAvatar
-    
-    const avatarData = avatars.find(a => a.id === scene.avatar)
-    return avatarData?.thumbnail || "/professional-woman-avatar.png"
+    return sceneImages[scene.id] || scene.thumbnail || "/heygen-app-presentation-video-frame-with-avatar.jpg"
   }
 
   const handleBackToBrowser = () => {
@@ -385,7 +353,7 @@ export default function TemplateEditor() {
 
   const handleGenerate = () => {
     window.speechSynthesis.cancel()
-    alert("Generating your professional video with custom script and avatar...")
+    alert("Generating your professional video with custom script and images...")
   }
 
   const handleAddElement = (type) => {
@@ -469,45 +437,48 @@ export default function TemplateEditor() {
                     {scene.id}
                   </div>
                   
-                  <div>
-                    <img 
-                      src={sceneAvatars[scene.id] || avatars.find(a => a.id === scene.avatar)?.thumbnail || "/professional-woman-avatar.png"} 
-                      alt="Avatar"
-                      className="w-10 h-10 rounded-full object-cover mb-2"
-                    />
+                  <div className="flex-1">
                     <select
-                      value={voiceSettings.voice}
-                      onChange={(e) => setVoiceSettings(prev => ({ ...prev, voice: e.target.value }))}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 w-28"
+                      value={scene.voiceSettings.voice}
+                      onChange={(e) => {
+                        const newScenes = [...scenes]
+                        newScenes[index].voiceSettings.voice = e.target.value
+                        setScenes(newScenes)
+                      }}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 w-full mb-2"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {voices.map(voice => (
                         <option key={voice} value={voice}>{voice}</option>
                       ))}
                     </select>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
+                    
                     <select
-                      value={voiceSettings.emotion}
-                      onChange={(e) => setVoiceSettings(prev => ({ ...prev, emotion: e.target.value }))}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 w-24"
+                      value={scene.voiceSettings.emotion}
+                      onChange={(e) => {
+                        const newScenes = [...scenes]
+                        newScenes[index].voiceSettings.emotion = e.target.value
+                        setScenes(newScenes)
+                      }}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 w-full"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {emotions.map(emotion => (
                         <option key={emotion} value={emotion}>{emotion}</option>
                       ))}
                     </select>
-                    
-                    <button 
-                      className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-all"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        generateAudioForScene(scene.id)
-                      }}
-                      disabled={isGeneratingAudio}
-                    >
-                      ▶️
-                    </button>
                   </div>
+
+                  <button 
+                    className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-all flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      generateAudioForScene(scene.id)
+                    }}
+                    disabled={isGeneratingAudio}
+                  >
+                    ▶️
+                  </button>
                 </div>
 
                 <textarea
@@ -516,13 +487,24 @@ export default function TemplateEditor() {
                   className="w-full border border-gray-300 rounded-lg p-2.5 text-sm leading-5 resize-vertical min-h-16 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your script for this scene..."
                   rows="3"
+                  onClick={(e) => e.stopPropagation()}
                 />
 
                 <div className="flex gap-2 mt-3 flex-wrap">
+                  <button 
+                    className="text-xs bg-blue-500 text-white border-none px-3 py-1.5 rounded hover:bg-blue-600 font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCurrentScene(index)
+                      setTimeout(() => {
+                        fileInputRef.current?.click()
+                      }, 100)
+                    }}
+                  >
+                    🖼️ Add Image
+                  </button>
                   <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">+ Scene</button>
                   <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">🔊 Audio</button>
-                  <button className="text-xs bg-transparent border border-gray-300 px-2 py-1 rounded hover:bg-gray-50">⏸️ Pause</button>
-                  <span className="text-xs text-gray-600 flex items-center gap-1">🎤 Voice Director</span>
                 </div>
               </div>
             ))}
@@ -537,8 +519,8 @@ export default function TemplateEditor() {
               className="flex flex-col items-center gap-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all"
               onClick={() => fileInputRef.current?.click()}
             >
-              <span className="text-sm">👤</span>
-              <span className="text-xs">Avatars</span>
+              <span className="text-sm">🖼️</span>
+              <span className="text-xs">Image</span>
             </button>
             <button 
               className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
@@ -547,10 +529,7 @@ export default function TemplateEditor() {
               <span className="text-sm">📝</span>
               <span className="text-xs">Text</span>
             </button>
-            <button 
-              className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-              onClick={() => imageInputRef.current?.click()}
-            >
+            <button className="flex flex-col items-center gap-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
               <span className="text-sm">🎵</span>
               <span className="text-xs">Media</span>
             </button>
@@ -583,21 +562,24 @@ export default function TemplateEditor() {
               {/* Background */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-purple-900"></div>
 
-              {/* Flower Image */}
-              <div 
-                className="absolute right-16 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105 transition-transform z-20"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <img
-                  src={getCurrentAvatar()}
-                  alt="Flower"
-                  className="w-64 h-80 object-cover rounded-2xl shadow-2xl border-4 border-white/30 hover:border-white/50 transition-all"
-                />
-                <div className="absolute inset-0 bg-black/70 rounded-2xl flex flex-col items-center justify-center gap-2.5 opacity-0 hover:opacity-100 transition-opacity">
-                  <span className="text-2xl">🌸</span>
-                  <span className="text-sm text-white">Click to change flower</span>
+              {/* Scene Image/Thumbnail - Show on right side of canvas */}
+              {sceneImages[getCurrentScene().id] && (
+                <div 
+                  className="absolute right-16 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105 transition-transform z-20 group"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <img
+                    src={sceneImages[getCurrentScene().id]}
+                    alt="Scene media"
+                    className="w-64 h-80 object-cover rounded-2xl shadow-2xl border-4 border-white/30 hover:border-white/50 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-black/70 rounded-2xl flex flex-col items-center justify-center gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-2xl">🖼️</span>
+                    <span className="text-sm text-white">Click to change image</span>
+                    <span className="text-xs text-white/70">Scene {getCurrentScene().id}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Text Elements */}
               {getCurrentScene()?.elements.map(element => (
@@ -617,15 +599,7 @@ export default function TemplateEditor() {
                     }
                   }}
                 >
-                  {sceneImages[getCurrentScene().id]?.[element.id] ? (
-                    <img 
-                      src={sceneImages[getCurrentScene().id][element.id]} 
-                      alt="Scene element"
-                      className="max-w-48 max-h-48"
-                    />
-                  ) : (
-                    element.content
-                  )}
+                  {element.content}
                 </div>
               ))}
 
@@ -661,35 +635,6 @@ export default function TemplateEditor() {
             </div>
           </div>
 
-          {/* Timeline */}
-          <div className="h-24 bg-white border-t border-gray-200 flex items-center px-5 gap-4">
-            <div className="text-base">▶</div>
-            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-1 flex gap-0.5 items-center overflow-x-auto">
-              {scenes.map((scene, index) => (
-                <div
-                  key={scene.id}
-                  className={`flex-shrink-0 bg-white border border-gray-300 rounded-lg cursor-pointer transition-all hover:shadow-md ${currentScene === index ? 'ring-2 ring-blue-500 ring-offset-0' : ''}`}
-                  style={{
-                    width: `${((scene.endTime - scene.startTime) / totalDuration) * 100}%`,
-                    minWidth: '60px'
-                  }}
-                  onClick={() => handleSeekToScene(index)}
-                >
-                  <div className="relative w-full h-full rounded-lg overflow-hidden">
-                    <img
-                      src="/heygen-app-presentation-video-frame-with-avatar.jpg"
-                      alt={`Scene ${scene.id}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-semibold">
-                      {scene.id}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button className="flex-shrink-0 w-12 h-12 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center text-xl text-gray-500">+</button>
-            </div>
-          </div>
         </div>
 
         {/* Right Sidebar - Layers Panel */}
@@ -701,25 +646,32 @@ export default function TemplateEditor() {
               <button className="w-8 h-8 bg-transparent border border-gray-300 rounded-lg px-1.5 py-1 text-gray-600 hover:bg-gray-50 flex items-center justify-center">⬆</button>
             </div>
           </div>
+          
+          <div className="p-4">
+            <div className="text-sm text-gray-600 mb-3">
+              <strong>Scene {getCurrentScene().id}</strong>
+            </div>
+            <div className="space-y-2">
+              {getCurrentScene()?.elements.map(element => (
+                <div 
+                  key={element.id}
+                  className={`p-2 border rounded-lg cursor-pointer hover:bg-gray-50 ${selectedElement === element.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                  onClick={() => setSelectedElement(element.id)}
+                >
+                  <div className="text-xs font-medium">{element.type === 'text' ? '📝' : '🖼️'} {element.type}</div>
+                  <div className="text-xs text-gray-500 truncate">{element.content}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Hidden file inputs */}
+      {/* Hidden file input for scene images */}
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleCustomAvatarUpload}
-        accept="image/*"
-        className="hidden"
-      />
-      <input
-        type="file"
-        ref={imageInputRef}
-        onChange={(e) => {
-          if (selectedElement) {
-            handleImageUpload(e, getCurrentScene().id, selectedElement)
-          }
-        }}
+        onChange={(e) => handleSceneImageUpload(e, getCurrentScene().id)}
         accept="image/*"
         className="hidden"
       />

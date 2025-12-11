@@ -53,21 +53,21 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
 const productTools = [
   
   {
-    id: "img2",
+    id: "",
     title: " Product Staging",
     description: "Create realistic product scenes to put your product in action.",
     image: "/products/img2.jpg",
     route: "/product-staging"
   },
   {
-    id: "img1",
+    id: "",
     title: " Product Beautifier",
     description: "Convert any product image into a studio-grade professional product shot in seconds.",
     image: "/products/img1.jpg",
     route: "/product-beautifier"
   },
   {
-    id: "img3",
+    id: "",
     title: "AI Backgrounds",
     description: "Generate realistic AI backgrounds in less than a second.",
     image: "/products/img3.jpg",
@@ -161,9 +161,7 @@ export default function Dashboard() {
                         </p>
                         
                         {/* Image ID Tag */}
-                        <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full">
-                          {tool.id}
-                        </div>
+                       
                       </div>
                     </Link>
                   ))}
@@ -171,7 +169,7 @@ export default function Dashboard() {
               </div>
 
               {/* Feature Grid */}
-              <div className="max-w-5xl w-full ml-auto mr-8">
+              <div className="max-w-5xl w-full mx-auto">
                 <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
                   Features of INNOVA
                 </h2>
@@ -203,13 +201,13 @@ export default function Dashboard() {
                   <FeatureCard
                     icon={Zap}
                     title="Social Sync"
-                    description="Schedule and publish content across all platforms simultaneously with intelligent timing."
+                    description="Schedule and publish content across social media."
                     delay={400}
                   />
                   <FeatureCard
                     icon={Users}
                     title="Team Collaboration"
-                    description="Work together in real-time with your team, share files, and streamline your workflow."
+                    description="Work together in real-time with your team and streamline your workflow."
                     delay={500}
                   />
                 </div>

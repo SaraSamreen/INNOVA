@@ -12,6 +12,7 @@ import {
   Plus,
   MessageCircle,
   Settings,
+  Instagram, 
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -21,6 +22,7 @@ const Sidebar = () => {
   const navItems = [
     { path: "/logo-generator", icon: Sparkles, label: "Logo Generator" },
     { path: "/poster-generator", icon: Image, label: "Poster Generator" },
+     { path: "/instagram-uploader", icon: Instagram, label: "Instagram" },
     { path: "/drafts", icon: FileText, label: "Your Drafts" },
     { path: "/video-editor", icon: Video, label: "Video Editor" },
     { path: "/simple-chat", icon: MessageCircle, label: "Chat" },

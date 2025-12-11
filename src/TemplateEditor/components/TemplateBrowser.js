@@ -101,6 +101,38 @@ export default function TemplateBrowser() {
   const totalTemplates = Object.values(videoTemplates).flat().length;
   const totalPremium = Object.values(videoTemplates).flat().filter(t => t.isPremium).length;
 
+  // Generate thumbnail preview
+  const generateThumbnail = (template) => {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-purple-900 flex items-center justify-center relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full" 
+            style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </div>
+        
+        {/* Content preview based on template */}
+        <div className="relative z-10 text-center px-8">
+          <h3 className="text-white text-5xl font-bold mb-4">
+            {template.title}
+          </h3>
+          <div className="mt-4 flex justify-center gap-2">
+            {Array.from({length: template.scenes?.length || 3}).map((_, i) => (
+              <div key={i} className="w-2 h-2 rounded-full bg-white/50" />
+            ))}
+          </div>
+        </div>
+
+        {/* Decorative element */}
+        <div className="absolute bottom-4 right-4 w-32 h-32 rounded-full bg-white/10 blur-3xl" />
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
@@ -178,7 +210,7 @@ export default function TemplateBrowser() {
       </div>
 
       {/* Templates Grid */}
-      <div className="px-10 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+      <div className="px-10 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {filteredTemplates.map((template) => {
           const isPurchased = purchasedTemplates.includes(template.id);
           const isPremium = template.isPremium;
@@ -208,12 +240,8 @@ export default function TemplateBrowser() {
               )}
 
               {/* Thumbnail */}
-              <div className="relative bg-black aspect-video overflow-hidden group">
-                <img 
-                  src={template.thumbnail || "/placeholder.svg"} 
-                  alt={template.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              <div className="relative aspect-video overflow-hidden group">
+                {generateThumbnail(template)}
                 
                 {/* Lock Overlay for Premium Templates */}
                 {isPremium && !isPurchased && (

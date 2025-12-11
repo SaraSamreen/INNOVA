@@ -137,8 +137,7 @@ Please contact our support team at support@yourapp.com for assistance.
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
 
-    console.log('✅ Login successful:', data.user.email);
-    alert('Login successful! Redirecting...');
+    
     
     // Redirect based on role
     window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
@@ -221,11 +220,15 @@ Please contact our support team at support@yourapp.com for assistance.
       if (!res.ok) throw new Error(data.message);
 
       // Store user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      alert('Signup successful');
-      window.location.href = '/dashboard';
+      setError('Account created successfully! Please login to continue.');
+setTimeout(() => {
+  setIsLogin(true);
+  setName('');
+  setSignupEmail('');
+  setSignupPassword('');
+  setConfirmPassword('');
+  setError('');
+}, 1500);
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -278,28 +281,36 @@ const handleGoogleAuth = async () => {
   }
 };
 
+
   return (
     <div className="fixed inset-0 bg-[#c3d5ef] overflow-hidden">
       <div className="h-full w-full">
         <div className="grid md:grid-cols-2 h-full">
           {/* Image Side */}
-          <div className={`relative bg-gradient-to-br from-[#2E7BC8] to-[#1E6BB0] overflow-hidden ${
+          <div className={`relative overflow-hidden bg-[#EBECED] ${
             isLogin ? 'order-1' : 'order-2'
           }`}>
-            <div className="absolute inset-0">
-      
-            </div>
             
-            <div className="relative z-10 h-full flex flex-col items-center justify-center -mt-16 p-8 text-white">
-              <div className="max-w-lg text-center">
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  INNOVA
-                </h1>
-                <p className="text-lg md:text-xl text-blue-100 drop-shadow-md">
-                  Empowering innovation through elegant design and cutting-edge technology
-                </p>
-              </div>
-            </div>
+            <div className="relative z-10 h-full flex flex-col items-center justify-center p-8">
+  <div className="max-w-md text-center">
+  <img 
+    src="/all-features.svg" 
+    alt="INNOVA Features" 
+    className="w-full max-w-md mx-auto mb-8 drop-shadow-2xl"
+  />
+  <p
+  className="text-2xl md:text-3xl text-black font-medium leading-relaxed"
+  style={{ fontFamily: "Times New Roman, Times, serif" }}
+>
+  Create. Schedule. Post. Grow. <br />
+  <span className="font-bold">All in One Place.</span>
+</p>
+
+
+</div>
+
+
+</div>
           </div>
 
           {/* Forms Side */}
@@ -318,7 +329,8 @@ const handleGoogleAuth = async () => {
                       <p className="text-[#374151] mb-8">Welcome back! Please login to continue</p>
 
                       {error && (
-                        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-[14px] mb-6">
+  <div className={`${error.includes('success') ? 'bg-green-50 border-green-500 text-green-700' : 'bg-green-50 border-red-500 text-red-700'} border-l-4 px-4 py-3 rounded-[14px] mb-4`}>
+          
                           <p className="text-sm font-medium">{error}</p>
                         </div>
                       )}

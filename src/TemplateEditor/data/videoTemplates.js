@@ -24,8 +24,8 @@ export const videoTemplates = {
             {
               id: "app-title-1",
               type: "text",
-              content: "HeyGen\nApp",
-              position: { x: 80, y: 150 },
+              content: "Flower\nApp",
+              position: { x: 80, y: 100 },
               style: { 
                 fontSize: "72px", 
                 fontWeight: "bold", 
@@ -39,7 +39,7 @@ export const videoTemplates = {
               id: "app-subtitle-1", 
               type: "text",
               content: "Your online high-quality\nFlower Shop",
-              position: { x: 80, y: 310 },
+              position: { x: 80, y: 280 },
               style: { 
                 fontSize: "22px", 
                 color: "white",
@@ -52,7 +52,7 @@ export const videoTemplates = {
               id: "store-badge-google-1",
               type: "text",
               content: "📱 Google Play",
-              position: { x: 80, y: 390 },
+              position: { x: 80, y: 360 },
               style: { 
                 fontSize: "14px", 
                 color: "white",
@@ -65,7 +65,7 @@ export const videoTemplates = {
               id: "store-badge-apple-1",
               type: "text",
               content: "🍎 App Store",
-              position: { x: 210, y: 390 },
+              position: { x: 210, y: 360 },
               style: { 
                 fontSize: "14px", 
                 color: "white",
@@ -88,16 +88,16 @@ export const videoTemplates = {
               id: "intro-header-2",
               type: "text", 
               content: "Brief Intro of the App",
-              position: { x: 47, y: 60 },
+              position: { x: 50, y: 70 },
               style: { 
                 fontSize: "32px", 
                 fontWeight: "bold", 
                 color: "white",
                 textAlign: "left",
                 background: "rgba(147, 112, 147, 0.85)",
-                padding: "10px 10px",
-                borderRadius: "5px",
-                width: "400px"
+                padding: "7px 7px",
+                borderRadius: "8px",
+                width: "350px"
               }
             },
             {
@@ -153,12 +153,13 @@ export const videoTemplates = {
             {
               id: "tagline-4",
               type: "text",
-              content: "",
-              position: { x: 50, y: 60 },
+              content: "Where every bloom\ntells a story",
+              position: { x: 45, y: 120 },
               style: { 
                 fontSize: "42px", 
                 fontWeight: "normal",
                 fontFamily: "cursive",
+                textAlign: "center",
                 color: "white",
                 fontStyle: "italic",
                 textShadow: "2px 2px 4px rgba(0,0,0,0.3)"

@@ -19,6 +19,7 @@ import {
 
 export default function ProductModelShowcase() {
   const [uploadedImage, setUploadedImage] = useState(null)
+  const [productNoBg, setProductNoBg] = useState(null) // Product with background removed
   const [generatedImage, setGeneratedImage] = useState(null)
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
@@ -28,7 +29,7 @@ export default function ProductModelShowcase() {
   const [quality, setQuality] = useState(80)
   const [creativity, setCreativity] = useState(50)
   
-  // Product positioning and scaling - NEW
+  // Product positioning and scaling
   const [scale, setScale] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const dragging = useRef(false)
@@ -90,6 +91,7 @@ export default function ProductModelShowcase() {
       const reader = new FileReader()
       reader.onload = (event) => {
         setUploadedImage(event.target?.result || null)
+        setProductNoBg(null)
         setGeneratedImage(null)
         setShowComparison(false)
         setScale(1)
@@ -105,6 +107,7 @@ export default function ProductModelShowcase() {
       const reader = new FileReader()
       reader.onload = (event) => {
         setUploadedImage(event.target?.result || null)
+        setProductNoBg(null)
         setGeneratedImage(null)
         setShowComparison(false)
         setScale(1)
@@ -122,18 +125,16 @@ export default function ProductModelShowcase() {
       const response = await fetch(uploadedImage)
       const blob = await response.blob()
       
-      const formData = new FormData()
-      formData.append('image', blob, 'product.png')
-      formData.append('prompt', prompt)
-      formData.append('creativity', creativity.toString())
-      formData.append('quality', quality.toString())
+      const formData = new FormData();
+formData.append('image', blob, 'product.png');
+formData.append('prompt', prompt);
+formData.append('creativity', creativity.toString());
+formData.append('quality', quality.toString());
 
-      console.log('🚀 Sending to backend...')
-      
-      const apiResponse = await fetch('http://localhost:3001/api/generate', {
-        method: 'POST',
-        body: formData
-      })
+const apiResponse = await fetch('http://localhost:5000/api/imageGen/generate', {
+  method: 'POST',
+  body: formData
+});
 
       if (!apiResponse.ok) {
         const errorData = await apiResponse.json()
@@ -142,9 +143,10 @@ export default function ProductModelShowcase() {
 
       const data = await apiResponse.json()
       
-      if (data.success && data.image) {
+      if (data.success && data.image && data.productNoBg) {
         console.log('✅ Generation successful!')
         setGeneratedImage(data.image)
+        setProductNoBg(data.productNoBg) // Store the product without background
         setShowComparison(true)
         setScale(1)
         setPosition({ x: 0, y: 0 })
@@ -169,6 +171,7 @@ export default function ProductModelShowcase() {
 
   const handleReset = () => {
     setUploadedImage(null)
+    setProductNoBg(null)
     setGeneratedImage(null)
     setPrompt("")
     setShowComparison(false)
@@ -176,7 +179,7 @@ export default function ProductModelShowcase() {
     setPosition({ x: 0, y: 0 })
   }
 
-  // Product dragging handlers - NEW
+  // Product dragging handlers
   const startDrag = (e) => {
     e.preventDefault()
     dragging.current = true
@@ -223,10 +226,10 @@ export default function ProductModelShowcase() {
     bgImg.onload = () => {
       ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height)
       
-      if (uploadedImage) {
+      if (productNoBg) {
         const prodImg = new window.Image()
         prodImg.crossOrigin = "anonymous"
-        prodImg.src = uploadedImage
+        prodImg.src = productNoBg
         
         prodImg.onload = () => {
           const scaledWidth = prodImg.width * scale
@@ -432,104 +435,103 @@ export default function ProductModelShowcase() {
               <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
                 <img 
                   src={generatedImage} 
-                  className="absolute inset-0 w-full h-full object-cover"
-                  alt="Generated background"
-                />
-                
-                {uploadedImage && (
-                  <img
-                    src={uploadedImage}
-                    onMouseDown={startDrag}
-                    style={{
-                      position: "absolute",
-                      left: position.x,
-                      top: position.y,
-                      transform: `scale(${scale})`,
-                      cursor: dragging.current ? "grabbing" : "grab",
-                      userSelect: "none",
-                    }}
-                    className="max-w-full max-h-full object-contain"
-                    draggable={false}
-                    alt="Product"
-                  />
-                )}
-              </div>
-            ) : isGenerating ? (
-              <div className="flex flex-col items-center justify-center aspect-square bg-gray-100 rounded-xl">
-                <div className="relative">
-                  <div className="h-16 w-16 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                  <Sparkles className="absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-blue-600" />
-                </div>
-                <p className="mt-4 text-sm font-medium">Creating your vision...</p>
-                <p className="text-xs text-gray-500">This may take a few seconds</p>
-              </div>
-            ) : uploadedImage ? (
-              <div className="relative aspect-square bg-gray-100 rounded-xl">
-                <img src={uploadedImage} className="w-full h-full object-contain opacity-50" alt="Product preview" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="bg-white/80 px-4 py-2 rounded-lg shadow">Enter a prompt to generate</p>
-                </div>
-              </div>
-            ) : (
-              <div className="aspect-square flex flex-col items-center justify-center rounded-xl bg-gray-100">
-                <Image className="h-12 w-12 text-gray-400 mb-3" />
-                <p className="text-sm text-gray-500">Upload an image to get started</p>
-              </div>
+                  className="absolute inset-0 w-full h-full object-cover"alt="Generated background"
+            />
+            
+            {productNoBg && (
+              <img
+                src={productNoBg}
+                onMouseDown={startDrag}
+                style={{
+                  position: "absolute",
+                  left: position.x,
+                  top: position.y,
+                  transform: `scale(${scale})`,
+                  cursor: dragging.current ? "grabbing" : "grab",
+                  userSelect: "none",
+                }}
+                className="max-w-full max-h-full object-contain"
+                draggable={false}
+                alt="Product"
+              />
             )}
           </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            {[ 
-              { icon: <Zap className="h-6 w-6 text-blue-600 mx-auto" />, title: "Instant", desc: "Results in seconds" },
-              { icon: <Image className="h-6 w-6 text-blue-600 mx-auto" />, title: "HD Output", desc: "High resolution" },
-              { icon: <Sparkles className="h-6 w-6 text-blue-600 mx-auto" />, title: "AI Magic", desc: "Smart editing" },
-            ].map((item) => (
-              <div key={item.title} className="border rounded-xl bg-white p-4 text-center shadow-sm">
-                {item.icon}
-                <p className="text-xs font-medium mt-1">{item.title}</p>
-                <p className="text-xs text-gray-500">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* NEW: Product Controls Panel */}
-          {generatedImage && uploadedImage && (
-            <div className="border rounded-xl bg-white p-6 shadow-sm">
-              <h2 className="flex items-center gap-2 mb-4 text-lg font-medium">
-                <GripVertical className="h-5 w-5 text-blue-600" /> Product Controls
-              </h2>
-
-              <label className="text-sm font-medium flex justify-between">
-                Product Size <span>{Math.round(scale * 100)}%</span>
-              </label>
-              <input
-                type="range"
-                min="0.3"
-                max="2"
-                step="0.05"
-                value={scale}
-                onChange={(e) => setScale(parseFloat(e.target.value))}
-                className="w-full mt-2"
-              />
-
-              <button
-                onClick={() => {
-                  setScale(1)
-                  setPosition({ x: 0, y: 0 })
-                }}
-                className="mt-4 w-full py-2 px-4 border rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 text-sm"
-              >
-                <RotateCcw className="h-4 w-4" /> Reset Position & Size
-              </button>
-
-              <p className="text-xs text-gray-500 mt-3 text-center">
-                💡 Drag the product image to reposition it
-              </p>
+        ) : isGenerating ? (
+          <div className="flex flex-col items-center justify-center aspect-square bg-gray-100 rounded-xl">
+            <div className="relative">
+              <div className="h-16 w-16 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+              <Sparkles className="absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-blue-600" />
             </div>
-          )}
-        </div>
+            <p className="mt-4 text-sm font-medium">Creating your vision...</p>
+            <p className="text-xs text-gray-500">This may take a few seconds</p>
+          </div>
+        ) : uploadedImage ? (
+          <div className="relative aspect-square bg-gray-100 rounded-xl">
+            <img src={uploadedImage} className="w-full h-full object-contain opacity-50" alt="Product preview" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="bg-white/80 px-4 py-2 rounded-lg shadow">Enter a prompt to generate</p>
+            </div>
+          </div>
+        ) : (
+          <div className="aspect-square flex flex-col items-center justify-center rounded-xl bg-gray-100">
+            <Image className="h-12 w-12 text-gray-400 mb-3" />
+            <p className="text-sm text-gray-500">Upload an image to get started</p>
+          </div>
+        )}
+      </div>
 
-      </main>
+      <div className="grid grid-cols-3 gap-4">
+        {[ 
+          { icon: <Zap className="h-6 w-6 text-blue-600 mx-auto" />, title: "Instant", desc: "Results in seconds" },
+          { icon: <Image className="h-6 w-6 text-blue-600 mx-auto" />, title: "HD Output", desc: "High resolution" },
+          { icon: <Sparkles className="h-6 w-6 text-blue-600 mx-auto" />, title: "AI Magic", desc: "Smart editing" },
+        ].map((item) => (
+          <div key={item.title} className="border rounded-xl bg-white p-4 text-center shadow-sm">
+            {item.icon}
+            <p className="text-xs font-medium mt-1">{item.title}</p>
+            <p className="text-xs text-gray-500">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Product Controls Panel */}
+      {generatedImage && productNoBg && (
+        <div className="border rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="flex items-center gap-2 mb-4 text-lg font-medium">
+            <GripVertical className="h-5 w-5 text-blue-600" /> Product Controls
+          </h2>
+
+          <label className="text-sm font-medium flex justify-between">
+            Product Size <span>{Math.round(scale * 100)}%</span>
+          </label>
+          <input
+            type="range"
+            min="0.3"
+            max="2"
+            step="0.05"
+            value={scale}
+            onChange={(e) => setScale(parseFloat(e.target.value))}
+            className="w-full mt-2"
+          />
+
+          <button
+            onClick={() => {
+              setScale(1)
+              setPosition({ x: 0, y: 0 })
+            }}
+            className="mt-4 w-full py-2 px-4 border rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 text-sm"
+          >
+            <RotateCcw className="h-4 w-4" /> Reset Position & Size
+          </button>
+
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            💡 Drag the product image to reposition it
+          </p>
+        </div>
+      )}
     </div>
+
+  </main>
+</div>
   )
 }

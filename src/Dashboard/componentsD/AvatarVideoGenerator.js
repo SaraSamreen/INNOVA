@@ -516,6 +516,17 @@ export default function AvatarVideoGenerator() {
                   </button>
                 </div>
 
+                <button
+  onClick={() => {
+    // Store video URL in localStorage so the editor can access it
+    localStorage.setItem('videoToEdit', videoUrl);
+    window.location.href = '/video-editor';
+  }}
+  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:opacity-90 flex items-center justify-center gap-2 mb-3"
+>
+  <span>✂️</span> Edit Video
+</button>
+
                 <div className="border-t pt-4 mb-4">
                   <h4 className="font-bold text-gray-700 mb-3 text-center">Share to Social Media</h4>
                   <div className="grid grid-cols-2 gap-3">

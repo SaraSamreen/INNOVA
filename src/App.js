@@ -21,6 +21,7 @@ import Drafts from './Drafts';
 import SimpleChat from './Chat/Chat';
 import VideoEditor from './video-editor/video';
 import AvatarVideoGenerator from './Dashboard/componentsD/AvatarVideoGenerator';
+import InstagramUploader from './Dashboard/componentsD/InstagramUploader';
 
 
 
@@ -50,6 +51,8 @@ function AppWrapper() {
           <Route path="/simple-chat" element={<SimpleChat/>} />
           <Route path="/video-editor" element={<VideoEditor />} />
           <Route path="/avatar-generator" element={<AvatarVideoGenerator />} />
+          <Route path="/instagram-uploader" element={<InstagramUploader />} />
+
         
       </Routes>
     </Router>

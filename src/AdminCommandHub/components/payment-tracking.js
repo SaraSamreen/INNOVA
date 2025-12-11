@@ -216,7 +216,7 @@ const PaymentTracking = () => {
                         ${t.amount.toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {t.status === "completed" ? "Premium" : "Freemium"}
+                        {t.status === "completed" ? "Premium" : "Standard"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
