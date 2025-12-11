@@ -323,7 +323,7 @@ const handleGoogleAuth = async () => {
                 isLogin ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
               }`}>
                 <div className="h-full overflow-y-auto">
-                  <div className="min-h-full flex flex-col justify-center p-8 lg:p-12">
+                  <div className="min-h-full flex flex-col justify-center px-8 lg:px-12 py-4">
                     <div className="max-w-md mx-auto w-full">
                       <h2 className="text-4xl font-bold text-[#3E8EDE] mb-2">Login</h2>
                       <p className="text-[#374151] mb-8">Welcome back! Please login to continue</p>
@@ -452,7 +452,7 @@ const handleGoogleAuth = async () => {
                 !isLogin ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
               }`}>
                 <div className="h-full overflow-y-auto">
-                  <div className="min-h-full flex flex-col justify-center p-8 lg:p-12 py-8">
+                  <div className="min-h-full flex flex-col justify-center px-8 lg:px-12 py-4">
                     <div className="max-w-md mx-auto w-full">
                       <h2 className="text-4xl font-bold text-[#3E8EDE] mb-2">Sign Up</h2>
                       <p className="text-[#374151] mb-6">Create your account and start your journey</p>

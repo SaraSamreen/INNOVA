@@ -53,14 +53,22 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
 const productTools = [
   
   {
+<<<<<<< HEAD
     id: "",
+=======
+    id: "img1",
+>>>>>>> 2771e000772db1a5c281a72bbd60705bd6073609
     title: " Product Staging",
     description: "Create realistic product scenes to put your product in action.",
     image: "/products/img2.jpg",
     route: "/product-staging"
   },
   {
+<<<<<<< HEAD
     id: "",
+=======
+    id: "img2",
+>>>>>>> 2771e000772db1a5c281a72bbd60705bd6073609
     title: " Product Beautifier",
     description: "Convert any product image into a studio-grade professional product shot in seconds.",
     image: "/products/img1.jpg",
@@ -78,7 +86,7 @@ const productTools = [
 export default function Dashboard() {
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-white to-blue-400 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-white to-blue-500 flex flex-col">
         <Topbar projectTitle="INNOVA  Studio" />
         <div className="flex flex-1">
           <Sidebar />

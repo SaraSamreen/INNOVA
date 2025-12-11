@@ -884,6 +884,7 @@ const handleTimelineRightClick = (e) => {
                   className="hidden"
                 />
               </div>
+<<<<<<< HEAD
             </div>
           ) : (
             <>
@@ -1038,6 +1039,156 @@ const handleTimelineRightClick = (e) => {
   </div>
 </div>
 
+=======
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center bg-black rounded-lg shadow-2xl overflow-hidden mb-4 border border-[#2d3142] p-4" style={{ height: '60vh' }}>
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={450}
+                  className="max-w-full max-h-full cursor-move"
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                />
+              </div>
+
+              <div className="bg-[#232734] rounded-lg shadow-lg p-4 border border-[#2d3142]">
+                <div className="flex items-center justify-center mb-3">
+                  <div className="bg-[#1a1d29] px-4 py-2 rounded-lg border border-[#2d3142]">
+                    <span className="text-white font-mono text-lg">{formatTime(currentTime)}</span>
+                  </div>
+                </div>
+
+                <div className="relative mb-4">
+                  <div className="flex justify-between text-xs text-gray-400 mb-2 px-2">
+                    <span>{formatTime(trim.start)}</span>
+                    <span>{formatTime(trim.end || duration)}</span>
+                  </div>
+
+                  <div className="relative bg-[#1a1d29] rounded-lg border-2 border-[#2d3142] overflow-hidden" style={{ height: '120px' }}>
+  <div
+    ref={timelineRef}
+    onClick={handleTimelineClick}
+    onContextMenu={handleTimelineClick}
+    className="absolute inset-0 flex cursor-pointer"
+    style={{
+      background: `linear-gradient(90deg, 
+        rgba(195, 213, 239, 0.1) 0%, 
+        rgba(195, 213, 239, 0.15) ${trimStartPercentage}%,
+        rgba(195, 213, 239, 0.3) ${trimStartPercentage}%,
+        rgba(195, 213, 239, 0.3) ${trimEndPercentage}%,
+        rgba(195, 213, 239, 0.15) ${trimEndPercentage}%,
+        rgba(195, 213, 239, 0.1) 100%)`
+    }}
+  >
+    <div className="flex w-full h-full items-center">
+      {thumbnails.length > 0 ? thumbnails.map((thumb, i) => (
+        <img
+          key={i}
+          src={thumb}
+          alt={`thumb-${i}`}
+          className="flex-1 h-full object-cover border-r border-[#2d3142]"
+        />
+      )) : (
+        Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="flex-1 h-full bg-[#111214] border-r border-[#2d3142]" />
+        ))
+      )}
+    </div>
+
+    {/* Render clip insertion markers */}
+    {/* Render clip insertion markers */}
+{clips.map((clip) => {
+  if (clip.type === 'split') {
+    const splitPercentage = duration ? ((clip.startTime / duration) * 100) : 0;
+    return (
+      <div
+        key={clip.id}
+        className="absolute top-0 bottom-0 w-1 bg-yellow-500 z-15 pointer-events-none"
+        style={{ left: `${splitPercentage}%` }}
+        title={`Split at ${formatTime(clip.startTime)}`}
+      >
+        <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-yellow-500">
+          <Scissors size={16} />
+        </div>
+      </div>
+    );
+  }
+  
+if (clip.type === 'video' || clip.type === 'image') {
+  const insertPercentage = duration ? ((clip.insertAt / duration) * 100) : 0;
+  const clipDuration = clip.duration || 3;
+  const clipWidthPercentage = duration ? ((clipDuration / duration) * 100) : 2;
+  
+  return (
+    <div
+      key={clip.id}
+      className="absolute top-0 bottom-0 bg-gradient-to-r from-[#7da3cc] to-[#5a8ab8] border-l-4 border-r-4 border-[#c3d5ef] z-15 pointer-events-none overflow-hidden shadow-lg"
+      style={{ 
+        left: `${insertPercentage}%`,
+        width: `${Math.max(clipWidthPercentage, 3)}%`
+      }}
+      title={`${clip.type === 'image' ? 'Image' : 'Video'} Insert: ${clip.filename}`}
+    >
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1a1d29] bg-opacity-60 backdrop-blur-sm">
+        <div className="text-3xl mb-1">{clip.type === 'image' ? '🖼️' : '🎬'}</div>
+        <div className="text-white text-[10px] font-bold text-center px-1">
+          {clip.type === 'image' ? 'IMAGE' : 'VIDEO'}
+        </div>
+        <div className="text-[#c3d5ef] text-[9px] font-semibold mt-1">
+          {formatTime(clipDuration)}
+        </div>
+      </div>
+      <div className="absolute top-0 left-0 right-0 text-[9px] bg-[#c3d5ef] text-[#1a1d29] text-center font-bold py-0.5 tracking-wider">
+        INSERTED CLIP
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#c3d5ef]"></div>
+    </div>
+  );
+}
+  return null;
+})}
+
+    <div
+      onMouseDown={handleTrimStartMouseDown}
+      className="absolute top-0 bottom-0 w-3 bg-[#c3d5ef] cursor-ew-resize hover:w-4 transition-all z-10 flex items-center justify-center"
+      style={{ left: `${trimStartPercentage}%` }}
+      title="Drag to trim start"
+    >
+      <div className="w-1 h-8 bg-white rounded-full"></div>
+    </div>
+
+    <div
+      onMouseDown={handleTrimEndMouseDown}
+      className="absolute top-0 bottom-0 w-3 bg-[#c3d5ef] cursor-ew-resize hover:w-4 transition-all z-10 flex items-center justify-center"
+      style={{ left: `${trimEndPercentage}%`, transform: 'translateX(-100%)' }}
+      title="Drag to trim end"
+    >
+      <div className="w-1 h-8 bg-white rounded-full"></div>
+    </div>
+
+    <div
+      className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
+      style={{ left: `${currentPercentage}%` }}
+    >
+      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full shadow-lg"></div>
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full shadow-lg"></div>
+    </div>
+  </div>
+</div>
+
+                  <div className="flex justify-between text-xs text-gray-500 mt-1 px-2">
+                    {Array.from({ length: 11 }).map((_, i) => (
+                      <span key={i}>{formatTime((duration / 10) * i)}</span>
+                    ))}
+                  </div>
+                </div>
+
+>>>>>>> 2771e000772db1a5c281a72bbd60705bd6073609
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button
