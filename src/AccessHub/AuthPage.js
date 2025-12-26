@@ -89,9 +89,7 @@ const AuthPage = () => {
     
     return { valid: true };
   };
-
-
-  const handleLoginSubmit = async (e) => {
+const handleLoginSubmit = async (e) => {
   e.preventDefault();
   setError('');
   setLoading(true);
@@ -125,7 +123,6 @@ Please contact our support team at support@yourapp.com for assistance.
       setError('Account Deleted. Please contact support.');
       setLoading(false);
       return;
-    
     }
 
     // Handle other errors
@@ -133,11 +130,18 @@ Please contact our support team at support@yourapp.com for assistance.
       throw new Error(data.message || 'Login failed');
     }
 
-    // Successful login
+    // ✅ FIXED: Store all required data including userId
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-
     
+    // 🔥 NEW CODE - Extract and store userId separately
+    const userId = data.user._id || data.user.id || data.userId;
+    if (userId) {
+      localStorage.setItem('userId', userId);
+      console.log('✅ Stored userId:', userId);
+    } else {
+      console.error('⚠️ No userId found in response:', data);
+    }
     
     // Redirect based on role
     window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
